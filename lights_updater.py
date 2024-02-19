@@ -89,7 +89,7 @@ def process_line(line: str, xp12_params: str) -> str:
         print("New landinglights:", new_line)
         print("------------------------------------------------------")
         return new_line
-    return line
+    # return line
 
 
 def get_object_files(filepath: str) -> list:
@@ -99,7 +99,7 @@ def get_object_files(filepath: str) -> list:
         filepath (str): Directory at wchich to start searching
 
     Returns:
-        list: Of files
+        list: Of matching files
     """
     return list(Path(filepath).rglob("*.[oO][bB][jJ]"))
 
@@ -124,6 +124,7 @@ def create_new_object_file(aircraft_object_file: Path) -> None:
                 if line.startswith(NEEDLES[0]) or line.startswith(NEEDLES[1]):
                     newline = process_line(line, xp12_params)
                     new_obj_file.write(newline)
+                    continue
                 new_obj_file.write(line)
 
 
