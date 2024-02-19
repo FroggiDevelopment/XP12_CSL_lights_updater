@@ -60,27 +60,30 @@ def process_line(line: str) -> str:
     returns: string 'line with new params'
     """
     if spill_needle in line:
-        # print("Spill:", line)
-        # new_spill_line = line.replace(spill_needle, new_landing_lights_bb)
-        # print("New Spill:", new_spill_line)
-        # return new_spill_line
-        pass
+        print("##################### SPILL-LIGHT ##################")
+        print("Spill:", line)
+        new_spill_line = line.replace(spill_needle, new_landing_lights_bb).replace(
+            "\n", ""
+        )
+        new_spill_line += f" {xp12_params}"
+        print("New Spill:", new_spill_line)
+        print("################### END SPILL-LIGHT ################")
+        return new_spill_line
     if needle in line:
+        print("--------------------- LANDING-LIGHTS -----------------")
         print("Old landinglights:", line.replace("\n", "").split(" "))
         try:
             [light_param, light_name, lat, long, height] = line.replace("\n", "").split(
                 " "
             )
-        #     if light_param:
-        #         print("Light param: ", light_param)
         except ValueError as err:
             print(err)
 
         new_line = line.replace(needle, new_landing_lights).replace("\n", "")
         new_line += f" {xp12_params}"
         print("New landinglights:", new_line)
-        print("---------------------------------------------------")
-        # return new_line
+        print("------------------------------------------------------")
+        return new_line
     return line
 
 
