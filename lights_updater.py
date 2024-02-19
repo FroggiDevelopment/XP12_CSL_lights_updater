@@ -29,36 +29,6 @@ HEAVY_JETS = (
 
 # TODO: Navlights, Strobes, Beacon, Taxi
 
-# Old spill-params:
-# LIGHT_SPILL_CUSTOM, #
-# x,
-# y,
-# z,
-# r,
-# g,
-# b,
-# brightness(set to 1),
-# size in m,
-# direction (hor, vert, lateral),
-# semiwidth of lightcone,
-# dataref
-
-# New lightparams
-# light_param,
-# light_name,
-# lat,
-# long,
-# height,
-# r,
-# g,
-# b,
-# light_index,
-# candelar,
-# vert_rotation,  # (left/right)
-# lat_rotation,  # (up/down)
-# for_aft_direction,
-# cone_angle
-
 
 # temporary new light parameters
 def determine_light_params(aircraft_type):
