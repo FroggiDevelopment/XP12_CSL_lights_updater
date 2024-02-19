@@ -130,7 +130,7 @@ def create_new_object_file(aircraft_object_file: Path) -> None:
 
 def main():
     for file in get_object_files(filepath):
-        make_backup(file)
+        make_backup(file, ".obj.backup")
         create_new_object_file(file)
 
 
