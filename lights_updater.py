@@ -2,6 +2,8 @@ from pathlib import Path
 from helpers import make_backup
 
 filepath = "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B773"
+# Old params
+NEEDLES = ("LIGHT_NAMED airplane_landing", "LIGHT_SPILL_CUSTOM")
 NEW_FILE_EXTENSION = ".obj.NEW"
 LIGHT_JETS = ("B733", "B734", "B737", "B738", "B739", "A318", "A319", "A320", "A321")
 HEAVY_JETS = (
@@ -48,35 +50,31 @@ def determine_light_params(aircraft_type: str) -> str:
 
 
 def process_line(line: str, xp12_params: str) -> str:
-    """_summary_
+    """Process line to look for landing lights or spill entry and replace with new params
 
     Args:
-        line (str): _description_
+        line (str): line from aircarft object file
         xp12_params (str): _description_
 
     Returns:
         str: _description_
     """
 
-    # Old
-    needle = "LIGHT_NAMED airplane_landing"
-    spill_needle = "LIGHT_SPILL_CUSTOM"
-
     # New
-    new_landing_lights = "LIGHT_PARAM airplane_landing_pm"
-    new_landing_lights_bb = "LIGHT_PARAM airplane_landing_bb"
+    new_landing_light_params = "LIGHT_PARAM airplane_landing_pm"
+    new_landing_light_billboard_params = "LIGHT_PARAM airplane_landing_bb"
 
-    if spill_needle in line:
+    if line.startswith(NEEDLES[0]):
         print("##################### SPILL-LIGHT ##################")
         print("Spill:", line)
-        new_spill_line = line.replace(spill_needle, new_landing_lights_bb).replace(
-            "\n", ""
-        )
+        new_spill_line = line.replace(
+            NEEDLES[0], new_landing_light_billboard_params
+        ).replace("\n", "")
         new_spill_line += f" {xp12_params}\n"
         print("New Spill:", new_spill_line)
         print("################### END SPILL-LIGHT ################")
         return new_spill_line
-    if needle in line:
+    if line.startswith(NEEDLES[1]):  # TODO: new syntax
         print("--------------------- LANDING-LIGHTS -----------------")
         print("Old landinglights:", line.replace("\n", "").split(" "))
         # try:
@@ -86,7 +84,7 @@ def process_line(line: str, xp12_params: str) -> str:
         # except ValueError as err:
         #     print(err)
 
-        new_line = line.replace(needle, new_landing_lights).replace("\n", "")
+        new_line = line.replace(NEEDLES[1], new_landing_light_params).replace("\n", "")
         new_line += f" {xp12_params}\n"
         print("New landinglights:", new_line)
         print("------------------------------------------------------")
@@ -106,25 +104,27 @@ def get_object_files(filepath: str) -> list:
     return list(Path(filepath).rglob("*.[oO][bB][jJ]"))
 
 
-def create_new_object_file(file: Path) -> None:
+def create_new_object_file(aircraft_object_file: Path) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
 
     Args:
         file (Path): the existing aircraft object file
     """
-    new_file = file.with_suffix(NEW_FILE_EXTENSION)
+    new_file = aircraft_object_file.with_suffix(NEW_FILE_EXTENSION)
 
     if new_file.exists():
         new_file.unlink()
 
-    with open(file) as obj_file:
-        aircraft_type = str(file.parents[0]).split("/")[-1]
+    with open(aircraft_object_file) as aircraft_object:
+        aircraft_type = str(aircraft_object_file.parents[0]).split("/")[-1]
         xp12_params = determine_light_params(aircraft_type)
 
-        for line in obj_file:
+        for line in aircraft_object:
             with open(new_file, "a") as new_obj_file:
-                newline = process_line(line, xp12_params)
-                new_obj_file.write(newline)
+                if line.startswith(NEEDLES[0]) or line.startswith(NEEDLES[1]):
+                    newline = process_line(line, xp12_params)
+                    new_obj_file.write(newline)
+                new_obj_file.write(line)
 
 
 def main():
