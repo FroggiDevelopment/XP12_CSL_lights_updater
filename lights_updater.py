@@ -2,6 +2,7 @@ from pathlib import Path
 from helpers import make_backup
 
 filepath = "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B773"
+NEW_FILE_EXTENSION = ".obj.NEW"
 
 # TODO: Navlights, Strobes, Beacon
 
@@ -65,7 +66,7 @@ def process_line(line: str) -> str:
         new_spill_line = line.replace(spill_needle, new_landing_lights_bb).replace(
             "\n", ""
         )
-        new_spill_line += f" {xp12_params}"
+        new_spill_line += f" {xp12_params}\n"
         print("New Spill:", new_spill_line)
         print("################### END SPILL-LIGHT ################")
         return new_spill_line
@@ -80,21 +81,33 @@ def process_line(line: str) -> str:
             print(err)
 
         new_line = line.replace(needle, new_landing_lights).replace("\n", "")
-        new_line += f" {xp12_params}"
+        new_line += f" {xp12_params}\n"
         print("New landinglights:", new_line)
         print("------------------------------------------------------")
         return new_line
     return line
 
 
+def get_object_files(filepath):
+    return list(Path(filepath).rglob("*.[oO][bB][jJ]"))
+
+
+def create_new_object_file(file):
+    new_file = file.with_suffix(NEW_FILE_EXTENSION)
+    if new_file.exists():
+        new_file.unlink()
+
+    with open(file) as obj_file:
+        for line in obj_file:
+            with open(new_file, "a") as new_obj_file:
+                newline = process_line(line)
+                new_obj_file.write(newline)
+
+
 def main():
-    object_files = list(Path(filepath).rglob("*.[oO][bB][jJ]"))
-    for file in object_files:
+    for file in get_object_files(filepath):
         make_backup(file)
-        with open(file) as obj_file:
-            for line in obj_file:
-                process_line(line)
-        # use map here!?
+        create_new_object_file(file)
 
 
 if __name__ == "__main__":
