@@ -38,10 +38,6 @@ def determine_light_params(aircraft_type):
         return "0.76052475 0.65837479 0.57758057 3 200000cd 0.034766696 -0.052357007 -0.99802303 0.97992471"
 
 
-def split_lines_into_params():
-    pass
-
-
 def process_line(line: str, xp12_params: str) -> str:
     """Get a line from a file, look for landing lights
     or spill entry and replace with new params
