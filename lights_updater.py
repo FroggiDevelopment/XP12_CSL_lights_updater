@@ -24,6 +24,7 @@ HEAVY_JETS = (
     "A343",
     "A345",
     "A346",
+    "A359",
     "A388",
 )
 
@@ -31,7 +32,15 @@ HEAVY_JETS = (
 
 
 # temporary new light parameters
-def determine_light_params(aircraft_type):
+def determine_light_params(aircraft_type: str) -> str:
+    """Determines the paramaters for the give aircraft type
+
+    Args:
+        aircraft_type (str): Aircraft type e.g. B733 for Boeing 737-300
+
+    Returns:
+        str: A string with the corresponding light parameters for the given aircraft type
+    """
     if aircraft_type in HEAVY_JETS:
         return "0.76052475 0.65837479 0.57758057 3 765000cd 0.034766696 -0.052357007 -0.99802303 0.97992471"
     if aircraft_type in LIGHT_JETS:
@@ -39,12 +48,14 @@ def determine_light_params(aircraft_type):
 
 
 def process_line(line: str, xp12_params: str) -> str:
-    """Get a line from a file, look for landing lights
-    or spill entry and replace with new params
+    """_summary_
 
-    Params:
-    line: string 'line from obj-file'
-    returns: string 'line with new params'
+    Args:
+        line (str): _description_
+        xp12_params (str): _description_
+
+    Returns:
+        str: _description_
     """
 
     # Old
@@ -83,7 +94,7 @@ def process_line(line: str, xp12_params: str) -> str:
     return line
 
 
-def get_object_files(filepath):
+def get_object_files(filepath: str) -> list:
     """Get all object files within filepath
 
     Args:
@@ -95,11 +106,11 @@ def get_object_files(filepath):
     return list(Path(filepath).rglob("*.[oO][bB][jJ]"))
 
 
-def create_new_object_file(file):
+def create_new_object_file(file: Path) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
 
     Args:
-        file (filepath): the eexisting aircraft object file
+        file (Path): the existing aircraft object file
     """
     new_file = file.with_suffix(NEW_FILE_EXTENSION)
 
