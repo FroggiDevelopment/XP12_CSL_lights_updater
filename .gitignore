@@ -47,6 +47,3 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-
-# no CSL files
-CSL/
