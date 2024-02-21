@@ -6,13 +6,13 @@ from typing import NoReturn
 filepath = "./CSL"
 # Old params
 LIGHT_NEEDLES = [
-    "airplane_landing",
-    "airplane_taxi",
-    "airplane_nav_left",
-    "airplane_nav_right",
-    "airplane_nav_tail",
-    "airplane_strobe",
-    "airplane_beacon",
+    " airplane_landing ",
+    " airplane_taxi ",
+    " airplane_nav_left ",
+    " airplane_nav_right ",
+    " airplane_nav_tail ",
+    " airplane_strobe ",
+    " airplane_beacon ",
 ]
 SPILL_NEEDLE = "LIGHT_SPILL_CUSTOM"
 LIGHT_REPLACE = {"old": "LIGHT_NAMED", "new": "LIGHT_PARAM"}
@@ -76,7 +76,7 @@ def create_anim_block(aircraft_object: Path) -> str:
                 continue
         elif copy == True:
             anim_block += line
-        return new_data
+    return new_data
 
 
 def create_new_object_file(aircraft_object_file: Path) -> NoReturn:
@@ -87,6 +87,9 @@ def create_new_object_file(aircraft_object_file: Path) -> NoReturn:
     """
 
     new_obj_file = aircraft_object_file.with_suffix(".obj.NEW")
+    aircraft_type = str(aircraft_object_file.parents[0]).split("/")[-1]
+    xp12_params = determine_light_params(aircraft_type)
+
     if new_obj_file.exists():
         new_obj_file.unlink()
     with (
