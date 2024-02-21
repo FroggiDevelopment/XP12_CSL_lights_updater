@@ -1,4 +1,7 @@
-def make_backup(file, backup_extension=".BCK") -> None:
+from pathlib import Path
+
+
+def make_backup(file: Path, backup_extension=".BCK") -> None:
     """Make a backup of the given file
 
     Arguments: file: string

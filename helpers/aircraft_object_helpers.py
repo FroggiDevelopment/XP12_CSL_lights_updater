@@ -25,7 +25,7 @@ HEAVY_JETS = (
 
 
 def determine_light_params(aircraft_type: str) -> str:
-    """Determines the paramaters for the give aircraft type
+    """Determines the paramaters for the given aircraft type
 
     Args:
         aircraft_type (str): Aircraft type e.g. B733 for Boeing 737-300
