@@ -75,7 +75,10 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(line)
 
 
-def copy_new_to_old():
+def copy_new_to_old() -> NoReturn:
+    """Copy the new created file over the original file
+    Delete the new file
+    """
     files_to_copy = list(Path(filepath).rglob("*.NEW"))
 
     for file in files_to_copy:
