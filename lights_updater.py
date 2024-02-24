@@ -59,12 +59,13 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                         if xp12_params[lighttype] != "":
                             line += f" {xp12_params[lighttype]}"
                         if "airplane_nav" in line:
-                            print("navlights found!")
                             line = (
                                 line.replace("_left", "")
                                 .replace("_right", "")
                                 .replace("_tail", "")
                             )
+                        if "airplane_beacon" in line or "airplane_strobe" in line:
+                            line += line.replace("_pm", "_bb")
                         cached_line = line
             if line.startswith("LIGHT_SPILL_CUSTOM"):
                 if cached_line != "":
