@@ -29,6 +29,27 @@ def get_object_files(filepath: str) -> list:
     return list(Path(filepath).rglob("*.[oO][bB][jJ]"))
 
 
+def handle_special_cases(line: str) -> str:
+    """
+    In case of special lines, e.g. missing SPILL, new param names,
+    handle these cases here.
+
+    Args:
+        line (str): line with light params
+
+    Returns:
+        str: Line with updated params according the the specifications
+             in XP12
+    """
+    if "airplane_nav" in line:
+        handled_line = (
+            line.replace("_left", "").replace("_right", "").replace("_tail", "")
+        )
+    if "airplane_beacon" in line or "airplane_strobe" in line:
+        handled_line += line.replace("_pm", "_bb")
+    return handled_line
+
+
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     """Create new aircraft obj file with X-Plane 12 light params
 
@@ -59,14 +80,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                         )
                         if xp12_params[lighttype] != "":
                             line += f" {xp12_params[lighttype]}\n"
-                        if "airplane_nav" in line:
-                            line = (
-                                line.replace("_left", "")
-                                .replace("_right", "")
-                                .replace("_tail", "")
-                            )
-                        if "airplane_beacon" in line or "airplane_strobe" in line:
-                            line += line.replace("_pm", "_bb")
+                        line = handle_special_cases(line)
                         cached_line = line
             if line.startswith("LIGHT_SPILL_CUSTOM"):
                 if cached_line != "":
