@@ -58,6 +58,15 @@ HEAVY_JETS = (
     "MD11",
 )
 PROPS = ("DH8D", "AT42", "AT72", "D328", "F50", "JS41", "L410", "SB20", "SF34")
+GA = (
+    "BE20",
+    "C150",
+    "C172",
+    "C182",
+    "C421",
+    "H25B",
+    "LJ45",
+)
 
 
 light_params = {
@@ -88,6 +97,15 @@ light_params = {
         "airplane_strobe": "3.7129087 -0.07354179 -1.1133618 1 1 1 0 75000cd 0.66745675 0.06932088 0.74141496 0.4617486\n",
         "airplane_beacon": "1 0 0 0 1000cd 0 0 0 1\n",
     },
+    "general_aviation": {
+        "airplane_landing": " 0.76052475 0.65837479 0.57758057 3 50000cd 0.034766696 -0.052357007 -0.99802303 0.97992471\n",
+        "airplane_taxi": "0.76052475 0.65837479 0.57758057 3 10000cd 0.034766696 -0.052357007 -0.99802303 0.97992471\n",
+        "airplane_nav_left": "0.94730663 0.82278603 0.7230553 0 500cd -0.077866882 -0.018656421 -0.99678928 0.34202015\n",
+        "airplane_nav_right": "0.94730663 0.82278603 0.7230553 0 500cd -0.077866882 -0.018656421 -0.99678928 0.34202015\n",
+        "airplane_nav_tail": "0.94730663 0.82278603 0.7230553 0 750cd -0.077866882 -0.018656421 -0.99678928 0.34202015\n",
+        "airplane_strobe": "3.7129087 -0.07354179 -1.1133618 1 1 1 0 40000cd 0.66745675 0.06932088 0.74141496 0.4617486\n",
+        "airplane_beacon": "1 0 0 0 1000cd 0 0 0 1\n",
+    },
 }
 
 
@@ -110,5 +128,7 @@ def determine_light_params(aircraft_type: str, light_type: str = "default") -> s
         light_specific_params = light_params["light"]
     if aircraft_type in PROPS:
         light_specific_params = light_params["props"]
+        if aircraft_type in GA:
+            light_specific_params = light_params["general_aviation"]
 
     return light_specific_params
