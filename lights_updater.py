@@ -20,7 +20,7 @@ def get_object_files(filepath: str) -> list:
     """Get all object files within filepath
 
     Args:
-        filepath (str): Directory at wchich to start searching
+        filepath (str): Directory at which to start searching
 
     Returns:
         list: Of matching files
@@ -39,7 +39,6 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     cached_line: str = ""
     aircraft_type: str = str(aircraft_obj_file.parents[0]).split("/")[-1]
     xp12_params: str = determine_light_params(aircraft_type)
-    aircraft_light_type: str = ""
 
     if new_object_file.exists():
         new_object_file.unlink()
