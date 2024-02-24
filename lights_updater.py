@@ -58,7 +58,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                             "\n", ""
                         )
                         if xp12_params[lighttype] != "":
-                            line += f" {xp12_params[lighttype]}"
+                            line += f" {xp12_params[lighttype]}\n"
                         if "airplane_nav" in line:
                             line = (
                                 line.replace("_left", "")
