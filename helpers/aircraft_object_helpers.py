@@ -34,6 +34,6 @@ def determine_light_params(aircraft_type: str) -> str:
         str: A string with the corresponding light parameters for the given aircraft type
     """
     if aircraft_type in HEAVY_JETS:
-        return "0.76052475 0.65837479 0.57758057 3 765000cd 0.034766696 -0.052357007 -0.99802303 0.97992471"
+        return "0.76052475 0.65837479 0.57758057 3 765000cd 0.034766696 -0.052357007 -0.99802303 0.97992471\n"
     if aircraft_type in LIGHT_JETS:
-        return "0.76052475 0.65837479 0.57758057 3 200000cd 0.034766696 -0.052357007 -0.99802303 0.97992471"
+        return "0.76052475 0.65837479 0.57758057 3 200000cd 0.034766696 -0.052357007 -0.99802303 0.97992471\n"

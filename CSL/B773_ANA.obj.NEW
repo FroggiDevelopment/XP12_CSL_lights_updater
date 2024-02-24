@@ -1,7 +1,0 @@
-ANIM_begin
-ANIM_hide -1.000000 0.400000 libxplanemp/controls/strobe_lites_on
-ANIM_show 0.500000 2.000000 libxplanemp/controls/strobe_lites_on
-LIGHT_PARAM airplane_strobe -30.107676 2.573810 8.573019
-LIGHT_PARAM airplane_strobe 29.994944 2.525130 8.613919
-ANIM_end
-ANIM_begin
