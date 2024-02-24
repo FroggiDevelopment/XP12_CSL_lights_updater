@@ -62,7 +62,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             if line.startswith("LIGHT_SPILL_CUSTOM"):
                 line = cached_line.replace("_pm", "_bb")
             new_obj_file.write(line)
-            cached_line = ""
+            cached_line = ""  # necessary or not?
 
 
 def main():
