@@ -47,3 +47,7 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+
+# CLS files created
+CSL/**/*.NEW
+CSL/**/*.BCK
