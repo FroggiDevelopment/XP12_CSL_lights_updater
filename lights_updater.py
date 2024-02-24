@@ -4,6 +4,7 @@ from helpers import determine_light_params
 from typing import NoReturn
 
 filepath = "./CSL"
+# filepath = "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B738"
 # Old params
 LIGHT_NEEDLES = [
     "airplane_landing",
@@ -74,10 +75,20 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(line)
 
 
+def copy_new_to_old():
+    files_to_copy = list(Path(filepath).rglob("*.NEW"))
+
+    for file in files_to_copy:
+        new_object_file = file.with_suffix("")
+        new_object_file.write_bytes(file.read_bytes())
+        file.unlink()
+
+
 def main():
     for file in get_object_files(filepath):
         make_backup(file, ".obj.BCK")
         process_obj_file(file)
+    copy_new_to_old()
 
 
 if __name__ == "__main__":
