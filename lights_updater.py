@@ -14,9 +14,6 @@ LIGHT_NEEDLES = [
     " airplane_strobe",
     " airplane_beacon",
 ]
-SPILL_NEEDLE = "LIGHT_SPILL_CUSTOM"
-LIGHT_REPLACE = {"old": "LIGHT_NAMED", "new": "LIGHT_PARAM"}
-NEW_FILE_EXTENSION = ".obj.NEW"
 
 
 def get_object_files(filepath: str) -> list:
@@ -29,54 +26,6 @@ def get_object_files(filepath: str) -> list:
         list: Of matching files
     """
     return list(Path(filepath).rglob("*.[oO][bB][jJ]"))
-
-
-# def update_block(anim_block: str):
-#     """Inspect this block and set new params per light type
-
-#     Args:
-#         anim_block (str): "Animation Block" with light params
-
-#     Returns:
-#         str: "Animation Block" with new XP12 light params
-#     """
-
-#     anim_block = anim_block.replace("LIGHT_NAMED", "LIGHT_PARAM")
-#     print(anim_block)
-#     return anim_block
-
-
-# def create_anim_block(aircraft_object: Path) -> str:
-#     """Create the anime start until anim end block for investigation
-
-#     Args:
-#         aircraft_object (Path): path to aircraft obj file
-
-#     Returns:
-#         str: Contains the full block between ANIM_start and ANIM_end
-#     """
-#     anim_block = ""
-#     new_data = ""
-#     copy = False
-#     block_end = False
-#     for line in aircraft_object:
-#         if line.startswith("ANIM_begin"):
-#             copy = True
-#             anim_block += line
-#         elif line.startswith("ANIM_end"):
-#             copy = False
-#             block_end = True
-#             anim_block += line
-#         elif block_end == True:
-#             if any(light in anim_block for light in LIGHT_NEEDLES):
-#                 new_data += update_block(anim_block)
-#                 anim_block = ""
-#             else:
-#                 anim_block = ""
-#                 continue
-#         elif copy == True:
-#             anim_block += line
-#     return new_data
 
 
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
