@@ -6,13 +6,13 @@ from typing import NoReturn
 filepath = "./CSL"
 # Old params
 LIGHT_NEEDLES = [
-    " airplane_landing",
-    " airplane_taxi",
-    " airplane_nav_left",
-    " airplane_nav_right",
-    " airplane_nav_tail",
-    " airplane_strobe",
-    " airplane_beacon",
+    "airplane_landing",
+    "airplane_taxi",
+    "airplane_nav_left",
+    "airplane_nav_right",
+    "airplane_nav_tail",
+    "airplane_strobe",
+    "airplane_beacon",
 ]
 
 
@@ -38,7 +38,6 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     new_object_file: Path = aircraft_obj_file.with_suffix(".obj.NEW")
     cached_line: str = ""
     aircraft_type: str = str(aircraft_obj_file.parents[0]).split("/")[-1]
-    # xp12_params: str = determine_light_params(aircraft_type)
 
     if new_object_file.exists():
         new_object_file.unlink()
@@ -54,26 +53,24 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                         xp12_params: str = determine_light_params(
                             aircraft_type, lighttype
                         )
-                        for [light in line for light in LIGHT_NEEDLES]:
-                            print ("Line with aircraft lights of type:", light)
-                        if "airplane_landing" in line:
-                            line = line.replace(lighttype, f"{lighttype}_pm").replace(
-                                "\n", ""
+                        line = line.replace(lighttype, f"{lighttype}_pm").replace(
+                            "\n", ""
+                        )
+                        if xp12_params[lighttype] != "":
+                            line += f" {xp12_params[lighttype]}"
+                        if "airplane_nav" in line:
+                            print("navlights found!")
+                            line = (
+                                line.replace("_left", "")
+                                .replace("_right", "")
+                                .replace("_tail", "")
                             )
-                            line += xp12_params
-                        else:
-                            line = line.replace(lighttype, f"{lighttype}_pm")
-                    cached_line = line
-                    print(cached_line)
+                        cached_line = line
             if line.startswith("LIGHT_SPILL_CUSTOM"):
-                # print(f"cached line from above: {cached_line}")
-                # print(line)
                 if cached_line != "":
                     line = cached_line.replace("_pm", "_bb")
-                    # print("Line after change:", line)
                     cached_line = ""
             new_obj_file.write(line)
-            cached_line = ""  # necessary or not?
 
 
 def main():
