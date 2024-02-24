@@ -38,7 +38,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     new_object_file: Path = aircraft_obj_file.with_suffix(".obj.NEW")
     cached_line: str = ""
     aircraft_type: str = str(aircraft_obj_file.parents[0]).split("/")[-1]
-    xp12_params: str = determine_light_params(aircraft_type)
+    # xp12_params: str = determine_light_params(aircraft_type)
 
     if new_object_file.exists():
         new_object_file.unlink()
@@ -51,6 +51,11 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                 line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
                 for lighttype in LIGHT_NEEDLES:
                     if lighttype in line:
+                        xp12_params: str = determine_light_params(
+                            aircraft_type, lighttype
+                        )
+                        for [light in line for light in LIGHT_NEEDLES]:
+                            print ("Line with aircraft lights of type:", light)
                         if "airplane_landing" in line:
                             line = line.replace(lighttype, f"{lighttype}_pm").replace(
                                 "\n", ""
@@ -58,9 +63,15 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                             line += xp12_params
                         else:
                             line = line.replace(lighttype, f"{lighttype}_pm")
-                        cached_line = line
+                    cached_line = line
+                    print(cached_line)
             if line.startswith("LIGHT_SPILL_CUSTOM"):
-                line = cached_line.replace("_pm", "_bb")
+                # print(f"cached line from above: {cached_line}")
+                # print(line)
+                if cached_line != "":
+                    line = cached_line.replace("_pm", "_bb")
+                    # print("Line after change:", line)
+                    cached_line = ""
             new_obj_file.write(line)
             cached_line = ""  # necessary or not?
 
