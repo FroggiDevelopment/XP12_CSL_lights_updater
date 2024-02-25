@@ -125,7 +125,7 @@ def main():
     for file in get_object_files(filepath):
         make_backup(file, ".obj.BCK")
         process_obj_file(file)
-    copy_new_to_old()
+    # copy_new_to_old()
 
 
 if __name__ == "__main__":
