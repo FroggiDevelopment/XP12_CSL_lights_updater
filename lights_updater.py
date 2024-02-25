@@ -44,6 +44,7 @@ def handle_special_cases(line: str) -> str:
         str: Line with updated params according the the specifications
              in XP12
     """
+    handled_line = ""
     if "airplane_nav" in line:
         handled_line = (
             line.replace("_left", "").replace("_right", "").replace("_tail", "")
@@ -88,6 +89,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     # aircraft_type: str = str(aircraft_obj_file.parents[0]).split("/")[-1]
     aircraft_type = aircraft_obj_file.name.split("_")[0]
 
+    # Delete new file to start a clean build.
     if new_object_file.exists():
         new_object_file.unlink()
 
