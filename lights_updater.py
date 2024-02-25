@@ -49,8 +49,11 @@ def handle_special_cases(line: str) -> str:
         handled_line = (
             line.replace("_left", "").replace("_right", "").replace("_tail", "")
         )
-    if "airplane_beacon" in line or "airplane_strobe" in line:
+    if "airplane_beacon" in line:
         handled_line += line.replace("_pm", "_bb")
+    if "airplane_strobe" in line:
+        handled_line += line.replace("_pm", "_bb")
+
     return handled_line
 
 
@@ -66,6 +69,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     Returns:
         str: new line with updated params
     """
+    result = ""
     new_line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
     for lighttype in LIGHT_NEEDLES:
         if lighttype in new_line:
@@ -73,8 +77,8 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
             new_line = new_line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
             if xp12_params[lighttype] != "":
                 new_line += f" {xp12_params[lighttype]}\n"
-            new_line = handle_special_cases(new_line)
-    return new_line
+            result = handle_special_cases(new_line)
+    return result
 
 
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
