@@ -1,3 +1,5 @@
+import sys
+
 LIGHT_JETS = (
     "B733",
     "B734",
@@ -64,11 +66,44 @@ GA = (
     "C172",
     "C182",
     "C421",
-    "H25B",
-    "LJ45",
 )
-HELI = ("B06", "EC35", "S76")
-
+PRIVATE_JETS = (
+    "LJ45",
+    "H25B",
+)
+HELI = (
+    "B06",
+    "EC35",
+    "S76",
+)
+MIL_FIGHTER = (
+    "F16C",
+    "F16D",
+    "F18C",
+    "F18D",
+    "HAWK",
+    "M339",
+    "MG29",
+    "SU27",
+    "TOR",
+    "EUFI",
+)
+MIL_HEAVY_JETS = (
+    "C17",
+    "C5M",
+    "E3D",
+)
+MIL_HEAVY_PROPS = (
+    "C130",
+    "C30J",
+    "A400",
+)
+MIL_LIGHT_PROPS = (
+    "G115",
+    "CL41",
+    "TUCA",
+    "PC9",
+)
 
 light_params = {
     "heavy": {
@@ -81,6 +116,15 @@ light_params = {
         "airplane_beacon": "1 0 0 0 1000cd 0 0 0 1",
     },
     "light": {
+        "airplane_landing": " 0.76052475 0.65837479 0.57758057 3 500000cd 0.034766696 -0.052357007 -0.99802303 0.97992471",
+        "airplane_taxi": "0.76052475 0.65837479 0.57758057 3 100000cd 0.034766696 -0.052357007 -0.99802303 0.97992471",
+        "airplane_nav_left": "0.94730663 0.82278603 0.7230553 0 500cd -0.077866882 -0.018656421 -0.99678928 0.34202015",
+        "airplane_nav_right": "0.94730663 0.82278603 0.7230553 0 500cd -0.077866882 -0.018656421 -0.99678928 0.34202015",
+        "airplane_nav_tail": "0.94730663 0.82278603 0.7230553 0 1000cd -0.077866882 -0.018656421 -0.99678928 0.34202015",
+        "airplane_strobe": "3.7129087 -0.07354179 -1.1133618 1 1 1 0 75000cd 0.66745675 0.06932088 0.74141496 0.4617486",
+        "airplane_beacon": "1 0 0 0 1000cd 0 0 0 1",
+    },
+    "private_jets": {
         "airplane_landing": " 0.76052475 0.65837479 0.57758057 3 500000cd 0.034766696 -0.052357007 -0.99802303 0.97992471",
         "airplane_taxi": "0.76052475 0.65837479 0.57758057 3 100000cd 0.034766696 -0.052357007 -0.99802303 0.97992471",
         "airplane_nav_left": "0.94730663 0.82278603 0.7230553 0 500cd -0.077866882 -0.018656421 -0.99678928 0.34202015",
@@ -119,7 +163,9 @@ light_params = {
 }
 
 
-def determine_light_params(aircraft_type: str, light_type: str = "default") -> str:
+def determine_light_params(
+    aircraft_type: str, light_type: str = "", light_params: dict = light_params
+) -> str:
     """Determines the paramaters for the given aircraft type
 
     Args:
@@ -130,17 +176,31 @@ def determine_light_params(aircraft_type: str, light_type: str = "default") -> s
     """
 
     light_specific_params = ""
-    if light_type == "default":
-        return ""
+
+    if light_type == "":
+        raise ValueError("The light type is missing!")
     if aircraft_type in HEAVY_JETS:
         light_specific_params = light_params["heavy"]
     if aircraft_type in LIGHT_JETS:
         light_specific_params = light_params["light"]
+    if aircraft_type in PRIVATE_JETS:
+        light_params = light_params["private_jets"]
     if aircraft_type in PROPS:
         light_specific_params = light_params["props"]
     if aircraft_type in GA:
         light_specific_params = light_params["general_aviation"]
     if aircraft_type in HELI:
-        light_specific_params = light_specific_params["heli"]
-
+        light_specific_params = light_params["heli"]
+    if aircraft_type in MIL_HEAVY_JETS:
+        light_specific_params = light_params["heavy"]
+    if aircraft_type in MIL_FIGHTER:
+        light_specific_params = light_params["light"]
+    if aircraft_type in MIL_HEAVY_PROPS:
+        light_specific_params = light_params["props"]
+    if aircraft_type in MIL_LIGHT_PROPS:
+        light_specific_params = light_params["general_aviation"]
+    if light_specific_params == "":
+        light_specific_params = light_params[
+            "light"
+        ]  # If all fails, give the aircraft some light.
     return light_specific_params
