@@ -33,6 +33,9 @@ def handle_special_cases(line: str) -> str:
     """
     In case of special lines, e.g. missing SPILL, new param names,
     handle these cases here.
+    As it seems are the SPILLS fro some lights missing.
+    This function takes care of these cases.
+
 
     Args:
         line (str): line with light params
@@ -82,7 +85,8 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
 
     cached_line: str = ""
     new_object_file: Path = aircraft_obj_file.with_suffix(".obj.NEW")
-    aircraft_type: str = str(aircraft_obj_file.parents[0]).split("/")[-1]
+    # aircraft_type: str = str(aircraft_obj_file.parents[0]).split("/")[-1]
+    aircraft_type = aircraft_obj_file.name.split("_")[0]
 
     if new_object_file.exists():
         new_object_file.unlink()
