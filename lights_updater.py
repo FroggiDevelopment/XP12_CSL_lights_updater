@@ -109,7 +109,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                     lighttype = line.split(" ")[1]
 
                     if lighttype == "headlight":  # Filter unusual lighttype names
-                        lighttype = "airplane_landing"
+                        line.replace("headlight", "airplane_landing")
 
                     line = handle_light_params(line, lighttype, aircraft_type)
                     cached_line = line
@@ -120,6 +120,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                 else:
                     line = line.replace("LIGHT_SPILL_CUSTOM", "LIGHT_PARAM")
                     line = line.replace("_pm", "_bb")
+            # Write data to new object file
             new_obj_file.write(line)
 
 
