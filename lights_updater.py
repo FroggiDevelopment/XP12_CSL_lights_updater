@@ -6,7 +6,7 @@ from typing import NoReturn
 filepath = "./CSL"
 # filepath = "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B738"
 # Old params
-LIGHT_NEEDLES = [
+LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
     "airplane_taxi",
     "airplane_nav_left",
@@ -49,11 +49,6 @@ def handle_special_cases(line: str) -> str:
         handled_line = (
             line.replace("_left", "").replace("_right", "").replace("_tail", "")
         )
-        # handled_line += handled_line.replace("_pm", "_bb")
-    # elif "airplane_beacon" in line:
-    #     handled_line += line.replace("_pm", "_bb")
-    # elif "airplane_strobe" in line:
-    #     handled_line += line.replace("_pm", "_bb")
     else:
         return line
     return handled_line
@@ -94,10 +89,8 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     Args:
         file (Path): the existing aircraft object file
     """
-
-    cached_line: str = ""
     new_object_file: Path = aircraft_obj_file.with_suffix(".obj.NEW")
-    aircraft_type = aircraft_obj_file.name.split("_")[0]
+    aircraft_type: str = aircraft_obj_file.name.split("_")[0]
 
     # Delete new file to start a clean build.
     if new_object_file.exists():
@@ -113,20 +106,10 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                 if [lighttype in line for lighttype in LIGHT_NEEDLES]:
                     lighttype = line.split(" ")[1]
 
-                    # if lighttype == "headlight":  # Filter unusual lighttype names
-                    #     line.replace("headlight", "airplane_landing")
-
                     line = handle_light_params(line, lighttype, aircraft_type)
-                    # cached_line = line
 
             if line.startswith("LIGHT_SPILL_CUSTOM"):
-                # if cached_line != "":
-                #     line = cached_line.replace("_pm", "_bb")
-                #     cached_line = ""
-                # else:
                 line = ""
-                # line = line.replace("LIGHT_SPILL_CUSTOM", "LIGHT_PARAM")
-                # line = line.replace("_pm", "_bb")
             # Write data to new object file
             new_obj_file.write(line)
 
