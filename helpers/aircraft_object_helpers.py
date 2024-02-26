@@ -1,7 +1,7 @@
 import sys
 
 
-def define_aircraft_specific_data():
+def set_aircraft_data():
     LIGHT_JETS = (
         "B733",
         "B734",
@@ -175,7 +175,7 @@ def determine_light_params(aircraft_type: str, light_type: str = "") -> str:
     Returns:
         str: A string with the corresponding light parameters for the given aircraft type
     """
-    light_params, LIGHT_JETS, HEAVY_JETS, PRIVATE_JETS, GA, PROPS, MIL_FIGHTER, MIL_HEAVY_JETS, MIL_HEAVY_PROPS, MIL_LIGHT_PROPS, HELI = define_aircraft_specific_data()
+    light_params, LIGHT_JETS, HEAVY_JETS, PRIVATE_JETS, GA, PROPS, MIL_FIGHTER, MIL_HEAVY_JETS, MIL_HEAVY_PROPS, MIL_LIGHT_PROPS, HELI = set_aircraft_data()
     light_specific_params = ""
 
     if light_type == "":
