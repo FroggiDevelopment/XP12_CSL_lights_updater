@@ -113,6 +113,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
 
                     line = handle_light_params(line, lighttype, aircraft_type)
                     cached_line = line
+                    
             if line.startswith("LIGHT_SPILL_CUSTOM"):
                 if cached_line != "":
                     line = cached_line.replace("_pm", "_bb")
