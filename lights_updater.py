@@ -72,8 +72,12 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
         str: new line with updated params
     """
     new_line: str = ""
-    # print("Inside handling:", lighttype)
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
+    
+    if lighttype == "headlight":  # Filter unusual lighttype names
+        line.replace("headlight", "airplane_landing")
+        lighttype = "airplane_landing"
+        
     new_line = line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
 
     if xp12_params[lighttype] != "":
@@ -109,8 +113,8 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                 if [lighttype in line for lighttype in LIGHT_NEEDLES]:
                     lighttype = line.split(" ")[1]
 
-                    if lighttype == "headlight":  # Filter unusual lighttype names
-                        line.replace("headlight", "airplane_landing")
+                    # if lighttype == "headlight":  # Filter unusual lighttype names
+                    #     line.replace("headlight", "airplane_landing")
 
                     line = handle_light_params(line, lighttype, aircraft_type)
                     # cached_line = line
