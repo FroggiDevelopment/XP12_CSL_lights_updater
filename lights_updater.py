@@ -24,12 +24,12 @@ def get_object_files(filepath: str) -> list:
         filepath (str): Directory at which to start searching
 
     Returns:
-        list: Of matching files
+        list: Of matching filepathes
     """
     return list(Path(filepath).rglob("*.[oO][bB][jJ]"))
 
 
-def handle_special_cases(line: str) -> str:
+def handle_special_cases(aircraft_lightparams_line: str) -> str:
     """
     In case of special lines, e.g. missing SPILL, new param names,
     handle these cases here.
@@ -38,28 +38,32 @@ def handle_special_cases(line: str) -> str:
 
 
     Args:
-        line (str): line with light params
+        aircraft_lightparams_line (str): aircraft_lightparams_line with light params
 
     Returns:
-        str: Line with updated params according the the specifications
+        str: aircraft_lightparams_line with updated params according the the specifications
              in XP12
     """
     handled_line = ""
-    if "airplane_nav" in line:
+    if "airplane_nav" in aircraft_lightparams_line:
         handled_line = (
-            line.replace("_left", "").replace("_right", "").replace("_tail", "")
+            aircraft_lightparams_line.replace("_left", "")
+            .replace("_right", "")
+            .replace("_tail", "")
         )
     else:
-        return line
+        return aircraft_lightparams_line
     return handled_line
 
 
-def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
+def handle_light_params(
+    aircraft_lightparams_line: str, lighttype: str, aircraft_type: str
+) -> str:
     """
-    Create a new param line based on XP12 specifications, aircraft_type and lighttype
+    Create a new param aircraft_lightparams_line based on XP12 specifications, aircraft_type and lighttype
 
     Args:
-        line (str): light params line old style
+        aircraft_lightparams_line (str): light params line old style
         lighttype (str): the type of light, e.g. airplane_beacon or airplane_landing
         aircraft_type (str): the type of the specific aircraft in ICAO terms. e.g. B733 for Boeing 737-300
 
@@ -69,13 +73,15 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     new_line: str = ""
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
 
-    if "headlight" in line:  # Filter unusual lighttype names
-        line = ""
+    if "headlight" in aircraft_lightparams_line:  # Filter unusual lighttype names
+        aircraft_lightparams_line = ""
         lighttype = "airplane_landing"
 
-    new_line = line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
+    new_line = aircraft_lightparams_line.replace(lighttype, f"{lighttype}_pm").replace(
+        "\n", ""
+    )
 
-    if xp12_params[lighttype] != "" and line != "":
+    if xp12_params[lighttype] != "" and aircraft_lightparams_line != "":
         new_line += f" {xp12_params[lighttype]}\n"
 
     new_line = handle_special_cases(new_line)
@@ -99,19 +105,26 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     with open(aircraft_obj_file) as aircraft_object_file, open(
         new_object_file, "w+"
     ) as new_obj_file:
-        for line in aircraft_object_file:
-            if line.startswith("LIGHT_NAMED"):
-                line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
+        for aircraft_lightparams_line in aircraft_object_file:
+            if aircraft_lightparams_line.startswith("LIGHT_NAMED"):
+                aircraft_lightparams_line = aircraft_lightparams_line.replace(
+                    "LIGHT_NAMED", "LIGHT_PARAM"
+                )
 
-                if [lighttype in line for lighttype in LIGHT_NEEDLES]:
-                    lighttype = line.split(" ")[1]
+                if [
+                    lighttype in aircraft_lightparams_line
+                    for lighttype in LIGHT_NEEDLES
+                ]:
+                    lighttype = aircraft_lightparams_line.split(" ")[1]
 
-                    line = handle_light_params(line, lighttype, aircraft_type)
+                    aircraft_lightparams_line = handle_light_params(
+                        aircraft_lightparams_line, lighttype, aircraft_type
+                    )
 
-            if line.startswith("LIGHT_SPILL_CUSTOM"):
-                line = ""
+            if aircraft_lightparams_line.startswith("LIGHT_SPILL_CUSTOM"):
+                aircraft_lightparams_line = ""
             # Write data to new object file
-            new_obj_file.write(line)
+            new_obj_file.write(aircraft_lightparams_line)
 
 
 def copy_new_to_old() -> NoReturn:
