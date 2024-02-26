@@ -71,7 +71,6 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     Returns:
         str: new line with updated params
     """
-    # onlz testing
     new_line: str = ""
     print("Inside handling:", lighttype)
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
