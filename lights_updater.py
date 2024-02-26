@@ -49,11 +49,12 @@ def handle_special_cases(line: str) -> str:
         handled_line = (
             line.replace("_left", "").replace("_right", "").replace("_tail", "")
         )
-    if "airplane_beacon" in line:
+    elif "airplane_beacon" in line:
         handled_line += line.replace("_pm", "_bb")
-    if "airplane_strobe" in line:
+    elif "airplane_strobe" in line:
         handled_line += line.replace("_pm", "_bb")
-
+    else:
+        return line
     return handled_line
 
 
@@ -69,16 +70,17 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     Returns:
         str: new line with updated params
     """
-    result = ""
-    new_line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
-    for lighttype in LIGHT_NEEDLES:
-        if lighttype in new_line:
-            xp12_params: str = determine_light_params(aircraft_type, lighttype)
-            new_line = new_line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
-            if xp12_params[lighttype] != "":
-                new_line += f" {xp12_params[lighttype]}\n"
-            result = handle_special_cases(new_line)
-    return result
+    new_line: str = ""
+    print("Inside handling:", lighttype)
+    xp12_params: str = determine_light_params(aircraft_type, lighttype)
+    new_line = line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
+
+    if xp12_params[lighttype] != "":
+        new_line += f" {xp12_params[lighttype]}\n"
+
+    new_line = handle_special_cases(new_line)
+
+    return new_line
 
 
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
@@ -90,7 +92,6 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
 
     cached_line: str = ""
     new_object_file: Path = aircraft_obj_file.with_suffix(".obj.NEW")
-    # aircraft_type: str = str(aircraft_obj_file.parents[0]).split("/")[-1]
     aircraft_type = aircraft_obj_file.name.split("_")[0]
 
     # Delete new file to start a clean build.
@@ -103,13 +104,22 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         for line in aircraft_object_file:
             if line.startswith("LIGHT_NAMED"):
                 line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
-                for lighttype in LIGHT_NEEDLES:
+
+                if [lighttype in line for lighttype in LIGHT_NEEDLES]:
+                    lighttype = line.split(" ")[1]
+
+                    if lighttype == "headlight":  # Filter unusual lighttype names
+                        lighttype = "airplane_landing"
+
                     line = handle_light_params(line, lighttype, aircraft_type)
                     cached_line = line
             if line.startswith("LIGHT_SPILL_CUSTOM"):
                 if cached_line != "":
                     line = cached_line.replace("_pm", "_bb")
                     cached_line = ""
+                else:
+                    line = line.replace("LIGHT_SPILL_CUSTOM", "LIGHT_PARAM")
+                    line = line.replace("_pm", "_bb")
             new_obj_file.write(line)
 
 
