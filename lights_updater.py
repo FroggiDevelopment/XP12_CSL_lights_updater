@@ -49,10 +49,11 @@ def handle_special_cases(line: str) -> str:
         handled_line = (
             line.replace("_left", "").replace("_right", "").replace("_tail", "")
         )
-    elif "airplane_beacon" in line:
-        handled_line += line.replace("_pm", "_bb")
-    elif "airplane_strobe" in line:
-        handled_line += line.replace("_pm", "_bb")
+        # handled_line += handled_line.replace("_pm", "_bb")
+    # elif "airplane_beacon" in line:
+    #     handled_line += line.replace("_pm", "_bb")
+    # elif "airplane_strobe" in line:
+    #     handled_line += line.replace("_pm", "_bb")
     else:
         return line
     return handled_line
@@ -79,7 +80,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
         new_line += f" {xp12_params[lighttype]}\n"
 
     new_line = handle_special_cases(new_line)
-
+    new_line += new_line.replace("_pm", "_bb")
     return new_line
 
 
@@ -112,15 +113,16 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
                         line.replace("headlight", "airplane_landing")
 
                     line = handle_light_params(line, lighttype, aircraft_type)
-                    cached_line = line
+                    # cached_line = line
                     
             if line.startswith("LIGHT_SPILL_CUSTOM"):
-                if cached_line != "":
-                    line = cached_line.replace("_pm", "_bb")
-                    cached_line = ""
-                else:
-                    line = line.replace("LIGHT_SPILL_CUSTOM", "LIGHT_PARAM")
-                    line = line.replace("_pm", "_bb")
+                # if cached_line != "":
+                #     line = cached_line.replace("_pm", "_bb")
+                #     cached_line = ""
+                # else:
+                line = ""
+                    # line = line.replace("LIGHT_SPILL_CUSTOM", "LIGHT_PARAM")
+                    # line = line.replace("_pm", "_bb")
             # Write data to new object file
             new_obj_file.write(line)
 
