@@ -73,14 +73,14 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     """
     new_line: str = ""
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
-    
-    if lighttype == "headlight":  # Filter unusual lighttype names
-        line.replace("headlight", "airplane_landing")
+
+    if "headlight" in line:  # Filter unusual lighttype names
+        line = ""
         lighttype = "airplane_landing"
-        
+
     new_line = line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
 
-    if xp12_params[lighttype] != "":
+    if xp12_params[lighttype] != "" and line != "":
         new_line += f" {xp12_params[lighttype]}\n"
 
     new_line = handle_special_cases(new_line)
@@ -118,15 +118,15 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
 
                     line = handle_light_params(line, lighttype, aircraft_type)
                     # cached_line = line
-                    
+
             if line.startswith("LIGHT_SPILL_CUSTOM"):
                 # if cached_line != "":
                 #     line = cached_line.replace("_pm", "_bb")
                 #     cached_line = ""
                 # else:
                 line = ""
-                    # line = line.replace("LIGHT_SPILL_CUSTOM", "LIGHT_PARAM")
-                    # line = line.replace("_pm", "_bb")
+                # line = line.replace("LIGHT_SPILL_CUSTOM", "LIGHT_PARAM")
+                # line = line.replace("_pm", "_bb")
             # Write data to new object file
             new_obj_file.write(line)
 
