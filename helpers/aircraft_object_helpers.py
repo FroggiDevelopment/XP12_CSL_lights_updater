@@ -163,7 +163,19 @@ def set_aircraft_data():
             "airplane_beacon": "1 0 0 0 1000cd 0 0 0 1",
         },
     }
-    return light_params, LIGHT_JETS, HEAVY_JETS, PRIVATE_JETS, GA, PROPS, MIL_FIGHTER, MIL_HEAVY_JETS, MIL_HEAVY_PROPS, MIL_LIGHT_PROPS, HELI
+    return (
+        light_params,
+        LIGHT_JETS,
+        HEAVY_JETS,
+        PRIVATE_JETS,
+        GA,
+        PROPS,
+        MIL_FIGHTER,
+        MIL_HEAVY_JETS,
+        MIL_HEAVY_PROPS,
+        MIL_LIGHT_PROPS,
+        HELI,
+    )
 
 
 def determine_light_params(aircraft_type: str, light_type: str = "") -> str:
@@ -175,7 +187,19 @@ def determine_light_params(aircraft_type: str, light_type: str = "") -> str:
     Returns:
         str: A string with the corresponding light parameters for the given aircraft type
     """
-    light_params, LIGHT_JETS, HEAVY_JETS, PRIVATE_JETS, GA, PROPS, MIL_FIGHTER, MIL_HEAVY_JETS, MIL_HEAVY_PROPS, MIL_LIGHT_PROPS, HELI = set_aircraft_data()
+    (
+        light_params,
+        LIGHT_JETS,
+        HEAVY_JETS,
+        PRIVATE_JETS,
+        GA,
+        PROPS,
+        MIL_FIGHTER,
+        MIL_HEAVY_JETS,
+        MIL_HEAVY_PROPS,
+        MIL_LIGHT_PROPS,
+        HELI,
+    ) = set_aircraft_data()
     light_specific_params = ""
 
     if light_type == "":
