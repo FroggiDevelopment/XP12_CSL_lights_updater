@@ -72,7 +72,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
         str: new line with updated params
     """
     new_line: str = ""
-    print("Inside handling:", lighttype)
+    # print("Inside handling:", lighttype)
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
     new_line = line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
 
