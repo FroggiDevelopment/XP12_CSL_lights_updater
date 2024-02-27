@@ -2,8 +2,9 @@ from pathlib import Path
 from helpers import make_backup
 from helpers import determine_light_params
 from typing import NoReturn
+import sys
 
-CLS_PATH = "./CSL"
+CSL_PATH = "./CSL"
 # "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B738"
 
 BACKUP_EXTENSION = ".BCK"
@@ -34,18 +35,18 @@ def correct_aircraft_light_names(line: str, to_correct_list: list) -> str:
     return line
 
 
-def get_object_files(CLS_PATH: str) -> list:
-    """Get all object files within CLS_PATH using rglob
+def get_object_files(CSL_PATH: str) -> list:
+    """Get all object files within CSL_PATH using rglob
        and a pattern to search for. In this case all obj
        files. Hardcoded patern!
 
     Args:
-        CLS_PATH (str): Directory at which to start searching
+        CSL_PATH (str): Directory at which to start searching
 
     Returns:
         list: Of matching filepathes
     """
-    return list(Path(CLS_PATH).rglob("*.[oO][bB][jJ]"))
+    return list(Path(CSL_PATH).rglob("*.[oO][bB][jJ]"))
 
 
 def handle_special_cases(aircraft_lightparams_line: str) -> str:
@@ -160,7 +161,7 @@ def copy_new_to_old() -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
-    files_to_copy = list(Path(CLS_PATH).rglob("*.NEW"))
+    files_to_copy = list(Path(CSL_PATH).rglob("*.NEW"))
 
     for file in files_to_copy:
         new_object_file = file.with_suffix(".obj")
@@ -168,8 +169,24 @@ def copy_new_to_old() -> NoReturn:
         file.unlink()
 
 
+def recover_from_backup(CSL_PATH: str) -> NoReturn:
+    backup_files = list(Path(CSL_PATH).rglob("*.BCK"))
+
+    for backup_file in backup_files:
+        recover_file = backup_file.with_suffix(".obj")
+        print(f"recovering from {backup_file} to {recover_file}")
+        recover_file.write_bytes(backup_file.read_bytes())
+        backup_file.unlink()
+
+
 def main() -> None:
-    for file in get_object_files(CLS_PATH):
+    # TODO: Make option te revert actions by setting back the backup files!
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "-r":
+            print("RECOVERY activated!")
+            recover_from_backup(CSL_PATH)
+            exit()
+    for file in get_object_files(CSL_PATH):
         make_backup(file, BACKUP_EXTENSION)
         process_obj_file(file)
     # copy_new_to_old()
