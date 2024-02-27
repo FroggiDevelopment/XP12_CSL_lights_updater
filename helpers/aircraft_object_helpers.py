@@ -1,6 +1,3 @@
-import sys
-
-
 def set_aircraft_data():
     LIGHT_JETS = (
         "B733",
