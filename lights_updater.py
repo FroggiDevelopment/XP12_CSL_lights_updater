@@ -19,7 +19,7 @@ LIGHT_NEEDLES: list[str] = [
 
 def get_object_files(filepath: str) -> list:
     """Get all object files within filepath using rglob
-       and a pattern to search for. Inn this case all obj
+       and a pattern to search for. In this case all obj
        files. Hardcoded patern!
 
     Args:
