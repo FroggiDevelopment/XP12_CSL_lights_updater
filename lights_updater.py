@@ -3,8 +3,8 @@ from helpers import make_backup
 from helpers import determine_light_params
 from typing import NoReturn
 
-filepath = "./CSL"
-# filepath = "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B738"
+CLS_PATH = "./CSL"
+# CLS_PATH = "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B738"
 # Old params
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
@@ -33,18 +33,18 @@ def correct_aircraft_light_names(line: str, to_correct_list: list) -> str:
     return line
 
 
-def get_object_files(filepath: str) -> list:
-    """Get all object files within filepath using rglob
+def get_object_files(CLS_PATH: str) -> list:
+    """Get all object files within CLS_PATH using rglob
        and a pattern to search for. In this case all obj
        files. Hardcoded patern!
 
     Args:
-        filepath (str): Directory at which to start searching
+        CLS_PATH (str): Directory at which to start searching
 
     Returns:
         list: Of matching filepathes
     """
-    return list(Path(filepath).rglob("*.[oO][bB][jJ]"))
+    return list(Path(CLS_PATH).rglob("*.[oO][bB][jJ]"))
 
 
 def handle_special_cases(aircraft_lightparams_line: str) -> str:
@@ -159,7 +159,7 @@ def copy_new_to_old() -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
-    files_to_copy = list(Path(filepath).rglob("*.NEW"))
+    files_to_copy = list(Path(CLS_PATH).rglob("*.NEW"))
 
     for file in files_to_copy:
         new_object_file = file.with_suffix("")
@@ -168,7 +168,7 @@ def copy_new_to_old() -> NoReturn:
 
 
 def main() -> None:
-    for file in get_object_files(filepath):
+    for file in get_object_files(CLS_PATH):
         make_backup(file, ".obj.BCK")
         process_obj_file(file)
     # copy_new_to_old()
