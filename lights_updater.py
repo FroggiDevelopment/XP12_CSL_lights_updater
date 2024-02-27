@@ -69,7 +69,7 @@ def create_new_light_name(line: str, lighttype: str) -> str:
     Returns:
         str: New line with updated light name
     """
-    return line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
+    return line.replace(lighttype, f"{lighttype}_pm").rstrip("\n")
 
 
 def handle_light_params(
