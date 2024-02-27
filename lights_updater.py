@@ -18,7 +18,9 @@ LIGHT_NEEDLES: list[str] = [
 
 
 def get_object_files(filepath: str) -> list:
-    """Get all object files within filepath
+    """Get all object files within filepath using rglob
+       and a pattern to search for. Inn this case all obj
+       files. Hardcoded patern!
 
     Args:
         filepath (str): Directory at which to start searching
@@ -139,7 +141,7 @@ def copy_new_to_old() -> NoReturn:
         file.unlink()
 
 
-def main():
+def main() -> None:
     for file in get_object_files(filepath):
         make_backup(file, ".obj.BCK")
         process_obj_file(file)
