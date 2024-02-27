@@ -17,6 +17,22 @@ LIGHT_NEEDLES: list[str] = [
 ]
 
 
+def correct_aircraft_light_names(line: str, to_correct_list: list) -> str:
+    """Delete unused parameter parts and return new string
+
+    Args:
+        line (str): Line with aircraft light parameter
+        to_correct_list (list): List of items to be removed
+
+    Returns:
+        str: Line without unused parameter(-parts)
+    """
+    for item in to_correct_list:
+        line = line.replace(item, "")
+
+    return line
+
+
 def get_object_files(filepath: str) -> list:
     """Get all object files within filepath using rglob
        and a pattern to search for. In this case all obj
@@ -48,10 +64,8 @@ def handle_special_cases(aircraft_lightparams_line: str) -> str:
     """
     handled_line = ""
     if "airplane_nav" in aircraft_lightparams_line:
-        handled_line = (
-            aircraft_lightparams_line.replace("_left", "")
-            .replace("_right", "")
-            .replace("_tail", "")
+        handled_line = correct_aircraft_light_names(
+            aircraft_lightparams_line, ["_left", "_right", "_tail"]
         )
     else:
         return aircraft_lightparams_line
