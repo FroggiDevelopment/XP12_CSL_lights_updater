@@ -4,8 +4,9 @@ from helpers import determine_light_params
 from typing import NoReturn
 
 CLS_PATH = "./CSL"
-# CLS_PATH = "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B738"
-# Old params
+# "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B738"
+
+BACKUP_EXTENSION = ".BCK"
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
     "airplane_taxi",
@@ -123,7 +124,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     Args:
         file (Path): the existing aircraft object file
     """
-    new_object_file: Path = aircraft_obj_file.with_suffix(".obj.NEW")
+    new_object_file: Path = aircraft_obj_file.with_suffix(".NEW")
     aircraft_type: str = aircraft_obj_file.name.split("_")[0]
 
     # Delete new file to start a clean build.
@@ -151,7 +152,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
 
             if aircraft_lightparams_line.startswith("LIGHT_SPILL_CUSTOM"):
                 aircraft_lightparams_line = ""
-            # Write data to new object file
+
             new_obj_file.write(aircraft_lightparams_line)
 
 
@@ -162,14 +163,14 @@ def copy_new_to_old() -> NoReturn:
     files_to_copy = list(Path(CLS_PATH).rglob("*.NEW"))
 
     for file in files_to_copy:
-        new_object_file = file.with_suffix("")
+        new_object_file = file.with_suffix(".obj")
         new_object_file.write_bytes(file.read_bytes())
         file.unlink()
 
 
 def main() -> None:
     for file in get_object_files(CLS_PATH):
-        make_backup(file, ".obj.BCK")
+        make_backup(file, BACKUP_EXTENSION)
         process_obj_file(file)
     # copy_new_to_old()
 
