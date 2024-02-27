@@ -58,6 +58,20 @@ def handle_special_cases(aircraft_lightparams_line: str) -> str:
     return handled_line
 
 
+def create_new_light_name(line: str, lighttype: str) -> str:
+    """Takes the original line and adds _pm to the light name
+       of type {lighttype}
+
+    Args:
+        line (str): The original line with the old light params
+        lighttype (str): the type of light that needs updating
+
+    Returns:
+        str: New line with updated light name
+    """
+    return line.replace(lighttype, f"{lighttype}_pm").replace("\n", "")
+
+
 def handle_light_params(
     aircraft_lightparams_line: str, lighttype: str, aircraft_type: str
 ) -> str:
@@ -79,9 +93,7 @@ def handle_light_params(
         aircraft_lightparams_line = ""
         lighttype = "airplane_landing"
 
-    new_line = aircraft_lightparams_line.replace(lighttype, f"{lighttype}_pm").replace(
-        "\n", ""
-    )
+    new_line = create_new_light_name(aircraft_lightparams_line, lighttype)
 
     if xp12_params[lighttype] != "" and aircraft_lightparams_line != "":
         new_line += f" {xp12_params[lighttype]}\n"
