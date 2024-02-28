@@ -2,12 +2,10 @@ from pathlib import Path
 from helpers import make_backup
 from helpers import determine_light_params
 from typing import NoReturn
+from config import Config
+
 import sys
 
-CSL_PATH = "./CSL"
-# "/media/froggi/Flightsim/X-Plane 12/Resources/plugins/LiveTraffic/Resources/CSL/BB_Boeing/B738"
-
-BACKUP_EXTENSION = ".BCK"
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
     "airplane_taxi",
@@ -35,18 +33,18 @@ def correct_aircraft_light_names(line: str, to_correct_list: list) -> str:
     return line
 
 
-def get_object_files(CSL_PATH: str) -> list:
-    """Get all object files within CSL_PATH using rglob
+def get_object_files(csl_path: str) -> list:
+    """Get all object files within csl_path using rglob
        and a pattern to search for. In this case all obj
        files. Hardcoded patern!
 
     Args:
-        CSL_PATH (str): Directory at which to start searching
+        csl_path (str): Directory at which to start searching
 
     Returns:
         list: Of matching filepathes
     """
-    return list(Path(CSL_PATH).rglob("*.[oO][bB][jJ]"))
+    return list(Path(csl_path).rglob("*.[oO][bB][jJ]"))
 
 
 def handle_special_cases(aircraft_lightparams_line: str) -> str:
@@ -136,6 +134,9 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         new_object_file, "w+"
     ) as new_obj_file:
         for aircraft_lightparams_line in aircraft_object_file:
+
+            # TODO: Can this be done in a cleaner way?
+
             if aircraft_lightparams_line.startswith("LIGHT_NAMED"):
                 aircraft_lightparams_line = aircraft_lightparams_line.replace(
                     "LIGHT_NAMED", "LIGHT_PARAM"
@@ -157,11 +158,11 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(aircraft_lightparams_line)
 
 
-def copy_new_to_old() -> NoReturn:
+def copy_new_to_old(config: dict) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
-    files_to_copy = list(Path(CSL_PATH).rglob("*.NEW"))
+    files_to_copy = list(Path(config["CSL"]["csl_path"]).rglob("*.NEW"))
 
     for file in files_to_copy:
         new_object_file = file.with_suffix(".obj")
@@ -169,31 +170,48 @@ def copy_new_to_old() -> NoReturn:
         try:
             new_object_file.write_bytes(file.read_bytes())
         except PermissionError as err:
+            if stop_on_error == True:
+                print("Stopping on error!", err)
+                sys.exit()
             continue
         file.unlink()
 
 
-def recover_from_backup(CSL_PATH: str) -> NoReturn:
-    backup_files = list(Path(CSL_PATH).rglob("*.BCK"))
+def recover_from_backup(csl_path: str, stop_on_error) -> NoReturn:
+    backup_files = list(Path(csl_path).rglob("*.BCK"))
 
     for backup_file in backup_files:
         recover_file = backup_file.with_suffix(".obj")
-        print(f"recovering from {backup_file} to {recover_file}")
-        recover_file.write_bytes(backup_file.read_bytes())
+        try:
+            recover_file.write_bytes(backup_file.read_bytes())
+        except PermissionError as err:
+            if stop_on_error == True:
+                print("Stopping on error!", err)
+                sys.exit()
+            continue
         backup_file.unlink()
+    print("Recovery done!")
+    sys.exit()
 
 
 def main() -> None:
-    # TODO: Make option te revert actions by setting back the backup files!
+    config = Config("./config.ini").get_config()
+    backup = config.getboolean("generic", "backup")
+    stop_on_error = config.getboolean("generic", "stop_on_error")
+    aircraft_objects = get_object_files(config["CSL"]["csl_path"])
+
     if len(sys.argv) > 1:
         if sys.argv[1] == "-r":
-            print("RECOVERY activated!")
-            recover_from_backup(CSL_PATH)
-            exit()
-    for file in get_object_files(CSL_PATH):
-        make_backup(file, BACKUP_EXTENSION)
+            print("Recovery activated!")
+            recover_from_backup(config["CSL"]["csl_path"], stop_on_error)
+
+    if backup == True:
+        print("Creating backups!")
+        make_backup(aircraft_objects, config["generic"]["backup_extension"])
+
+    for file in aircraft_objects:
         process_obj_file(file)
-    copy_new_to_old()
+    # copy_new_to_old(config)
 
 
 if __name__ == "__main__":
