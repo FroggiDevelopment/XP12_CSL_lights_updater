@@ -165,7 +165,11 @@ def copy_new_to_old() -> NoReturn:
 
     for file in files_to_copy:
         new_object_file = file.with_suffix(".obj")
-        new_object_file.write_bytes(file.read_bytes())
+
+        try:
+            new_object_file.write_bytes(file.read_bytes())
+        except PermissionError as err:
+            continue
         file.unlink()
 
 
@@ -189,7 +193,7 @@ def main() -> None:
     for file in get_object_files(CSL_PATH):
         make_backup(file, BACKUP_EXTENSION)
         process_obj_file(file)
-    # copy_new_to_old()
+    copy_new_to_old()
 
 
 if __name__ == "__main__":
