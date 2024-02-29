@@ -1,5 +1,6 @@
 from pathlib import Path
 from helpers import make_backup
+from helpers import recover_from_backup
 from helpers import determine_light_params
 from typing import NoReturn
 from config import Config
@@ -158,7 +159,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(aircraft_lightparams_line)
 
 
-def copy_new_to_old(config: dict) -> NoReturn:
+def copy_new_to_old(config: dict, stop_on_error: bool = False) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
@@ -177,41 +178,25 @@ def copy_new_to_old(config: dict) -> NoReturn:
         file.unlink()
 
 
-def recover_from_backup(csl_path: str, stop_on_error) -> NoReturn:
-    backup_files = list(Path(csl_path).rglob("*.BCK"))
-
-    for backup_file in backup_files:
-        recover_file = backup_file.with_suffix(".obj")
-        try:
-            recover_file.write_bytes(backup_file.read_bytes())
-        except PermissionError as err:
-            if stop_on_error == True:
-                print("Stopping on error!", err)
-                sys.exit()
-            continue
-        backup_file.unlink()
-    print("Recovery done!")
-    sys.exit()
-
-
 def main() -> None:
     config = Config("./config.ini").get_config()
-    backup = config.getboolean("generic", "backup")
+    do_backup = config.getboolean("generic", "do_backup")
+    backup_extension = config["generic"]["backup_extension"]
     stop_on_error = config.getboolean("generic", "stop_on_error")
     aircraft_objects = get_object_files(config["CSL"]["csl_path"])
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "-r":
             print("Recovery activated!")
-            recover_from_backup(config["CSL"]["csl_path"], stop_on_error)
+            recover_from_backup(aircraft_objects, backup_extension, stop_on_error)
 
-    if backup == True:
+    if do_backup == True:
         print("Creating backups!")
-        make_backup(aircraft_objects, config["generic"]["backup_extension"])
+        make_backup(aircraft_objects, backup_extension, stop_on_error)
 
     for file in aircraft_objects:
         process_obj_file(file)
-    # copy_new_to_old(config)
+    # copy_new_to_old(config, stop_on_error)
 
 
 if __name__ == "__main__":
