@@ -230,7 +230,7 @@ def main() -> None:
     # Lets do the magic stuff!
     for file in aircraft_objects:
         process_obj_file(file)
-    # copy_new_to_old(CSL_PATH, stop_on_error)
+    copy_new_to_old(filepath=CSL_PATH, stop_on_error=stop_on_error)
 
 
 if __name__ == "__main__":
