@@ -4,7 +4,6 @@ from helpers import recover_from_backup
 from helpers import determine_light_params
 from typing import NoReturn
 from configparser import ConfigParser
-
 import sys
 
 LIGHT_NEEDLES: list[str] = [
@@ -124,33 +123,37 @@ def change_light_params(line: str, aircraft_type: str) -> str:
     Returns:
         str: A line with updated light parameters
     """
-    if [lighttype in line for lighttype in LIGHT_NEEDLES]:
-        lighttype = line.split(" ")[1]
+    if line.startswith("LIGHT_NAMED"):
+        line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
+        if [lighttype in line for lighttype in LIGHT_NEEDLES]:
+            lighttype = line.split(" ")[1]
 
-        line = handle_light_params(line, lighttype, aircraft_type)
-        return line
-    else:
-        return line
+            line = handle_light_params(line, lighttype, aircraft_type)  # Set new params
+    elif line.startswith("LIGHT_SPILL_CUSTOM"):  # Remove the old custom spill.
+        line = ""
+
+    return line
 
 
-def check_for_light_params(line: str) -> tuple[str, bool]:
+def check_for_light_params(line: str) -> bool:
     """Checks if the line conatains any light parameters based on the start fo the line
 
     Args:
         line (str): A line from the aircraft object file
 
     Returns:
-        tuple[str, bool]: A string with corrected light name and True or False if line contains
-                          light params
+        bool: True if its a lightparam line
     """
     is_light_line: bool = False
-    if line.startswith("LIGHT_NAMED"):
-        line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
+    if line.startswith("LIGHT_NAMED") or line.startswith("LIGHT_SPILL_CUSTOM"):
         is_light_line = True
-    elif line.startswith("LIGHT_SPILL_CUSTOM"):  # Remove the old custom spill.
-        line = ""
-    else:
-        return line, is_light_line
+
+    return is_light_line
+
+
+def delete_file(file: Path):
+    if file.exists():
+        file.unlink()
 
 
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
@@ -163,15 +166,14 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     aircraft_type: str = aircraft_obj_file.name.split("_")[0]
 
     # Delete new file to start a clean build.
-    if new_object_file.exists():
-        new_object_file.unlink()
+    delete_file(new_object_file)
 
     with open(aircraft_obj_file) as aircraft_object_file, open(
         new_object_file, "w+"
     ) as new_obj_file:
         for line in aircraft_object_file:
 
-            line, is_light_line = check_for_light_params(line)
+            is_light_line = check_for_light_params(line)
 
             if is_light_line:
                 line = change_light_params(line, aircraft_type)
@@ -183,7 +185,7 @@ def copy_new_to_old(*, config: dict, stop_on_error: bool = False) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
-    files_to_copy = list(Path(config["CSL"]["csl_path"]).rglob("*.NEW"))
+    files_to_copy = list(Path(CSL_PATH).rglob("*.NEW"))
 
     for file in files_to_copy:
         new_object_file = file.with_suffix(".obj")
@@ -204,12 +206,13 @@ def main() -> None:
     config.read("./config.ini")
 
     # Set config(s)
+    CSL_PATH = config["CSL"]["csl_path"]
     do_backup = config.getboolean("generic", "do_backup")
     backup_extension = config["generic"]["backup_extension"]
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
     # Get all aircraft obj files
-    aircraft_objects = get_object_files(config["CSL"]["csl_path"])
+    aircraft_objects = get_object_files(CSL_PATH)
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "-r":
