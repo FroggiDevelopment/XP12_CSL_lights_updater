@@ -3,7 +3,7 @@ from helpers import make_backup
 from helpers import recover_from_backup
 from helpers import determine_light_params
 from typing import NoReturn
-from config import Config
+from configparser import ConfigParser
 
 import sys
 
@@ -179,10 +179,16 @@ def copy_new_to_old(*, config: dict, stop_on_error: bool = False) -> NoReturn:
 
 
 def main() -> None:
-    config = Config("./config.ini").get_config()
+    # Get config
+    config = ConfigParser()
+    config.read("./config.ini")
+
+    # Set config(s)
     do_backup = config.getboolean("generic", "do_backup")
     backup_extension = config["generic"]["backup_extension"]
     stop_on_error = config.getboolean("generic", "stop_on_error")
+
+    # Get all aircraft obj files
     aircraft_objects = get_object_files(config["CSL"]["csl_path"])
 
     if len(sys.argv) > 1:
