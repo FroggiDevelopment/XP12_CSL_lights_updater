@@ -172,12 +172,8 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         new_object_file, "w+"
     ) as new_obj_file:
         for line in aircraft_object_file:
-
-            is_light_line = check_for_light_params(line)
-
-            if is_light_line:
+            if check_for_light_params(line) == True:
                 line = change_light_params(line, aircraft_type)
-
             new_obj_file.write(line)
 
 
