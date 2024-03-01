@@ -236,7 +236,7 @@ def main() -> None:
             print("Recovery activated!")
             recover_from_backup(
                 files=aircraft_objects,
-                BACKUP_SUFFIX=BACKUP_SUFFIX,
+                backup_extension=BACKUP_SUFFIX,
                 stop_on_error=stop_on_error,
             )
 
