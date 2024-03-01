@@ -181,11 +181,11 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(line)
 
 
-def copy_new_to_old(*, config: dict, stop_on_error: bool = False) -> NoReturn:
+def copy_new_to_old(*, filepath: Path, stop_on_error: bool = True) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
-    files_to_copy = list(Path(CSL_PATH).rglob("*.NEW"))
+    files_to_copy = list(Path(filepath).rglob("*.NEW"))
 
     for file in files_to_copy:
         new_object_file = file.with_suffix(".obj")
@@ -234,7 +234,7 @@ def main() -> None:
     # Lets do the magic stuff!
     for file in aircraft_objects:
         process_obj_file(file)
-    # copy_new_to_old(config, stop_on_error)
+    # copy_new_to_old(CSL_PATH, stop_on_error)
 
 
 if __name__ == "__main__":
