@@ -4,7 +4,11 @@ import sys
 
 
 def make_backup(
-    *, files: list, backup_extension: str, stop_on_error: bool = "True"
+    *,
+    files: list,
+    backup_extension: str,
+    stop_on_error: bool = "True",
+    debug: bool = False,
 ) -> NoReturn:
     """Make a backup of the given file
 
@@ -19,9 +23,11 @@ def make_backup(
                 if stop_on_error == True:
                     print("Stopping on error!", err)
                     sys.exit()
-            print(f"Backup for {file} is ready!")
+            if debug == True:
+                print(f"Backup for {file} is ready!")
             continue
-        print("Backup already exists for:", file)
+        if debug == True:
+            print("Backup already exists for:", file)
     print("Backups done!")
 
 
