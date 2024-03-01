@@ -7,7 +7,6 @@ class Config:
         self.config = self.get_config()
 
     def get_config(self) -> ConfigParser:
-        _config = {}
         config_object = ConfigParser()
         config_object.read(self.config_file)
 
