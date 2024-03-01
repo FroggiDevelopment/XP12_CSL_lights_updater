@@ -18,6 +18,8 @@ LIGHT_NEEDLES: list[str] = [
 ]
 
 DEBUG = False
+TEMP_FILE_SUFFIX = ".TEMP"
+BACKUP_SUFFIX = ".BCK"
 
 
 def adapt_nav_lights(line: str, old_nav_lights: list[str]) -> str:
@@ -154,9 +156,12 @@ def check_for_light_params(line: str) -> bool:
     return is_light_line
 
 
-def delete_file(file: Path):
-    if file.exists():
-        file.unlink()
+def delete_file(files: list[Path], suffix: str = None):
+    for file in files:
+        if suffix is not None:
+            file = file.with_suffix(suffix)
+        if file.exists():
+            file.unlink()
 
 
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
@@ -165,14 +170,14 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     Args:
         file (Path): the existing aircraft object file
     """
-    new_object_file: Path = aircraft_obj_file.with_suffix(".NEW")
+    temp_object_file: Path = aircraft_obj_file.with_suffix(TEMP_FILE_SUFFIX)
     aircraft_type: str = aircraft_obj_file.name.split("_")[0]
 
     # Delete new file to start a clean build.
-    delete_file(new_object_file)
+    delete_file([temp_object_file])
 
     with open(aircraft_obj_file) as aircraft_object_file, open(
-        new_object_file, "w+"
+        temp_object_file, "w+"
     ) as new_obj_file:
         if DEBUG == True:
             print(f"Processing {aircraft_object_file.name}")
@@ -182,31 +187,27 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(line)
 
 
-def copy_new_to_old(
-    *, filepath: Path, stop_on_error: bool = True, keep_new_files: bool = True
-) -> NoReturn:
+def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
     if DEBUG == True:
         print("Start copying processed files to original file!")
-    files_to_copy = list(Path(filepath).rglob("*.NEW"))
+    # files_to_copy = list(Path(filepath).rglob("*.NEW"))
 
-    for file in files_to_copy:
-        new_object_file = file.with_suffix(".obj")
+    for file in files:
+        destination_file = file.with_suffix(".obj")
+        temp_object_file = file.with_suffix(TEMP_FILE_SUFFIX)
 
         try:
-            new_object_file.write_bytes(file.read_bytes())
+            destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
             if stop_on_error == True:
                 print("Stopping on error!", err)
-                sys.exit()
+                raise Exception  # TODO: Make better exception!!
             continue
-
-        if keep_new_files == False:
-            file.unlink()
-
-    print("Copy to original file done!")
+        if DEBUG == True:
+            print("Copy to original file done!")
 
 
 def main() -> None:
@@ -220,8 +221,9 @@ def main() -> None:
     DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["CSL"]["csl_path"]
     do_backup = config.getboolean("generic", "do_backup")
-    backup_extension = config["generic"]["backup_extension"]
+    BACKUP_SUFFIX = config["generic"]["backup_extension"]
     keep_new_files = config.getboolean("generic", "keep_new_files")
+    keep_backup_files = config.getboolean("generic", "keep_backup_files")
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
     # Get all aircraft obj files
@@ -233,7 +235,7 @@ def main() -> None:
             print("Recovery activated!")
             recover_from_backup(
                 files=aircraft_objects,
-                backup_extension=backup_extension,
+                BACKUP_SUFFIX=BACKUP_SUFFIX,
                 stop_on_error=stop_on_error,
             )
 
@@ -241,7 +243,7 @@ def main() -> None:
         print("Creating backups!")
         make_backup(
             files=aircraft_objects,
-            backup_extension=backup_extension,
+            backup_extension=BACKUP_SUFFIX,
             stop_on_error=stop_on_error,
             debug=DEBUG,
         )
@@ -257,7 +259,14 @@ def main() -> None:
     duration = end_time - start_time
     print(f"It took {duration.seconds:.2f} seconds!")
 
-    copy_new_to_old(filepath=CSL_PATH, stop_on_error=stop_on_error)
+    # copy_new_to_old(filepath=CSL_PATH, stop_on_error=stop_on_error)
+    copy_new_to_old(aircraft_objects, stop_on_error=stop_on_error)
+
+    # Remove files if necessary
+    if keep_new_files == False:
+        delete_file(aircraft_objects, TEMP_FILE_SUFFIX)
+    if keep_backup_files == False:
+        delete_file(aircraft_objects, TEMP_FILE_SUFFIX)
 
 
 if __name__ == "__main__":
