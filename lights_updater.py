@@ -159,7 +159,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(aircraft_lightparams_line)
 
 
-def copy_new_to_old(config: dict, stop_on_error: bool = False) -> NoReturn:
+def copy_new_to_old(*, config: dict, stop_on_error: bool = False) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
@@ -188,11 +188,19 @@ def main() -> None:
     if len(sys.argv) > 1:
         if sys.argv[1] == "-r":
             print("Recovery activated!")
-            recover_from_backup(aircraft_objects, backup_extension, stop_on_error)
+            recover_from_backup(
+                files=aircraft_objects,
+                backup_extension=backup_extension,
+                stop_on_error=stop_on_error,
+            )
 
     if do_backup == True:
         print("Creating backups!")
-        make_backup(aircraft_objects, backup_extension, stop_on_error)
+        make_backup(
+            files=aircraft_objects,
+            backup_extension=backup_extension,
+            stop_on_error=stop_on_error,
+        )
 
     for file in aircraft_objects:
         process_obj_file(file)
