@@ -4,6 +4,7 @@ from helpers import recover_from_backup
 from helpers import determine_light_params
 from typing import NoReturn
 from configparser import ConfigParser
+from datetime import datetime
 import sys
 
 LIGHT_NEEDLES: list[str] = [
@@ -15,6 +16,8 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_strobe",
     "airplane_beacon",
 ]
+
+DEBUG = False
 
 
 def adapt_nav_lights(line: str, old_nav_lights: list[str]) -> str:
@@ -171,16 +174,22 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     with open(aircraft_obj_file) as aircraft_object_file, open(
         new_object_file, "w+"
     ) as new_obj_file:
+        if DEBUG == True:
+            print(f"Processing {aircraft_object_file.name}")
         for line in aircraft_object_file:
             if check_for_light_params(line) == True:
                 line = change_light_params(line, aircraft_type)
             new_obj_file.write(line)
 
 
-def copy_new_to_old(*, filepath: Path, stop_on_error: bool = True) -> NoReturn:
+def copy_new_to_old(
+    *, filepath: Path, stop_on_error: bool = True, keep_new_files: bool = True
+) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
+    if DEBUG == True:
+        print("Start copying processed files to original file!")
     files_to_copy = list(Path(filepath).rglob("*.NEW"))
 
     for file in files_to_copy:
@@ -193,22 +202,31 @@ def copy_new_to_old(*, filepath: Path, stop_on_error: bool = True) -> NoReturn:
                 print("Stopping on error!", err)
                 sys.exit()
             continue
-        file.unlink()
+
+        if keep_new_files == False:
+            file.unlink()
+
+    print("Copy to original file done!")
 
 
 def main() -> None:
+    start_time = datetime.now()
+
     # Get config
     config = ConfigParser()
     config.read("./config.ini")
 
     # Set config(s)
+    DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["CSL"]["csl_path"]
     do_backup = config.getboolean("generic", "do_backup")
     backup_extension = config["generic"]["backup_extension"]
+    keep_new_files = config.getboolean("generic", "keep_new_files")
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
     # Get all aircraft obj files
     aircraft_objects = get_object_files(CSL_PATH)
+    number_of_objects = len(aircraft_objects)
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "-r":
@@ -225,11 +243,20 @@ def main() -> None:
             files=aircraft_objects,
             backup_extension=backup_extension,
             stop_on_error=stop_on_error,
+            debug=DEBUG,
         )
 
     # Lets do the magic stuff!
+    print(
+        "Start processing! Duration depends on number of files and of course general hardware performance."
+    )
     for file in aircraft_objects:
         process_obj_file(file)
+    print(f"Processing done, {number_of_objects} files have been processed!")
+    end_time = datetime.now()
+    duration = end_time - start_time
+    print(f"It took {duration.seconds:.2f} seconds!")
+
     copy_new_to_old(filepath=CSL_PATH, stop_on_error=stop_on_error)
 
 
