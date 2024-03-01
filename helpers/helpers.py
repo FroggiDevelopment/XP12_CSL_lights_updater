@@ -4,7 +4,7 @@ import sys
 
 
 def make_backup(
-    files: list, backup_extension: str, stop_on_error: bool = "True"
+    *, files: list, backup_extension: str, stop_on_error: bool = "True"
 ) -> NoReturn:
     """Make a backup of the given file
 
@@ -26,7 +26,7 @@ def make_backup(
 
 
 def recover_from_backup(
-    files: list, backup_extension: str, stop_on_error: bool = False
+    *, files: list, backup_extension: str, stop_on_error: bool = False
 ) -> NoReturn:
 
     for backup_file in files:
