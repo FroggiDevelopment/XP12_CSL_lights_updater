@@ -34,6 +34,8 @@ def adapt_nav_lights(line: str, old_nav_lights: list[str]) -> str:
     """
     # TODO: left and right, green and red!!!
     for item in old_nav_lights:
+        # splited_line = line.split(" ")
+        # print(splited_line[5:][:-6])
         line = line.replace(item, "")
 
     return line
@@ -133,7 +135,6 @@ def change_light_params(line: str, aircraft_type: str) -> str:
         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
         if [lighttype in line for lighttype in LIGHT_NEEDLES]:
             lighttype = line.split(" ")[1]
-
             line = handle_light_params(line, lighttype, aircraft_type)  # Set new params
     elif line.startswith("LIGHT_SPILL_CUSTOM"):  # Remove the old custom spill.
         line = ""
