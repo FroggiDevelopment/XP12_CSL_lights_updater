@@ -219,8 +219,8 @@ def main() -> None:
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["CSL"]["csl_path"]
+    BACKUP_SUFFIX = ".BCK"
     do_backup = config.getboolean("generic", "do_backup")
-    BACKUP_SUFFIX = config["generic"]["backup_extension"]
     keep_new_files = config.getboolean("generic", "keep_new_files")
     keep_backup_files = config.getboolean("generic", "keep_backup_files")
     stop_on_error = config.getboolean("generic", "stop_on_error")
