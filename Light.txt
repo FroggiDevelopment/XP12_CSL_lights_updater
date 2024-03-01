@@ -27,3 +27,7 @@
 # lat_rotation,  # (up/down)
 # for_aft_direction,
 # cone_angle
+
+#Nav lights 
+# red is left
+# green is right
