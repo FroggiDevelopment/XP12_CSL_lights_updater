@@ -32,10 +32,7 @@ def adapt_nav_lights(line: str, old_nav_lights: list[str]) -> str:
     Returns:
         str: Line without unused parameter(-parts)
     """
-    # TODO: left and right, green and red!!!
     for item in old_nav_lights:
-        # splited_line = line.split(" ")
-        # print(splited_line[5:][:-6])
         line = line.replace(item, "")
 
     return line
