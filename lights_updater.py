@@ -1,5 +1,6 @@
 from pathlib import Path
 from helpers import make_backup
+from helpers import delete_files
 from helpers import recover_from_backup
 from helpers import determine_light_params
 from typing import NoReturn
@@ -152,14 +153,6 @@ def check_for_light_params(line: str) -> bool:
     return is_light_line
 
 
-def delete_file(files: list[Path], suffix: str = None):
-    for file in files:
-        if suffix is not None:
-            file = file.with_suffix(suffix)
-        if file.exists():
-            file.unlink()
-
-
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     """Create new aircraft obj file with X-Plane 12 light params
 
@@ -170,7 +163,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     aircraft_type: str = aircraft_obj_file.name.split("_")[0]
 
     # Delete new file to start a clean build.
-    delete_file([temp_object_file])
+    delete_files([temp_object_file])
 
     with open(aircraft_obj_file) as aircraft_object_file, open(
         temp_object_file, "w+"
@@ -261,9 +254,9 @@ def main() -> None:
 
     # Remove files if necessary
     if not keep_temp_files:
-        delete_file(aircraft_objects, TEMP_FILE_SUFFIX)
+        delete_files(aircraft_objects, TEMP_FILE_SUFFIX)
     if not keep_backup_files:
-        delete_file(aircraft_objects, TEMP_FILE_SUFFIX)
+        delete_files(aircraft_objects, TEMP_FILE_SUFFIX)
 
 
 if __name__ == "__main__":
