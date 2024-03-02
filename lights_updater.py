@@ -258,7 +258,6 @@ def main() -> None:
     duration = end_time - start_time
     print(f"It took {duration.seconds:.2f} seconds!")
 
-    # copy_new_to_old(filepath=CSL_PATH, stop_on_error=stop_on_error)
     copy_new_to_old(aircraft_objects, stop_on_error=stop_on_error)
 
     # Remove files if necessary
