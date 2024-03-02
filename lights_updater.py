@@ -226,8 +226,10 @@ def main() -> None:
     aircraft_objects = get_object_files(CSL_PATH)
     number_of_objects = len(aircraft_objects)
 
+    # Check if cli params are present TODO: argparser???
+
     if len(sys.argv) > 1:
-        if sys.argv[1] == "-r":
+        if sys.argv[1] == "-u":  # Undo changes, recover object from backup.
             print("Recovery activated!")
             recover_from_backup(
                 files=aircraft_objects,
