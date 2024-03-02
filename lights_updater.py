@@ -52,22 +52,20 @@ def get_object_files(csl_path: str) -> list[Path]:
     return list(Path(csl_path).rglob("*.[oO][bB][jJ]"))
 
 
-def handle_special_cases(line: str) -> str:
+def correct_nav_lights(line: str) -> str:
     """
-    In case of special lines, e.g. missing SPILL, new param names,
-    handle these cases here.
-    As it seems are the SPILLS fro some lights missing.
-    This function takes care of these cases.
+    Navlights are no longer specified by left, right or tail. The new way is setting them via lightparams
 
 
     Args:
-        line (str): line with light params
-
+        line (str): line airplane_nav params
     Returns:
         str: line with updated params according the the specifications
              in XP12
     """
     handled_line = ""
+
+    # aircraft_nav is now only one type (_tail, _left, _right are no longer used)
     if "airplane_nav" in line:
         handled_line = adapt_nav_lights(line, ["_left", "_right", "_tail"])
     else:
@@ -102,18 +100,18 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
         str: new line with updated params
     """
     new_line: str = ""
+
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
 
-    if "headlight" in line:  # Filter unusual lighttype names
-        line = ""
-        lighttype = "airplane_landing"
+    if "headlight" in line:  # Delete lines with old param 'headlight'
+        return ""
 
     new_line = create_new_light_name(line, lighttype)
 
     if xp12_params[lighttype] != "" and line != "":
         new_line += f" {xp12_params[lighttype]}\n"
 
-    new_line = handle_special_cases(new_line)
+    new_line = correct_nav_lights(new_line)
     new_line += new_line.replace("_pm", "_bb")
     return new_line
 
