@@ -128,13 +128,12 @@ def change_light_params(line: str, aircraft_type: str) -> str:
     """
     if line.startswith("LIGHT_NAMED"):
         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
+
         if [lighttype in line for lighttype in LIGHT_NEEDLES]:
             lighttype = line.split(" ")[1]
-            line = handle_light_params(line, lighttype, aircraft_type)  # Set new params
+            return handle_light_params(line, lighttype, aircraft_type)  # Set new params
     elif line.startswith("LIGHT_SPILL_CUSTOM"):  # Remove the old custom spill.
-        line = ""
-
-    return line
+        return ""
 
 
 def check_for_light_params(line: str) -> bool:
