@@ -31,6 +31,10 @@ def make_backup(
     print("Backups done!")
 
 
+def remove_backup_files(files: list[Path], backup_extension: str):
+    delete_files(files, backup_extension)
+
+
 def recover_from_backup(
     *, files: list, backup_extension: str, stop_on_error: bool = False
 ) -> NoReturn:
@@ -54,3 +58,11 @@ def recover_from_backup(
         print(f"Recovery of {recover_file} is done!")
     print("Recovery done!")
     sys.exit()
+
+
+def delete_files(files: list[Path], suffix: str = None):
+    for file in files:
+        if suffix is not None:
+            file = file.with_suffix(suffix)
+        if file.exists():
+            file.unlink()
