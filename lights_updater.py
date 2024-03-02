@@ -218,7 +218,7 @@ def main() -> None:
     CSL_PATH = config["CSL"]["csl_path"]
     BACKUP_SUFFIX = ".BCK"
     do_backup = config.getboolean("generic", "do_backup")
-    keep_new_files = config.getboolean("generic", "keep_new_files")
+    keep_temp_files = config.getboolean("generic", "keep_temp_files")
     keep_backup_files = config.getboolean("generic", "keep_backup_files")
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
@@ -260,9 +260,9 @@ def main() -> None:
     copy_new_to_old(aircraft_objects, stop_on_error=stop_on_error)
 
     # Remove files if necessary
-    if keep_new_files == False:
+    if not keep_temp_files:
         delete_file(aircraft_objects, TEMP_FILE_SUFFIX)
-    if keep_backup_files == False:
+    if not keep_backup_files:
         delete_file(aircraft_objects, TEMP_FILE_SUFFIX)
 
 
