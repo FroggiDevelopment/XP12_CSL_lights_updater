@@ -197,6 +197,8 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
             temp_object_file.unlink()
         except PermissionError as err:
             print(f"{temp_object_file.name} can not be deleted!", err)
+            if stop_on_error == True:
+                sys.exit()
         if DEBUG == True:
             print(f"Copy {file.name} to original object file done!")
 
