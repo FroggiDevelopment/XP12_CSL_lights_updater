@@ -194,7 +194,7 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
         except PermissionError as err:
             if stop_on_error == True:
                 print("Stopping on error!", err)
-                raise Exception  # TODO: Make better exception!!
+                sys.exit()
             continue
         if DEBUG == True:
             print("Copy to original file done!")
