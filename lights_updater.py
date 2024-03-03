@@ -196,6 +196,10 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
                 print("Stopping on error!", err)
                 sys.exit()
             continue
+        try:
+            temp_object_file.unlink()
+        except PermissionError as err:
+            print(f"{temp_object_file.name} can not be deleted!", err)
         if DEBUG == True:
             print("Copy to original file done!")
 
@@ -211,9 +215,8 @@ def main() -> None:
     DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["CSL"]["csl_path"]
     BACKUP_SUFFIX = ".BCK"
+    TEMP_FILE_SUFFIX = ".TEMP"
     do_backup = config.getboolean("generic", "do_backup")
-    keep_temp_files = config.getboolean("generic", "keep_temp_files")
-    keep_backup_files = config.getboolean("generic", "keep_backup_files")
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
     # Get all aircraft obj files
@@ -276,12 +279,6 @@ def main() -> None:
     print(f"It took {duration.seconds:.2f} seconds!")
 
     copy_new_to_old(aircraft_objects, stop_on_error=stop_on_error)
-
-    # Remove files if necessary
-    if not keep_temp_files:
-        delete_files(aircraft_objects, TEMP_FILE_SUFFIX)
-    if not keep_backup_files:
-        delete_files(aircraft_objects, TEMP_FILE_SUFFIX)
 
 
 if __name__ == "__main__":
