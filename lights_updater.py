@@ -5,6 +5,7 @@ from helpers import recover_from_backup
 from helpers import determine_light_params
 from typing import NoReturn
 from configparser import ConfigParser
+import argparse
 from datetime import datetime
 import sys
 
@@ -220,16 +221,40 @@ def main() -> None:
     number_of_objects = len(aircraft_objects)
 
     # Check if cli params are present TODO: argparser???
+    parser = argparse.ArgumentParser(
+        prog="lights_updater.py",
+        description="This programm can convert XP11 lightparams to the new XP12 specifications\
+        It is mainly developed for LifeTraffic CSL aircraft.",
+        epilog="No you know!",
+    )
+    parser.add_argument(
+        "-u",
+        "--undo",
+        action="store_true",
+        help="Rolls back the previous made changes!",
+    )
+    parser.add_argument(
+        "-r",
+        "--remove_backups",
+        action="store_true",
+        help="Removes the backup files. Be careful!",
+    )
+    args = parser.parse_args()
 
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "-u":  # Undo changes, recover object from backup.
-            print("Recovery activated!")
-            recover_from_backup(
-                files=aircraft_objects,
-                backup_extension=BACKUP_SUFFIX,
-                stop_on_error=stop_on_error,
-            )
+    if args.undo:  # Undo changes, recover object from backup.
+        print("Recovery activated!")
+        recover_from_backup(
+            files=aircraft_objects,
+            backup_extension=BACKUP_SUFFIX,
+            stop_on_error=stop_on_error,
+        )
 
+    if args.remove_backups:  # Remove the backupfiles.
+        print("Backups will be removed now!")
+        yes_no = input("Are you sure? [yes/No]" or "No")
+        if yes_no.lower() == "yes" or yes_no.lower() == "y":
+            print("Okay! Let's do it....!!")
+        sys.exit()
     if do_backup == True:
         print("Creating backups!")
         make_backup(
