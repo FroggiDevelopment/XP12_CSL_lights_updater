@@ -271,6 +271,7 @@ def main() -> None:
 
     # Start of normal execution
     if do_backup == True:
+        print(f"Start converting aircraft object files in {CSL_PATH}")
         print("Creating backups!")
         make_backup(
             files=aircraft_objects,
@@ -285,12 +286,13 @@ def main() -> None:
     )
     for file in aircraft_objects:
         process_obj_file(file)
-    print(f"Processing done, {number_of_objects} files have been processed!")
-    end_time = datetime.now()
-    duration = end_time - start_time
-    print(f"It took {duration.seconds:.2f} seconds!")
 
     copy_new_to_old(aircraft_objects, stop_on_error=stop_on_error)
+
+    end_time = datetime.now()
+    duration = end_time - start_time
+    print(f"Processing done, {number_of_objects} files have been processed!")
+    print(f"It took {duration.seconds:.2f} seconds!")
 
 
 if __name__ == "__main__":
