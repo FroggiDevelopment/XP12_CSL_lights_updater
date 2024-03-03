@@ -163,9 +163,6 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     temp_object_file: Path = aircraft_obj_file.with_suffix(TEMP_FILE_SUFFIX)
     aircraft_type: str = aircraft_obj_file.name.split("_")[0]
 
-    # Delete new file to start a clean build.
-    delete_files([temp_object_file])
-
     with open(aircraft_obj_file) as aircraft_object_file, open(
         temp_object_file, "w+"
     ) as new_obj_file:
@@ -201,7 +198,20 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
         except PermissionError as err:
             print(f"{temp_object_file.name} can not be deleted!", err)
         if DEBUG == True:
-            print("Copy to original file done!")
+            print(f"Copy {file.name} to original object file done!")
+
+
+def delete_backups(file_list: list[Path]) -> NoReturn:
+    """Delete the backup files
+
+    Args:
+        file_list (list[Path]): List of object files
+        suffix (str): _description_
+
+    Returns:
+        NoReturn: _description_
+    """
+    delete_files(file_list, suffix=BACKUP_SUFFIX)
 
 
 def main() -> None:
@@ -214,8 +224,6 @@ def main() -> None:
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["CSL"]["csl_path"]
-    BACKUP_SUFFIX = ".BCK"
-    TEMP_FILE_SUFFIX = ".TEMP"
     do_backup = config.getboolean("generic", "do_backup")
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
@@ -244,6 +252,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # Start of actions based on cli arguments
     if args.undo:  # Undo changes, recover object from backup.
         print("Recovery activated!")
         recover_from_backup(
@@ -257,7 +266,10 @@ def main() -> None:
         yes_no = input("Are you sure? [yes/No]" or "No")
         if yes_no.lower() == "yes" or yes_no.lower() == "y":
             print("Okay! Let's do it....!!")
+            delete_backups(aircraft_objects)
         sys.exit()
+
+    # Start of normal execution
     if do_backup == True:
         print("Creating backups!")
         make_backup(
