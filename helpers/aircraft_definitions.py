@@ -30,6 +30,12 @@ def set_aircraft_data():
         "MD90",
         "A320w",
         "A321w",
+        "AN72",
+        "AN74",
+        "IL62",
+        "TU134",
+        "TU154",
+        "TU204",
     )
     HEAVY_JETS = (
         "B717",
@@ -57,8 +63,29 @@ def set_aircraft_data():
         "A388",
         "DC10",
         "MD11",
+        "AN225",
+        "IL86",
+        "IL96",
     )
-    PROPS = ("DH8D", "AT42", "AT72", "D328", "F50", "JS41", "L410", "SB20", "SF34")
+    PROPS = (
+        "DH8D",
+        "AT42",
+        "AT72",
+        "D328",
+        "F50",
+        "JS41",
+        "L410",
+        "SB20",
+        "SF34",
+        "AN12",
+        "AN22",
+        "AN24",
+        "AN26",
+        "AN28",
+        "AN30",
+        "AN32",
+        "AN8",
+    )
     GA = (
         "BE20",
         "C150",
@@ -91,6 +118,7 @@ def set_aircraft_data():
         "C17",
         "C5M",
         "E3D",
+        "IL76",
     )
     MIL_HEAVY_PROPS = (
         "C130",
