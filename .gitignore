@@ -50,7 +50,4 @@ Thumbs.db
 
 # CLS files created
 CSL/*
-CSL/B773/B773_ANA.obj
-CSL/C5M/C5M_US4_40061.obj
-CSL/F16C/F16C_BE4_101.obj
-CSL/F50/F50_AVA.obj
+X-CSL/*
