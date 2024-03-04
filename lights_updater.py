@@ -54,6 +54,24 @@ def get_object_files(csl_path: str) -> list[Path]:
     return list(Path(csl_path).rglob("*.[oO][bB][jJ]"))
 
 
+def get_xcsl_inventory(csl_path: str) -> list[str]:
+    aircraft_desc_files = list(Path(csl_path).rglob("xsb_aircraft.txt"))
+    aircraft_object_files: list[str] = []
+
+    for desc_file in aircraft_desc_files:
+        with open(desc_file, "r") as f:
+            for line in f:
+                if line.startswith("OBJ8 SOLID YES"):
+                    if "png" in line:
+                        object = line.split(" ")[3].split(":")[1]
+                        # print("Object", object)
+                        if object not in aircraft_object_files:
+                            aircraft_object_files.append(object)
+    print(aircraft_object_files)
+    print(len(aircraft_object_files))
+    # return aircraft_object_files
+
+
 def correct_nav_lights(line: str) -> str:
     """
     Navlights are no longer specified by left, right or tail. The new way is setting them via lightparams
@@ -258,9 +276,15 @@ def main() -> None:
     )
     parser.add_argument(
         "-r",
-        "--remove_backups",
+        "--remove-backups",
         action="store_true",
         help="Removes the backup files. Be careful!",
+    )
+    parser.add_argument(
+        "-x",
+        "--xcsl",
+        action="store_true",
+        help="Get inventory of x-csl aircraft objects.",
     )
     args = parser.parse_args()
 
@@ -279,6 +303,11 @@ def main() -> None:
         if yes_no.lower() == "yes" or yes_no.lower() == "y":
             print("Okay! Let's do it....!!")
             delete_backups(aircraft_objects)
+        sys.exit()
+
+    if args.xcsl:  # Get inventory of x-csl aircraft objects.
+        print("Getting inventory of x-csl aircraft objects!")
+        get_xcsl_inventory(CSL_PATH)
         sys.exit()
 
     # Start of normal execution
