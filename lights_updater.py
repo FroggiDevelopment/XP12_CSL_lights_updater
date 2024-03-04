@@ -105,7 +105,17 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
 
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
 
+    # Check for 'strange' lights or params
+    # TODO: move this to its won function
+    # TODO: X-CSL could hide more surprises... must be checked.
+
     if "headlight" in line:  # Delete lines with old param 'headlight'
+        return ""
+
+    if "_size" in line:  # Old light size definition
+        return ""
+
+    if "_sp" in line:  # Delete lines with old param '_sp'
         return ""
 
     new_line = create_new_light_name(line, lighttype)
