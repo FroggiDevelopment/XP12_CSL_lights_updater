@@ -254,6 +254,7 @@ def main() -> None:
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["CSL"]["csl_path"]
+    is_xcsl = config.getboolean("CSL", "is_xcsl")
     do_backup = config.getboolean("generic", "do_backup")
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
@@ -280,12 +281,6 @@ def main() -> None:
         action="store_true",
         help="Removes the backup files. Be careful!",
     )
-    parser.add_argument(
-        "-x",
-        "--xcsl",
-        action="store_true",
-        help="Get inventory of x-csl aircraft objects.",
-    )
     args = parser.parse_args()
 
     # Start of actions based on cli arguments
@@ -305,7 +300,7 @@ def main() -> None:
             delete_backups(aircraft_objects)
         sys.exit()
 
-    if args.xcsl:  # Get inventory of x-csl aircraft objects.
+    if is_xcsl:  # Get inventory of x-csl aircraft objects.
         print("Getting inventory of x-csl aircraft objects!")
         get_xcsl_inventory(CSL_PATH)
         sys.exit()
