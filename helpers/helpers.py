@@ -57,7 +57,6 @@ def recover_from_backup(
         backup_file.unlink()
         print(f"Recovery of {recover_file} is done!")
     print("Recovery done!")
-    sys.exit()
 
 
 def delete_files(files: list[Path], suffix: str = None):
