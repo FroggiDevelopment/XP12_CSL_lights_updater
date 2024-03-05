@@ -12,6 +12,7 @@ import sys
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
     "airplane_taxi",
+    "airplane_nav",
     "airplane_nav_left",
     "airplane_nav_right",
     "airplane_nav_tail",
@@ -54,22 +55,32 @@ def get_object_files(csl_path: str) -> list[Path]:
     return list(Path(csl_path).rglob("*.[oO][bB][jJ]"))
 
 
-def get_xcsl_inventory(csl_path: str) -> list[str]:
+def get_xsb_inventory(csl_path: str, is_xcsl: bool = False) -> list[str]:
+    """A very chaotic way of getting the object file pathes.
+        Doe to the very different ways it is handled, a lot if if work is needed.
+
+    Args:
+        csl_path (str): Path to start searching.
+        is_xcsl (bool, optional): Is het a X-CSL package? Defaults to False.
+
+    Returns:
+        list[str]: A list with filepaths to the object files.
+    """
     aircraft_desc_files = list(Path(csl_path).rglob("xsb_aircraft.txt"))
     aircraft_object_files: list[str] = []
 
     for desc_file in aircraft_desc_files:
-        with open(desc_file, "r") as f:
-            for line in f:
+        parentdir = desc_file.parent.absolute()
+
+        with open(desc_file, "r") as xsb_aircraft_file:
+            for line in xsb_aircraft_file:
                 if line.startswith("OBJ8 SOLID YES"):
-                    if "png" in line:
-                        object = line.split(" ")[3].split(":")[1]
-                        # print("Object", object)
-                        if object not in aircraft_object_files:
-                            aircraft_object_files.append(object)
-    print(aircraft_object_files)
-    print(len(aircraft_object_files))
-    # return aircraft_object_files
+                    if is_xcsl == True and "png" in line:
+                        object_file = line.split()[3].split(":")[1]
+                        object_path = Path(parentdir, object_file)
+                        if object_path not in aircraft_object_files:
+                            aircraft_object_files.append(object_path)
+    return aircraft_object_files
 
 
 def correct_nav_lights(line: str) -> str:
@@ -127,15 +138,35 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     # TODO: move this to its won function
     # TODO: X-CSL could hide more surprises... must be checked.
 
-    if "headlight" in line:  # Delete lines with old param 'headlight'
-        return ""
+    # There are special lights in the "old" style of obj files. A qick and dirty way to handle
+    # this is below....
 
-    if "_size" in line:  # Old light size definition
-        return ""
+    lights_to_ignore = [
+        "headlight",
+        "_size",
+        "_sp",
+        "taillight",
+        "_rotate",
+        "_core",
+        "_size",
+        "_omni",
+        "_dir",
+        "airplane_strobe_omni",
+        "full_custom_halo_night",
+        "_glow",
+        "_flare",
+        "logo",
+    ]
 
-    if "_sp" in line:  # Delete lines with old param '_sp'
-        return ""
+    if any(unwanted in line for unwanted in lights_to_ignore):
+        return line
 
+    # Occasionally X-CSL aircaraft have already _pm or _bb params. To avoid problems i remove them here
+    if "_pm" in lighttype or "_bb" in lighttype:
+        lighttype = lighttype.replace("_pm", "").replace("_bb", "")
+    # Some lines are commented out... Must be undone
+    if "#LIGHT_PARAM" in line:
+        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
     new_line = create_new_light_name(line, lighttype)
 
     if xp12_params[lighttype] != "" and line != "":
@@ -156,11 +187,10 @@ def change_light_params(line: str, aircraft_type: str) -> str:
     Returns:
         str: A line with updated light parameters
     """
-    if line.startswith("LIGHT_NAMED"):
+    if "LIGHT_NAMED" in line or "LIGHT_PARAM" in line:
         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
-
         if [lighttype in line for lighttype in LIGHT_NEEDLES]:
-            lighttype = line.split(" ")[1]
+            lighttype = line.split()[1]
             return handle_light_params(line, lighttype, aircraft_type)  # Set new params
     elif line.startswith("LIGHT_SPILL_CUSTOM"):  # Remove the old custom spill.
         return ""
@@ -176,7 +206,8 @@ def check_for_light_params(line: str) -> bool:
         bool: True if its a lightparam line
     """
     is_light_line: bool = False
-    if line.startswith("LIGHT_NAMED") or line.startswith("LIGHT_SPILL_CUSTOM"):
+    if "LIGHT_NAMED" in line or "LIGHT_SPILL_CUSTOM" in line or "LIGHT_PARAM" in line:
+        # if line.startswith("LIGHT_NAMED") or line.startswith("LIGHT_SPILL_CUSTOM"):
         is_light_line = True
 
     return is_light_line
@@ -258,10 +289,6 @@ def main() -> None:
     do_backup = config.getboolean("generic", "do_backup")
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
-    # Get all aircraft obj files
-    aircraft_objects = get_object_files(CSL_PATH)
-    number_of_objects = len(aircraft_objects)
-
     # Check if cli params are present TODO: argparser???
     parser = argparse.ArgumentParser(
         prog="lights_updater.py",
@@ -283,6 +310,15 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # Get the list of aircraft obj files
+    if is_xcsl == True:  # Get inventory of x-csl aircraft objects.
+        aircraft_objects = get_xsb_inventory(CSL_PATH, is_xcsl)
+    else:
+        # Get all aircraft obj files
+        aircraft_objects = get_object_files(CSL_PATH)
+
+    number_of_objects = len(aircraft_objects)
+
     # Start of actions based on cli arguments
     if args.undo:  # Undo changes, recover object from backup.
         print("Recovery activated!")
@@ -291,6 +327,7 @@ def main() -> None:
             backup_extension=BACKUP_SUFFIX,
             stop_on_error=stop_on_error,
         )
+        sys.exit()
 
     if args.remove_backups:  # Remove the backupfiles.
         print("Backups will be removed now!")
@@ -300,14 +337,8 @@ def main() -> None:
             delete_backups(aircraft_objects)
         sys.exit()
 
-    if is_xcsl:  # Get inventory of x-csl aircraft objects.
-        print("Getting inventory of x-csl aircraft objects!")
-        get_xcsl_inventory(CSL_PATH)
-        sys.exit()
-
     # Start of normal execution
     if do_backup == True:
-        print(f"Start converting aircraft object files in {CSL_PATH}")
         print("Creating backups!")
         make_backup(
             files=aircraft_objects,
