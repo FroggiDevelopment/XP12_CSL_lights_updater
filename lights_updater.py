@@ -280,7 +280,7 @@ def main() -> None:
 
     # Get config
     config = ConfigParser()
-    config.read("./config.ini")
+    config.read("config.ini")
 
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
