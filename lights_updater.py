@@ -7,7 +7,7 @@ from configparser import ConfigParser
 from datetime import datetime
 
 from helpers import make_backup
-from helpers import delete_files
+from helpers import delete_backups
 from helpers import recover_from_backup
 from helpers import determine_light_params
 
@@ -169,6 +169,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line:
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
+
     new_line = create_new_light_name(line, lighttype)
 
     if xp12_params[lighttype] != "" and line != "":
@@ -223,7 +224,6 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     """
     temp_object_file: Path = aircraft_obj_file.with_suffix(TEMP_FILE_SUFFIX)
     aircraft_type: str = aircraft_obj_file.name.split("_")[0]
-
     with open(aircraft_obj_file) as aircraft_object_file, open(
         temp_object_file, "w+"
     ) as new_obj_file:
@@ -262,19 +262,6 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
                 sys.exit()
         if DEBUG == True:
             print(f"Copy {file.name} to original object file done!")
-
-
-def delete_backups(file_list: list[Path]) -> NoReturn:
-    """Delete the backup files
-
-    Args:
-        file_list (list[Path]): List of object files
-        suffix (str): _description_
-
-    Returns:
-        NoReturn: _description_
-    """
-    delete_files(file_list, suffix=BACKUP_SUFFIX)
 
 
 def main() -> None:
@@ -336,7 +323,7 @@ def main() -> None:
         yes_no = input("Are you sure? [yes/No]" or "No")
         if yes_no.lower() == "yes" or yes_no.lower() == "y":
             print("Okay! Let's do it....!!")
-            delete_backups(aircraft_objects)
+            delete_backups(aircraft_objects, BACKUP_SUFFIX)
         sys.exit()
 
     # Start of normal execution
