@@ -228,7 +228,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         temp_object_file, "w+"
     ) as new_obj_file:
         if DEBUG == True:
-            print(f"Processing {aircraft_object_file.name}")
+            logging.debug(f"Processing {aircraft_object_file.name}")
         for line in aircraft_object_file:
             if check_for_light_params(line) == True:
                 line = change_light_params(line, aircraft_type)
@@ -240,7 +240,7 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
     Delete the new file
     """
     if DEBUG == True:
-        print("Start copying processed files to original file!")
+        logging.debug("Start copying processed files to original file!")
     # files_to_copy = list(Path(filepath).rglob("*.NEW"))
 
     for file in files:
@@ -261,10 +261,16 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
             if stop_on_error == True:
                 sys.exit()
         if DEBUG == True:
-            print(f"Copy {file.name} to original object file done!")
+            logging.debug(f"Copy {file.name} to original object file done!")
 
 
 def main() -> None:
+    logging.basicConfig(
+        level=logging.WARNING,
+        format="$(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        filename="lights_updater.log",
+    )
     start_time = datetime.now()
 
     # Get config
@@ -311,6 +317,7 @@ def main() -> None:
     # Start of actions based on cli arguments
     if args.undo:  # Undo changes, recover object from backup.
         print("Recovery activated!")
+        logging.info("Recovery activated!")
         recover_from_backup(
             files=aircraft_objects,
             backup_extension=BACKUP_SUFFIX,
@@ -329,6 +336,7 @@ def main() -> None:
     # Start of normal execution
     if do_backup == True:
         print("Creating backups!")
+        logging.info("Creating backups!")
         make_backup(
             files=aircraft_objects,
             backup_extension=BACKUP_SUFFIX,
@@ -340,6 +348,7 @@ def main() -> None:
     print(
         "Start processing! Duration depends on number of files and of course general hardware performance."
     )
+    logging.info("Start processing!")
     for file in aircraft_objects:
         process_obj_file(file)
 
@@ -348,7 +357,9 @@ def main() -> None:
     end_time = datetime.now()
     duration = end_time - start_time
     print(f"Processing done, {number_of_objects} files have been processed!")
+    logging.info(f"Processing done, {number_of_objects} files have been processed!")
     print(f"It took {duration.seconds:.2f} seconds!")
+    logging.info(f"It took {duration.seconds:.2f} seconds!")
 
 
 if __name__ == "__main__":
