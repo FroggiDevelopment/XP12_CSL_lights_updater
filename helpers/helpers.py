@@ -31,7 +31,7 @@ def make_backup(
     print("Backups done!")
 
 
-def remove_backup_files(files: list[Path], backup_extension: str):
+def delete_backups(files: list[Path], backup_extension: str):
     delete_files(files, backup_extension)
 
 
