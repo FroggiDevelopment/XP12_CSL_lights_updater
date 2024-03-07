@@ -269,6 +269,7 @@ def main() -> None:
         format="$(asctime)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         filename="lights_updater.log",
+        filemode="w",
     )
     start_time = datetime.now()
 
