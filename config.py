@@ -19,9 +19,3 @@ class DynamicConfigIni:
         self._raw = conf
         for key, value in self._raw.items():
             setattr(self, key, DynamicConfig(dict(value.items())))
-
-
-parser = configparser.ConfigParser()
-parser.read_file(open("config.ini"))
-config = DynamicConfigIni(parser)
-print(config.generic.debug, config.CSL.csl_path)
