@@ -1,6 +1,9 @@
 from pathlib import Path
 from typing import NoReturn
+import logging
 import sys
+
+log = logging.getLogger(__name__)
 
 
 def make_backup(
@@ -21,14 +24,15 @@ def make_backup(
                 backup_file.write_bytes(file.read_bytes())
             except PermissionError as err:
                 if stop_on_error == True:
-                    print("Stopping on error!", err)
+                    logging.debug("Stopping on error!", err)
                     sys.exit()
             if debug == True:
-                print(f"Backup for {file} is ready!")
+                logging.debug(f"Backup for {file} is ready!")
             continue
         if debug == True:
-            print("Backup already exists for:", file)
+            logging.debug("Backup already exists for:", file)
     print("Backups done!")
+    debug.info("Backups done!")
 
 
 def delete_backups(files: list[Path], backup_extension: str):
@@ -46,17 +50,19 @@ def recover_from_backup(
             recover_file.write_bytes(backup_file.read_bytes())
         except PermissionError as err:
             if stop_on_error == True:
-                print("Stopping on error!", err)
+                logging.debug("Stopping on error!", err)
                 sys.exit()
             continue
         except FileNotFoundError as notfound:
             if stop_on_error == True:
-                print("Stopping because backup not found!", notfound)
+                logging.debug("Stopping because backup not found!", notfound)
                 sys.exit()
             continue
         backup_file.unlink()
-        print(f"Recovery of {recover_file} is done!")
+        print(f"Recovery of {backup_file} is done!")
+        logging.debug(f"Recovery of {recover_file} is done!")
     print("Recovery done!")
+    logging.info("Recovery done!")
 
 
 def delete_files(files: list[Path], suffix: str = None):
