@@ -241,7 +241,6 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
     """
     if DEBUG == True:
         logging.debug("Start copying processed files to original file!")
-    # files_to_copy = list(Path(filepath).rglob("*.NEW"))
 
     for file in files:
         destination_file = file.with_suffix(".obj")
