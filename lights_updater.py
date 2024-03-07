@@ -265,7 +265,7 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
 
 def main() -> None:
     logging.basicConfig(
-        level=logging.WARNING,
+        level=logging.DEBUG,
         format="$(asctime)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         filename="lights_updater.log",
@@ -278,8 +278,8 @@ def main() -> None:
 
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
-    CSL_PATH = config["CSL"]["csl_path"]
-    is_xcsl = config.getboolean("CSL", "is_xcsl")
+    CSL_PATH = config["csl"]["csl_path"]
+    is_xcsl = config.getboolean("csl", "is_xcsl")
     do_backup = config.getboolean("generic", "do_backup")
     stop_on_error = config.getboolean("generic", "stop_on_error")
 
