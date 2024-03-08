@@ -27,7 +27,7 @@ def make_backup(
                     sys.exit()
             logging.debug(f"Backup for {file} is ready!")
             continue
-        logging.warning("Backup already exists for:", file)
+        logging.info(f"Backup already exists for: {file.name}")
     print("Backups done!")
     logging.info("Backups done!")
 
