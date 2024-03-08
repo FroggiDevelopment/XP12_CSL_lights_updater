@@ -191,8 +191,7 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
-    if DEBUG == True:
-        logging.debug("Start copying processed files to original file!")
+    logging.debug("Start copying processed files to original file!")
 
     for file in files:
         destination_file = file.with_suffix(".obj")
@@ -202,17 +201,16 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
             destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
             if stop_on_error == True:
-                print("Stopping on error!", err)
+                logging.error("Stopping on error!", err)
                 sys.exit()
             continue
         try:
             temp_object_file.unlink()
         except PermissionError as err:
-            print(f"{temp_object_file.name} can not be deleted!", err)
+            logging.error(f"{temp_object_file.name} can not be deleted!", err)
             if stop_on_error == True:
                 sys.exit()
-        if DEBUG == True:
-            logging.debug(f"Copy {file.name} to original object file done!")
+        logging.debug(f"Copy {file.name} to original object file done!")
 
 
 def main() -> None:
