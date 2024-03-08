@@ -83,16 +83,9 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     """
     new_line: str = ""
 
-    xp12_params: str = determine_light_params(aircraft_type, lighttype)
-
-    # Check for 'strange' lights or params
-    # TODO: move this to its won function
     # TODO: X-CSL could hide more surprises... must be checked.
-
     # There are special lights in the "old" style of obj files. A qick and dirty way to handle
     # this is below....
-
-    # TODO: Must be moved to config or aircraft_definitions
     lights_to_ignore = [
         "headlight",
         "_size",
@@ -116,14 +109,16 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     # Occasionally X-CSL aircaraft have already _pm or _bb params. To avoid problems i remove them here
     if "_pm" in lighttype or "_bb" in lighttype:
         lighttype = lighttype.replace("_pm", "").replace("_bb", "")
+
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line:
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
     new_line = line.replace(lighttype, f"{lighttype}_pm").rstrip("\n")
 
-    if xp12_params[lighttype] != "" and line != "":
-        new_line += f" {xp12_params[lighttype]}\n"
+    xp12_params: str = determine_light_params(aircraft_type, lighttype)
+    if xp12_params != "" and line != "":
+        new_line += f" {xp12_params}\n"
 
     if "airplane_nav" in new_line:
         for item in ["_left", "_right", "_tail"]:
@@ -215,8 +210,8 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
 
 def main() -> None:
     logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - %(levelname)s - %(message)s",
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(filename)s - on line: %(lineno)d - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         filename="lights_updater.log",
         filemode="w",
