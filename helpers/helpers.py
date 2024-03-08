@@ -70,6 +70,7 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
             continue
         backup_file.unlink()
         logging.debug(f"Recovery of {recover_file} is done!")
+        print(f"Recovering {backup_file}")
     print("Recovery done!")
     logging.info("Recovery done!")
 
