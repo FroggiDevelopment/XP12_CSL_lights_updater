@@ -218,8 +218,10 @@ def determine_light_params(aircraft_type: str, light_type: str = "") -> str:
     """
 
     if light_type == "":
+        logger.error("The light type is missing!")
         raise ValueError("The light type is missing!")
     if aircraft_type == "":
+        logger.error("The aircraft type is missing!")
         raise ValueError("The aircraft type is missing!")
 
     for key, value in aircrafts.items():
@@ -234,10 +236,11 @@ def determine_light_params(aircraft_type: str, light_type: str = "") -> str:
 def main():
 
     to_check_aircraft = "Socata"
+    light_type = "airplane_landing"
 
-    result = determine_light_params(to_check_aircraft, "airplane_landing")
+    result = determine_light_params(to_check_aircraft, light_type)
 
-    print(result)
+    print(f"Light params for {light_type} are: {result}")
 
 
 if __name__ == "__main__":
