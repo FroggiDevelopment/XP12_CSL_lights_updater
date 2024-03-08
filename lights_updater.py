@@ -27,22 +27,6 @@ TEMP_FILE_SUFFIX = ".TEMP"
 BACKUP_SUFFIX = ".BCK"
 
 
-def adapt_nav_lights(line: str, old_nav_lights: list[str]) -> str:
-    """Delete unused parameter parts and return new string
-
-    Args:
-        line (str): Line with aircraft navlight parameter
-        to_correct_list (list): List of items to be removed
-
-    Returns:
-        str: Line without unused parameter(-parts)
-    """
-    for item in old_nav_lights:
-        line = line.replace(item, "")
-
-    return line
-
-
 def get_object_files(csl_path: str) -> list[Path]:
     """Get all object files within csl_path using rglob
        and a pattern to search for. In this case all obj
@@ -85,27 +69,6 @@ def get_xsb_inventory(csl_path: str, is_xcsl: bool = False) -> list[str]:
     return aircraft_object_files
 
 
-def correct_nav_lights(line: str) -> str:
-    """
-    Navlights are no longer specified by left, right or tail. The new way is setting them via lightparams
-
-
-    Args:
-        line (str): line airplane_nav params
-    Returns:
-        str: line with updated params according the the specifications
-             in XP12
-    """
-    handled_line = ""
-
-    # aircraft_nav is now only one type (_tail, _left, _right are no longer used)
-    if "airplane_nav" in line:
-        handled_line = adapt_nav_lights(line, ["_left", "_right", "_tail"])
-    else:
-        return line
-    return handled_line
-
-
 def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     """
     Create a new param line based on XP12 specifications, aircraft_type and lighttype
@@ -129,6 +92,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     # There are special lights in the "old" style of obj files. A qick and dirty way to handle
     # this is below....
 
+    # TODO: Must be moved to config or aircraft_definitions
     lights_to_ignore = [
         "headlight",
         "_size",
@@ -156,14 +120,15 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     if "#LIGHT_PARAM" in line:
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
-    # new_line = create_new_light_name(line, lighttype)
-
     new_line = line.replace(lighttype, f"{lighttype}_pm").rstrip("\n")
 
     if xp12_params[lighttype] != "" and line != "":
         new_line += f" {xp12_params[lighttype]}\n"
 
-    new_line = correct_nav_lights(new_line)
+    if "airplane_nav" in new_line:
+        for item in ["_left", "_right", "_tail"]:
+            new_line = new_line.replace(item, "")
+
     new_line += new_line.replace("_pm", "_bb")
     return new_line
 
