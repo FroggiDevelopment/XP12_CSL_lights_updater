@@ -90,6 +90,10 @@ def filter_unwanted_light_params(line: str) -> str:
     if "#LIGHT_PARAM" in line:
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
+    if "airplane_nav" in line:
+        for item in ["_left", "_right", "_tail"]:
+            line = line.replace(item, "")
+
     return line
 
 
@@ -137,9 +141,8 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     if xp12_params != "" and line != "":
         line += f" {xp12_params}\n"
 
-    if "airplane_nav" in new_line:
-        for item in ["_left", "_right", "_tail"]:
-            line = line.replace(item, "")
+    # add pm to light param
+    line = line.replace(lighttype, lighttype + "_pm")
 
     line += line.replace("_pm", "_bb")
     return line
