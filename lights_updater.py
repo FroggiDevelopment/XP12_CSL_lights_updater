@@ -131,7 +131,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
         return line
 
     line = filter_unwanted_light_params(line).replace("\n", "")
-    print(line)
+    logging.debug(f"Line create by filter_unwanted_light_params is: {line}")
 
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
     if xp12_params != "" and line != "":
