@@ -163,7 +163,6 @@ def check_for_light_params(line: str) -> bool:
     """
     is_light_line: bool = False
     if "LIGHT_NAMED" in line or "LIGHT_SPILL_CUSTOM" in line or "LIGHT_PARAM" in line:
-        # if line.startswith("LIGHT_NAMED") or line.startswith("LIGHT_SPILL_CUSTOM"):
         is_light_line = True
 
     return is_light_line
