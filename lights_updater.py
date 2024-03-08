@@ -22,6 +22,8 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_beacon",
 ]
 
+# TODO: !!! CONFIG HAS TO BE GLOBAL!!!
+
 DEBUG = False
 TEMP_FILE_SUFFIX = ".TEMP"
 BACKUP_SUFFIX = ".BCK"
@@ -69,6 +71,28 @@ def get_xsb_inventory(csl_path: str, is_xcsl: bool = False) -> list[str]:
     return aircraft_object_files
 
 
+def filter_unwanted_light_params(line: str) -> str:
+    """Filter out light params that are old or otherwise wrong.
+       Can be expanded for future cases.
+
+    Args:
+        line (str): Line with light parameters
+
+    Returns:
+        str: Corrected line with light parameters
+    """
+
+    # Occasionally X-CSL aircaraft have already _pm or _bb params. To avoid problems i remove them here
+    if "_pm" in line or "_bb" in line:
+        line = line.replace("_pm", "").replace("_bb", "")
+
+    # Some lines are commented out... Must be undone
+    if "#LIGHT_PARAM" in line:
+        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
+
+    return line
+
+
 def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     """
     Create a new param line based on XP12 specifications, aircraft_type and lighttype
@@ -106,26 +130,19 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     if any(unwanted in line for unwanted in lights_to_ignore):
         return line
 
-    # Occasionally X-CSL aircaraft have already _pm or _bb params. To avoid problems i remove them here
-    if "_pm" in lighttype or "_bb" in lighttype:
-        lighttype = lighttype.replace("_pm", "").replace("_bb", "")
-
-    # Some lines are commented out... Must be undone
-    if "#LIGHT_PARAM" in line:
-        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
-
-    new_line = line.replace(lighttype, f"{lighttype}_pm").rstrip("\n")
+    line = filter_unwanted_light_params(line).replace("\n", "")
+    print(line)
 
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
     if xp12_params != "" and line != "":
-        new_line += f" {xp12_params}\n"
+        line += f" {xp12_params}\n"
 
     if "airplane_nav" in new_line:
         for item in ["_left", "_right", "_tail"]:
-            new_line = new_line.replace(item, "")
+            line = line.replace(item, "")
 
-    new_line += new_line.replace("_pm", "_bb")
-    return new_line
+    line += line.replace("_pm", "_bb")
+    return line
 
 
 def change_light_params(line: str, aircraft_type: str) -> str:
@@ -228,6 +245,7 @@ def main() -> None:
     is_xcsl = config.getboolean("csl", "is_xcsl")
     do_backup = config.getboolean("generic", "do_backup")
     stop_on_error = config.getboolean("generic", "stop_on_error")
+    unwanted_lights = config["data"]["unwanted_lights"]
 
     # Check if cli params are present TODO: argparser???
     parser = argparse.ArgumentParser(
