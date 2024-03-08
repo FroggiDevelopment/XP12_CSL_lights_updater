@@ -106,20 +106,6 @@ def correct_nav_lights(line: str) -> str:
     return handled_line
 
 
-def create_new_light_name(line: str, lighttype: str) -> str:
-    """Takes the original line and adds _pm to the light name
-       of type {lighttype}
-
-    Args:
-        line (str): The original line with the old light params
-        lighttype (str): the type of light that needs updating
-
-    Returns:
-        str: New line with updated light name
-    """
-    return line.replace(lighttype, f"{lighttype}_pm").rstrip("\n")
-
-
 def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     """
     Create a new param line based on XP12 specifications, aircraft_type and lighttype
@@ -170,7 +156,9 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     if "#LIGHT_PARAM" in line:
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
-    new_line = create_new_light_name(line, lighttype)
+    # new_line = create_new_light_name(line, lighttype)
+
+    new_line = line.replace(lighttype, f"{lighttype}_pm").rstrip("\n")
 
     if xp12_params[lighttype] != "" and line != "":
         new_line += f" {xp12_params[lighttype]}\n"
@@ -266,7 +254,7 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
 def main() -> None:
     logging.basicConfig(
         level=logging.DEBUG,
-        format="$(asctime)s - %(levelname)s - %(message)s",
+        format="%(asctime)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         filename="lights_updater.log",
         filemode="w",
@@ -320,7 +308,6 @@ def main() -> None:
         logging.info("Recovery activated!")
         recover_from_backup(
             files=aircraft_objects,
-            backup_extension=BACKUP_SUFFIX,
             stop_on_error=stop_on_error,
         )
         sys.exit()
@@ -339,9 +326,7 @@ def main() -> None:
         logging.info("Creating backups!")
         make_backup(
             files=aircraft_objects,
-            backup_extension=BACKUP_SUFFIX,
             stop_on_error=stop_on_error,
-            debug=DEBUG,
         )
 
     # Lets do the magic stuff!
