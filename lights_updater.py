@@ -231,7 +231,7 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
 def main() -> None:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(filename)s - on line: %(lineno)d - %(message)s",
+        format="%(levelname)s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         filename="lights_updater.log",
         filemode="w",
@@ -248,7 +248,7 @@ def main() -> None:
     is_xcsl = config.getboolean("csl", "is_xcsl")
     do_backup = config.getboolean("generic", "do_backup")
     stop_on_error = config.getboolean("generic", "stop_on_error")
-    unwanted_lights = config["data"]["unwanted_lights"]
+    # unwanted_lights = config["data"]["unwanted_lights"]
 
     # Check if cli params are present TODO: argparser???
     parser = argparse.ArgumentParser(
