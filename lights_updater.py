@@ -22,7 +22,7 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_beacon",
 ]
 
-# TODO: !!! CONFIG HAS TO BE GLOBAL!!!
+# TODO: !!! CONFIG HAS TO BE GLOBAL!!! Maybe...
 
 DEBUG = False
 TEMP_FILE_SUFFIX = ".TEMP"
@@ -30,6 +30,7 @@ BACKUP_SUFFIX = ".BCK"
 IS_XCSL = False
 DO_BACKUP = True
 STOP_ON_ERROR = True
+LIGHT_INDICATORS = ["LIGHT_NAMED", "LIGHT_SPILL_CUSTOM", "LIGHT_PARAM"]
 
 
 def get_object_files(csl_path: str) -> list[Path]:
@@ -170,7 +171,7 @@ def change_light_params(line: str, aircraft_type: str) -> str:
         return ""
 
 
-def check_for_light_params(line: str) -> bool:
+def check_for_light_params(line: str, needles: list[str]) -> bool:
     """Checks if the line conatains any light parameters based on the start fo the line
 
     Args:
@@ -179,11 +180,10 @@ def check_for_light_params(line: str) -> bool:
     Returns:
         bool: True if its a lightparam line
     """
-    is_light_line: bool = False
-    if "LIGHT_NAMED" in line or "LIGHT_SPILL_CUSTOM" in line or "LIGHT_PARAM" in line:
-        is_light_line = True
+    if any(light_indicator in line for light_indicator in needles):
+        return True
 
-    return is_light_line
+    return False
 
 
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
@@ -200,7 +200,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         if DEBUG == True:
             logging.debug(f"Processing {aircraft_object_file.name}")
         for line in aircraft_object_file:
-            if check_for_light_params(line) == True:
+            if check_for_light_params(line, LIGHT_INDICATORS) == True:
                 line = change_light_params(line, aircraft_type)
             new_obj_file.write(line)
 
