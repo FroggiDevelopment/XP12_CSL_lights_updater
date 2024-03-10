@@ -27,6 +27,9 @@ LIGHT_NEEDLES: list[str] = [
 DEBUG = False
 TEMP_FILE_SUFFIX = ".TEMP"
 BACKUP_SUFFIX = ".BCK"
+IS_XCSL = False
+DO_BACKUP = True
+STOP_ON_ERROR = True
 
 
 def get_object_files(csl_path: str) -> list[Path]:
@@ -43,13 +46,13 @@ def get_object_files(csl_path: str) -> list[Path]:
     return list(Path(csl_path).rglob("*.[oO][bB][jJ]"))
 
 
-def get_xsb_inventory(csl_path: str, is_xcsl: bool = False) -> list[str]:
+def get_xsb_inventory(csl_path: str) -> list[str]:
     """A very chaotic way of getting the object file pathes.
         Doe to the very different ways it is handled, a lot if if work is needed.
 
     Args:
         csl_path (str): Path to start searching.
-        is_xcsl (bool, optional): Is het a X-CSL package? Defaults to False.
+        IS_XCSL (bool, optional): Is het a X-CSL package? Defaults to False.
 
     Returns:
         list[str]: A list with filepaths to the object files.
@@ -63,7 +66,7 @@ def get_xsb_inventory(csl_path: str, is_xcsl: bool = False) -> list[str]:
         with open(desc_file, "r") as xsb_aircraft_file:
             for line in xsb_aircraft_file:
                 if line.startswith("OBJ8 SOLID YES"):
-                    if is_xcsl == True and "png" in line:
+                    if IS_XCSL == True and "png" in line:
                         object_file = line.split()[3].split(":")[1]
                         object_path = Path(parentdir, object_file)
                         if object_path not in aircraft_object_files:
@@ -202,7 +205,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(line)
 
 
-def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
+def copy_new_to_old(files: list[Path]) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
@@ -215,7 +218,7 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
-            if stop_on_error == True:
+            if STOP_ON_ERROR == True:
                 logging.error("Stopping on error!", err)
                 sys.exit()
             continue
@@ -223,7 +226,7 @@ def copy_new_to_old(files: list[Path], stop_on_error: bool = True) -> NoReturn:
             temp_object_file.unlink()
         except PermissionError as err:
             logging.error(f"{temp_object_file.name} can not be deleted!", err)
-            if stop_on_error == True:
+            if STOP_ON_ERROR == True:
                 sys.exit()
         logging.debug(f"Copy {file.name} to original object file done!")
 
@@ -245,9 +248,9 @@ def main() -> None:
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["csl"]["csl_path"]
-    is_xcsl = config.getboolean("csl", "is_xcsl")
-    do_backup = config.getboolean("generic", "do_backup")
-    stop_on_error = config.getboolean("generic", "stop_on_error")
+    IS_XCSL = config.getboolean("csl", "IS_XCSL")
+    DO_BACKUP = config.getboolean("generic", "do_backup")
+    STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
     # unwanted_lights = config["data"]["unwanted_lights"]
 
     # Check if cli params are present TODO: argparser???
@@ -272,8 +275,8 @@ def main() -> None:
     args = parser.parse_args()
 
     # Get the list of aircraft obj files
-    if is_xcsl == True:  # Get inventory of x-csl aircraft objects.
-        aircraft_objects = get_xsb_inventory(CSL_PATH, is_xcsl)
+    if IS_XCSL == True:  # Get inventory of x-csl aircraft objects.
+        aircraft_objects = get_xsb_inventory(CSL_PATH)
     else:
         # Get all aircraft obj files
         aircraft_objects = get_object_files(CSL_PATH)
@@ -286,7 +289,7 @@ def main() -> None:
         logging.info("Recovery activated!")
         recover_from_backup(
             files=aircraft_objects,
-            stop_on_error=stop_on_error,
+            stop_on_error=STOP_ON_ERROR,
         )
         sys.exit()
 
@@ -299,12 +302,12 @@ def main() -> None:
         sys.exit()
 
     # Start of normal execution
-    if do_backup == True:
+    if DO_BACKUP == True:
         print("Creating backups!")
         logging.info("Creating backups!")
         make_backup(
             files=aircraft_objects,
-            stop_on_error=stop_on_error,
+            stop_on_error=STOP_ON_ERROR,
         )
 
     # Lets do the magic stuff!
@@ -315,7 +318,7 @@ def main() -> None:
     for file in aircraft_objects:
         process_obj_file(file)
 
-    copy_new_to_old(aircraft_objects, stop_on_error=stop_on_error)
+    copy_new_to_old(aircraft_objects)
 
     end_time = datetime.now()
     duration = end_time - start_time
