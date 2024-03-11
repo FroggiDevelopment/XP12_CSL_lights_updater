@@ -55,7 +55,7 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
     for backup_file in files:
         backup_file = backup_file.with_suffix(".BCK")
         recover_file = backup_file.with_suffix(".obj")
-        logging.debug(f"Recovery of {backup_file.name} is started")
+        logging.debug(f"Recovery of {backup_file} is started")
         try:
             recover_file.write_bytes(backup_file.read_bytes())
         except PermissionError as err:
