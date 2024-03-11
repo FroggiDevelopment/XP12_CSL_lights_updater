@@ -10,6 +10,7 @@ from helpers import make_backup
 from helpers import delete_backups
 from helpers import recover_from_backup
 from helpers import determine_light_params
+from helpers import get_aircraft_objects_from_xsb_file
 
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
@@ -31,20 +32,6 @@ IS_XCSL = False
 DO_BACKUP = True
 STOP_ON_ERROR = True
 LIGHT_INDICATORS = ["LIGHT_NAMED", "LIGHT_SPILL_CUSTOM", "LIGHT_PARAM"]
-
-
-def get_object_files(csl_path: str) -> list[Path]:
-    """Get all object files within csl_path using rglob
-       and a pattern to search for. In this case all obj
-       files. Hardcoded patern!
-
-    Args:
-        csl_path (str): Directory at which to start searching
-
-    Returns:
-        list: Of matching filepathes
-    """
-    return list(Path(csl_path).rglob("*.[oO][bB][jJ]"))
 
 
 def get_xsb_inventory(csl_path: str) -> list[str]:
@@ -85,10 +72,6 @@ def filter_unwanted_light_params(line: str) -> str:
     Returns:
         str: Corrected line with light parameters
     """
-
-    # Occasionally X-CSL aircaraft have already _pm or _bb params. To avoid problems i remove them here
-    # if "_pm" in line or "_bb" in line:
-    #     line = line.replace("_pm", "").replace("_bb", "")
 
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line:
@@ -212,11 +195,12 @@ def copy_new_to_old(files: list[Path]) -> NoReturn:
     Delete the new file
     """
     logging.debug("Start copying processed files to original file!")
-
+    print("Start copying processed files to original file!")
     for file in files:
         destination_file = file.with_suffix(".obj")
         temp_object_file = file.with_suffix(TEMP_FILE_SUFFIX)
-
+        print(f"Copying {temp_object_file.name} to {file} file!")
+        logging.info(f"Copying {temp_object_file.name} to {file} file!")
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
@@ -276,12 +260,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Get the list of aircraft obj files
-    if IS_XCSL == True:  # Get inventory of x-csl aircraft objects.
-        aircraft_objects = get_xsb_inventory(CSL_PATH)
-    else:
-        # Get all aircraft obj files
-        aircraft_objects = get_object_files(CSL_PATH)
+    # Get the list of aircraft obj files and the number of files
+    aircraft_objects = get_aircraft_objects_from_xsb_file(CSL_PATH, IS_XCSL)
     number_of_objects = len(aircraft_objects)
 
     # Start of actions based on cli arguments
