@@ -98,9 +98,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     """
     new_line: str = ""
 
-    # TODO: X-CSL could hide more surprises... must be checked.
-    # There are special lights in the "old" style of obj files. A qick and dirty way to handle
-    # this is below....
+    # Ignore lights that need no processing, i.e. lights not used by XP12 or already changed to XP12 types
     lights_to_ignore = [
         "headlight",
         "_size",
@@ -126,7 +124,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     line = filter_unwanted_light_params(line).replace("\n", "")
     logging.debug(f"Line created by filter_unwanted_light_params is: {line}")
 
-    xp12_params: str = determine_light_params(aircraft_type, lighttype)
+    xp12_params: str = determine_light_params(aircraft_type, light_type=lighttype)
     if xp12_params != "" and line != "":
         line += f" {xp12_params}\n"
 
@@ -177,7 +175,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     Args:
         file (Path): the existing aircraft object file
     """
-    temp_object_file: Path = aircraft_obj_file.with_suffix(TEMP_FILE_SUFFIX)
+    temp_object_file: Path = aircraft_obj_file.with_suffix(suffix=TEMP_FILE_SUFFIX)
 
     # If airline is in the filename, it is sparated by "_". The 'normal' case.
     if "_" in aircraft_obj_file.name:
@@ -190,7 +188,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         if DEBUG == True:
             logging.debug(f"Processing {aircraft_object_file.name}")
         for line in aircraft_object_file:
-            if check_for_light_params(line, LIGHT_INDICATORS) == True:
+            if check_for_light_params(line, needles=LIGHT_INDICATORS) == True:
                 line = change_light_params(line, aircraft_type)
             new_obj_file.write(line)
 
@@ -266,7 +264,9 @@ def main() -> None:
     args = parser.parse_args()
 
     # Get the list of aircraft obj files and the number of files
-    aircraft_objects = get_aircraft_objects_from_xsb_file(CSL_PATH, IS_XCSL)
+    aircraft_objects = get_aircraft_objects_from_xsb_file(
+        searchpath=CSL_PATH, is_xcsl=IS_XCSL
+    )
     number_of_objects = len(aircraft_objects)
 
     # Start of actions based on cli arguments
@@ -284,7 +284,7 @@ def main() -> None:
         yes_no = input("Are you sure? [yes/No]" or "No")
         if yes_no.lower() == "yes" or yes_no.lower() == "y":
             print("Okay! Let's do it....!!")
-            delete_backups(aircraft_objects, BACKUP_SUFFIX)
+            delete_backups(files=aircraft_objects, backup_extension=BACKUP_SUFFIX)
         sys.exit()
 
     # Start of normal execution
@@ -304,7 +304,7 @@ def main() -> None:
     for file in aircraft_objects:
         if DEBUG == True:
             print(f"Processing {file}")
-        process_obj_file(file)
+        process_obj_file(aircraft_obj_file=file)
 
     copy_new_to_old(aircraft_objects)
 
