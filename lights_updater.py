@@ -67,7 +67,7 @@ def get_xsb_inventory(csl_path: str) -> list[str]:
         with open(desc_file, "r") as xsb_aircraft_file:
             for line in xsb_aircraft_file:
                 if line.startswith("OBJ8 SOLID YES"):
-                    if IS_XCSL == True and "png" in line:
+                    if "png" in line:
                         object_file = line.split()[3].split(":")[1]
                         object_path = Path(parentdir, object_file)
                         if object_path not in aircraft_object_files:
@@ -87,8 +87,8 @@ def filter_unwanted_light_params(line: str) -> str:
     """
 
     # Occasionally X-CSL aircaraft have already _pm or _bb params. To avoid problems i remove them here
-    if "_pm" in line or "_bb" in line:
-        line = line.replace("_pm", "").replace("_bb", "")
+    # if "_pm" in line or "_bb" in line:
+    #     line = line.replace("_pm", "").replace("_bb", "")
 
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line:
@@ -122,6 +122,8 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
         "headlight",
         "_size",
         "_sp",
+        "_pm",
+        "_bb",
         "taillight",
         "_rotate",
         "_core",
@@ -139,7 +141,7 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
         return line
 
     line = filter_unwanted_light_params(line).replace("\n", "")
-    logging.debug(f"Line create by filter_unwanted_light_params is: {line}")
+    logging.debug(f"Line created by filter_unwanted_light_params is: {line}")
 
     xp12_params: str = determine_light_params(aircraft_type, lighttype)
     if xp12_params != "" and line != "":
@@ -248,7 +250,7 @@ def main() -> None:
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["csl"]["csl_path"]
-    IS_XCSL = config.getboolean("csl", "IS_XCSL")
+    IS_XCSL = config.getboolean("csl", "is_xcsl")
     DO_BACKUP = config.getboolean("generic", "do_backup")
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
     # unwanted_lights = config["data"]["unwanted_lights"]
@@ -280,7 +282,6 @@ def main() -> None:
     else:
         # Get all aircraft obj files
         aircraft_objects = get_object_files(CSL_PATH)
-
     number_of_objects = len(aircraft_objects)
 
     # Start of actions based on cli arguments
@@ -316,6 +317,8 @@ def main() -> None:
     )
     logging.info("Start processing!")
     for file in aircraft_objects:
+        if DEBUG == True:
+            print(f"Processing {file}")
         process_obj_file(file)
 
     copy_new_to_old(aircraft_objects)
