@@ -178,7 +178,12 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         file (Path): the existing aircraft object file
     """
     temp_object_file: Path = aircraft_obj_file.with_suffix(TEMP_FILE_SUFFIX)
-    aircraft_type: str = aircraft_obj_file.name.split("_")[0]
+
+    # If airline is in the filename, it is sparated by "_". The 'normal' case.
+    if "_" in aircraft_obj_file.name:
+        aircraft_type: str = aircraft_obj_file.name.split("_")[0]
+    else:  # Rare case with only type in object name without airline abbreviation.
+        aircraft_type = aircraft_obj_file.name.rstrip(".obj")
     with open(aircraft_obj_file) as aircraft_object_file, open(
         temp_object_file, "w+"
     ) as new_obj_file:
