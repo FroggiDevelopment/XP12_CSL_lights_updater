@@ -32,6 +32,7 @@ aircrafts: dict = {
         "J328",
         "MD83",
         "MD90",
+        "A319f",
         "A320w",
         "A321w",
         "AN72",
@@ -40,6 +41,7 @@ aircrafts: dict = {
         "TU134",
         "TU154",
         "TU204",
+        "T154",
     },
     "heavy_airliners": {
         "B717",
@@ -72,8 +74,12 @@ aircrafts: dict = {
         "IL96",
         "C17",
         "C5M",
+        "C5",
         "E3D",
         "IL76",
+        "DC10",
+        "MD11",
+        "CONC",
     },
     "props": {
         "DH8D",
@@ -228,9 +234,9 @@ def determine_light_params(aircraft_type: str, light_type: str = "") -> str:
         if aircraft_type in value:
             logging.debug(f"{aircraft_type} found in {key}")
             return light_params[key][light_type]
-        else:
-            logging.warning(f"{aircraft_type} not found in {key}. Using defaults!")
-            return light_params["airliners"][light_type]
+    else:
+        logging.warning(f"{aircraft_type} not found.. Using default light params!")
+        return light_params["airliners"][light_type]
 
 
 def main():
