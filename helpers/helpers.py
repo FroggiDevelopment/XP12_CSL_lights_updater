@@ -85,4 +85,6 @@ def delete_files(files: list[Path], suffix: str = None):
         if suffix is not None:
             file = file.with_suffix(suffix)
         if file.exists():
+            print(f"Deleting {file}!")
+            logging.debug(f"Deleting {file}!")
             file.unlink()
