@@ -239,6 +239,25 @@ def determine_light_params(aircraft_type: str, light_type: str = "") -> str:
         return light_params["airliners"][light_type]
 
 
+def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
+    """Returns the light parameters for the given aircraft type
+
+    Args:
+        aircraft_type (str): Aircraft type e.g. B733 for Boeing 737-300
+
+    Returns:
+        dict[str]: A dictionary with the corresponding light parameters for the given aircraft type
+    """
+
+    for key, value in aircrafts.items():
+        if aircraft_type in value:
+            logging.debug(f"{aircraft_type} found in {key}")
+            return light_params[key]
+    else:
+        logging.warning(f"{aircraft_type} not found.. Using default light params!")
+        return light_params["airliners"]
+
+
 def main():
 
     to_check_aircraft = "Socata"
