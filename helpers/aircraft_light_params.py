@@ -307,33 +307,6 @@ light_params = {
 }
 
 
-def determine_light_params(aircraft_type: str, light_type: str = "") -> str:
-    """Determines the paramaters for the given aircraft type
-
-    Args:
-        aircraft_type (str): Aircraft type e.g. B733 for Boeing 737-300
-        light_type (str): Light type e.g. airplane_landing
-
-    Returns:
-        str: A string with the corresponding light parameters for the given aircraft type
-    """
-
-    if light_type == "":
-        logger.error("The light type is missing!")
-        raise ValueError("The light type is missing!")
-    if aircraft_type == "":
-        logger.error("The aircraft type is missing!")
-        raise ValueError("The aircraft type is missing!")
-
-    for key, value in aircrafts.items():
-        if aircraft_type in value:
-            logging.debug(f"{aircraft_type} found in {key}")
-            return light_params[key][light_type]
-    else:
-        logging.warning(f"{aircraft_type} not found.. Using default light params!")
-        return light_params["airliners"][light_type]
-
-
 def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
     """Returns the light parameters for the given aircraft type
 
@@ -355,12 +328,12 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
 
 def main():
 
-    to_check_aircraft = "Socata"
+    to_check_aircraft = "PC12"
     light_type = "airplane_landing"
 
-    result = determine_light_params(to_check_aircraft, light_type)
+    result = get_light_params_for_aircraft_type(to_check_aircraft)
 
-    print(f"Light params for {light_type} are: {result}")
+    print(f"Light params for {to_check_aircraft} are: {result}")
 
 
 if __name__ == "__main__":
