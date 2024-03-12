@@ -10,6 +10,7 @@ from helpers import make_backup
 from helpers import delete_backups
 from helpers import recover_from_backup
 from helpers import determine_light_params
+from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 
 LIGHT_NEEDLES: list[str] = [
@@ -182,6 +183,12 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         aircraft_type: str = aircraft_obj_file.name.split("_")[0]
     else:  # Rare case with only type in object name without airline abbreviation.
         aircraft_type = aircraft_obj_file.name.rstrip(".obj")
+
+    # TODO: Get all params here?
+    # light_params = get_light_params_for_aircraft_type(aircraft_type)
+    # print(light_params)
+    # sys.exit()
+
     with open(aircraft_obj_file) as aircraft_object_file, open(
         temp_object_file, "w+"
     ) as new_obj_file:
@@ -221,13 +228,6 @@ def copy_new_to_old(files: list[Path]) -> NoReturn:
 
 
 def main() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(levelname)s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        filename="lights_updater.log",
-        filemode="w",
-    )
     start_time = datetime.now()
 
     # Get config
@@ -236,11 +236,21 @@ def main() -> None:
 
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
+    DEBUG_LEVEL = config.getboolean("generic", "debug_level").upper()
     CSL_PATH = config["csl"]["csl_path"]
     IS_XCSL = config.getboolean("csl", "is_xcsl")
     DO_BACKUP = config.getboolean("generic", "do_backup")
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
     # unwanted_lights = config["data"]["unwanted_lights"]
+
+    # Setup logging
+    logging.basicConfig(
+        level=logging.DEBUG_LEVEL,
+        format="%(levelname)s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        filename="lights_updater.log",
+        filemode="w",
+    )
 
     # Check if cli params are present TODO: argparser???
     parser = argparse.ArgumentParser(
