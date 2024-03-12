@@ -16,7 +16,6 @@ from helpers import get_aircraft_objects_from_xsb_file
 DEBUG = False
 TEMP_FILE_SUFFIX = ".TEMP"
 BACKUP_SUFFIX = ".BCK"
-IS_XCSL = False
 DO_BACKUP = True
 STOP_ON_ERROR = True
 LIGHT_NEEDLES: list[str] = [
@@ -128,6 +127,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     ) as new_obj_file:
         if DEBUG == True:
             logging.debug(f"Processing {aircraft_object_file.name}")
+        print(f"Processing {aircraft_object_file.name}")
         for line in aircraft_object_file:
             if line.startswith("#"):
                 continue
@@ -176,7 +176,6 @@ def main() -> None:
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["csl"]["csl_path"]
-    IS_XCSL = config.getboolean("csl", "is_xcsl")
     DO_BACKUP = config.getboolean("generic", "do_backup")
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
@@ -211,9 +210,7 @@ def main() -> None:
     args = parser.parse_args()
 
     # Get the list of aircraft obj files and the number of files
-    aircraft_objects = get_aircraft_objects_from_xsb_file(
-        searchpath=CSL_PATH, is_xcsl=IS_XCSL
-    )
+    aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
     number_of_objects = len(aircraft_objects)
 
     # Start of actions based on cli arguments
