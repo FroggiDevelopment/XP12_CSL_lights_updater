@@ -236,7 +236,6 @@ def main() -> None:
 
     # Set config(s)
     DEBUG = config.getboolean("generic", "debug")
-    DEBUG_LEVEL = config.getboolean("generic", "debug_level").upper()
     CSL_PATH = config["csl"]["csl_path"]
     IS_XCSL = config.getboolean("csl", "is_xcsl")
     DO_BACKUP = config.getboolean("generic", "do_backup")
@@ -245,7 +244,7 @@ def main() -> None:
 
     # Setup logging
     logging.basicConfig(
-        level=logging.DEBUG_LEVEL,
+        level=logging.INFO,
         format="%(levelname)s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         filename="lights_updater.log",
