@@ -12,6 +12,13 @@ from helpers import recover_from_backup
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 
+
+DEBUG = False
+TEMP_FILE_SUFFIX = ".TEMP"
+BACKUP_SUFFIX = ".BCK"
+IS_XCSL = False
+DO_BACKUP = True
+STOP_ON_ERROR = True
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
     "airplane_taxi",
@@ -22,15 +29,6 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_strobe",
     "airplane_beacon",
 ]
-
-# TODO: !!! CONFIG HAS TO BE GLOBAL!!! Maybe...
-
-DEBUG = False
-TEMP_FILE_SUFFIX = ".TEMP"
-BACKUP_SUFFIX = ".BCK"
-IS_XCSL = False
-DO_BACKUP = True
-STOP_ON_ERROR = True
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -55,7 +53,15 @@ def filter_unwanted_light_params(line: str) -> str:
     return line
 
 
-def ignore_line(line):
+def ignore_line(line: str) -> bool:
+    """Test if line contains ignorable light parameters
+
+    Args:
+        line (str): String of light parameters
+
+    Returns:
+        bool: True if it can be ignored, False otherwise.
+    """
     lights_to_ignore = [
         "headlight",
         "_size",
@@ -244,7 +250,7 @@ def main() -> None:
     logging.info("Start processing!")
     for file in aircraft_objects:
         if DEBUG == True:
-            print(f"Processing {file}")
+            logging.debug(f"Processing {file}")
         process_obj_file(aircraft_obj_file=file)
 
     copy_new_to_old(aircraft_objects)
