@@ -23,7 +23,7 @@ def get_aircraft_objects_from_xsb_file(
     aircraft_desc_files: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
     aircraft_object_files: list[str] = []
 
-    # Separators differ between Bluebell and X-CSL
+    # Separator differ between Bluebell and X-CSL
     _seperator: str = "/"
     if is_xcsl == True:
         _seperator = ":"
