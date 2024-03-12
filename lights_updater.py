@@ -9,7 +9,6 @@ from datetime import datetime
 from helpers import make_backup
 from helpers import delete_backups
 from helpers import recover_from_backup
-from helpers import determine_light_params
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 
@@ -32,35 +31,6 @@ BACKUP_SUFFIX = ".BCK"
 IS_XCSL = False
 DO_BACKUP = True
 STOP_ON_ERROR = True
-LIGHT_INDICATORS = ["LIGHT_NAMED", "LIGHT_SPILL_CUSTOM", "LIGHT_PARAM"]
-
-
-def get_xsb_inventory(csl_path: str) -> list[str]:
-    """A very chaotic way of getting the object file pathes.
-        Doe to the very different ways it is handled, a lot if if work is needed.
-
-    Args:
-        csl_path (str): Path to start searching.
-        IS_XCSL (bool, optional): Is het a X-CSL package? Defaults to False.
-
-    Returns:
-        list[str]: A list with filepaths to the object files.
-    """
-    aircraft_desc_files = list(Path(csl_path).rglob("xsb_aircraft.txt"))
-    aircraft_object_files: list[str] = []
-
-    for desc_file in aircraft_desc_files:
-        parentdir = desc_file.parent.absolute()
-
-        with open(desc_file, "r") as xsb_aircraft_file:
-            for line in xsb_aircraft_file:
-                if line.startswith("OBJ8 SOLID YES"):
-                    if "png" in line:
-                        object_file = line.split()[3].split(":")[1]
-                        object_path = Path(parentdir, object_file)
-                        if object_path not in aircraft_object_files:
-                            aircraft_object_files.append(object_path)
-    return aircraft_object_files
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -85,21 +55,7 @@ def filter_unwanted_light_params(line: str) -> str:
     return line
 
 
-def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
-    """
-    Create a new param line based on XP12 specifications, aircraft_type and lighttype
-
-    Args:
-        line (str): light params line old style
-        lighttype (str): the type of light, e.g. airplane_beacon or airplane_landing
-        aircraft_type (str): the type of the specific aircraft in ICAO terms. e.g. B733 for Boeing 737-300
-
-    Returns:
-        str: new line with updated params
-    """
-    new_line: str = ""
-
-    # Ignore lights that need no processing, i.e. lights not used by XP12 or already changed to XP12 types
+def ignore_line(line):
     lights_to_ignore = [
         "headlight",
         "_size",
@@ -120,54 +76,28 @@ def handle_light_params(line: str, lighttype: str, aircraft_type: str) -> str:
     ]
 
     if any(unwanted in line for unwanted in lights_to_ignore):
-        return line
-
-    line = filter_unwanted_light_params(line).replace("\n", "")
-    logging.debug(f"Line created by filter_unwanted_light_params is: {line}")
-
-    xp12_params: str = determine_light_params(aircraft_type, light_type=lighttype)
-    if xp12_params != "" and line != "":
-        line += f" {xp12_params}\n"
-
-    # add pm to light param
-    line = line.replace(lighttype, lighttype + "_pm")
-
-    line += line.replace("_pm", "_bb")
-    return line
+        return True
+    return False
 
 
-def change_light_params(line: str, aircraft_type: str) -> str:
+def process_lights(line: str, light_params: dict[str, str]) -> str:
     """Changes the light parameters to XP12 specs
 
     Args:
         line (str): A string with light specifics parameters
-        aircraft_type (): A string with the aircraft type
+        light_params (dict[str, str]): A dictionary with the light parameters
 
     Returns:
         str: A line with updated light parameters
     """
-    if "LIGHT_NAMED" in line or "LIGHT_PARAM" in line:
-        line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
-        if [lighttype in line for lighttype in LIGHT_NEEDLES]:
-            lighttype = line.split()[1]
-            return handle_light_params(line, lighttype, aircraft_type)  # Set new params
-    elif line.startswith("LIGHT_SPILL_CUSTOM"):  # Remove the old custom spill.
-        return ""
-
-
-def check_for_light_params(line: str, needles: list[str]) -> bool:
-    """Checks if the line conatains any light parameters based on the start fo the line
-
-    Args:
-        line (str): A line from the aircraft object file
-
-    Returns:
-        bool: True if its a lightparam line
-    """
-    if any(light_indicator in line for light_indicator in needles):
-        return True
-
-    return False
+    lighttype = line.split()[1]
+    line = line.replace("\n", "")
+    line += f" {light_params[lighttype]}\n"
+    line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
+    line = line.replace(f"{lighttype}", f"{lighttype}_pm")
+    line += line.replace("_pm", "_bb")
+    line = filter_unwanted_light_params(line)
+    return line
 
 
 def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
@@ -185,9 +115,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         aircraft_type = aircraft_obj_file.name.rstrip(".obj")
 
     # TODO: Get all params here?
-    # light_params = get_light_params_for_aircraft_type(aircraft_type)
-    # print(light_params)
-    # sys.exit()
+    light_params = get_light_params_for_aircraft_type(aircraft_type)
 
     with open(aircraft_obj_file) as aircraft_object_file, open(
         temp_object_file, "w+"
@@ -195,8 +123,13 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         if DEBUG == True:
             logging.debug(f"Processing {aircraft_object_file.name}")
         for line in aircraft_object_file:
-            if check_for_light_params(line, needles=LIGHT_INDICATORS) == True:
-                line = change_light_params(line, aircraft_type)
+            if line.startswith("#"):
+                continue
+            if ignore_line(line) == True:
+                continue
+            if any(lighttype in line for lighttype in LIGHT_NEEDLES):
+                line = process_lights(line, light_params)
+
             new_obj_file.write(line)
 
 
@@ -240,7 +173,6 @@ def main() -> None:
     IS_XCSL = config.getboolean("csl", "is_xcsl")
     DO_BACKUP = config.getboolean("generic", "do_backup")
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
-    # unwanted_lights = config["data"]["unwanted_lights"]
 
     # Setup logging
     logging.basicConfig(
