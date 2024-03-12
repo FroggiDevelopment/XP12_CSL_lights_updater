@@ -329,8 +329,6 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
 def main():
 
     to_check_aircraft = "PC12"
-    light_type = "airplane_landing"
-
     result = get_light_params_for_aircraft_type(to_check_aircraft)
 
     print(f"Light params for {to_check_aircraft} are: {result}")
