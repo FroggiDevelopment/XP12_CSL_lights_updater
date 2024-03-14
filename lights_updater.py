@@ -267,7 +267,7 @@ def main() -> None:
         "Start processing! Duration depends on number of files and of course general hardware performance."
     )
     log.info(
-        "First remove possible xpmp2 files as they can 'cache' the objects. LifeTraffic will recreate them."
+        "Removing possible xpmp2 files as they can 'cache' the objects. LifeTraffic will recreate them."
     )
 
     remove_xpmp2_files(filepath=CSL_PATH)
