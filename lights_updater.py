@@ -9,6 +9,7 @@ from datetime import datetime
 from helpers import make_backup
 from helpers import delete_backups
 from helpers import recover_from_backup
+from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 
@@ -28,6 +29,21 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_strobe",
     "airplane_beacon",
 ]
+
+# Setup logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(levelname)s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    filename="lights_updater.log",
+    filemode="w",
+)
+log = logging.getLogger("lights_updater")
+screen = logging.StreamHandler(sys.stdout)
+screen.setLevel(logging.INFO)
+screenformatter = logging.Formatter("%(levelname)10s - %(message)s")
+screen.setFormatter(screenformatter)
+log.addHandler(screen)
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -126,8 +142,8 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         temp_object_file, "w+"
     ) as new_obj_file:
         if DEBUG == True:
-            logging.debug(f"Processing {aircraft_object_file.name}")
-        print(f"Processing {aircraft_object_file.name}")
+            log.debug(f"Processing {aircraft_object_file.name}")
+        log.info(f"Processing {aircraft_object_file.name}")
         for line in aircraft_object_file:
             if line.startswith("#"):
                 continue
@@ -143,27 +159,26 @@ def copy_new_to_old(files: list[Path]) -> NoReturn:
     """Copy the new created file over the original file
     Delete the new file
     """
-    logging.debug("Start copying processed files to original file!")
-    print("Start copying processed files to original file!")
+    log.debug("Start copying processed files to original file!")
+    log.info("Start copying processed files to original file!")
     for file in files:
         destination_file = file.with_suffix(".obj")
         temp_object_file = file.with_suffix(TEMP_FILE_SUFFIX)
-        print(f"Copying {temp_object_file.name} to {file} file!")
-        logging.info(f"Copying {temp_object_file.name} to {file} file!")
+        log.info(f"Copying {temp_object_file.name} to {file} file!")
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
             if STOP_ON_ERROR == True:
-                logging.error("Stopping on error!", err)
+                log.error("Stopping on error!", err)
                 sys.exit()
             continue
         try:
             temp_object_file.unlink()
         except PermissionError as err:
-            logging.error(f"{temp_object_file.name} can not be deleted!", err)
+            log.error(f"{temp_object_file.name} can not be deleted!", err)
             if STOP_ON_ERROR == True:
                 sys.exit()
-        logging.debug(f"Copy {file.name} to original object file done!")
+        log.debug(f"Copy {file.name} to original object file done!")
 
 
 def main() -> None:
@@ -178,15 +193,6 @@ def main() -> None:
     CSL_PATH = config["csl"]["csl_path"]
     DO_BACKUP = config.getboolean("generic", "do_backup")
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
-
-    # Setup logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(levelname)s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        filename="lights_updater.log",
-        filemode="w",
-    )
 
     # Check if cli params are present TODO: argparser???
     parser = argparse.ArgumentParser(
@@ -215,8 +221,7 @@ def main() -> None:
 
     # Start of actions based on cli arguments
     if args.undo:  # Undo changes, recover object from backup.
-        print("Recovery activated!")
-        logging.info("Recovery activated!")
+        log.info("Recovery activated!")
         recover_from_backup(
             files=aircraft_objects,
             stop_on_error=STOP_ON_ERROR,
@@ -224,40 +229,43 @@ def main() -> None:
         sys.exit()
 
     if args.remove_backups:  # Remove the backupfiles.
-        print("Backups will be removed now!")
+        log.info("Backups will be removed now!")
         yes_no = input("Are you sure? [yes/No]" or "No")
         if yes_no.lower() == "yes" or yes_no.lower() == "y":
-            print("Okay! Let's do it....!!")
+            log.info("Okay! Let's do it....!!")
             delete_backups(files=aircraft_objects, backup_extension=BACKUP_SUFFIX)
         sys.exit()
 
     # Start of normal execution
     if DO_BACKUP == True:
-        print("Creating backups!")
-        logging.info("Creating backups!")
+        log.info("Creating backups!")
         make_backup(
             files=aircraft_objects,
             stop_on_error=STOP_ON_ERROR,
         )
 
     # Lets do the magic stuff!
-    print(
+    log.info(
         "Start processing! Duration depends on number of files and of course general hardware performance."
     )
-    logging.info("Start processing!")
+    log.info("Start processing!")
+    log.info(
+        "First remove possible xpmp2 files as they can 'cache' the objects. LifeTraffic will recreate them."
+    )
+
+    remove_xpmp2_files(filepath=CSL_PATH)
+
     for file in aircraft_objects:
         if DEBUG == True:
-            logging.debug(f"Processing {file}")
+            log.debug(f"Processing {file}")
         process_obj_file(aircraft_obj_file=file)
 
     copy_new_to_old(aircraft_objects)
 
     end_time = datetime.now()
     duration = end_time - start_time
-    print(f"Processing done, {number_of_objects} files have been processed!")
-    logging.info(f"Processing done, {number_of_objects} files have been processed!")
-    print(f"It took {duration.seconds:.2f} seconds!")
-    logging.info(f"It took {duration.seconds:.2f} seconds!")
+    log.info(f"Processing done, {number_of_objects} files have been processed!")
+    log.info(f"It took {duration.seconds:.2f} seconds!")
 
 
 if __name__ == "__main__":
