@@ -23,13 +23,13 @@ def make_backup(
                 backup_file.write_bytes(file.read_bytes())
             except PermissionError as err:
                 if stop_on_error == True:
-                    logging.error("Stopping on error!", err)
+                    log.error("Stopping on error!", err)
                     sys.exit()
-            logging.debug(f"Backup for {file} is ready!")
+            log.debug(f"Backup for {file} is ready!")
             continue
-        logging.info(f"Backup already exists for: {file.name}")
+        log.info(f"Backup already exists for: {file.name}")
     print("Backups done!")
-    logging.info("Backups done!")
+    log.info("Backups done!")
 
 
 def delete_backups(files: list[Path], backup_extension: str) -> NoReturn:
@@ -39,10 +39,10 @@ def delete_backups(files: list[Path], backup_extension: str) -> NoReturn:
     """
     # TODO: Error handling
     print("Start of deleting backups!")
-    logging.info("Start of deleting backups!")
+    log.info("Start of deleting backups!")
     delete_files(files, backup_extension)
     print("Backups deleted!")
-    logging.info("Backups deleted!")
+    log.info("Backups deleted!")
 
 
 def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn:
@@ -55,24 +55,24 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
     for backup_file in files:
         backup_file = backup_file.with_suffix(".BCK")
         recover_file = backup_file.with_suffix(".obj")
-        logging.debug(f"Recovery of {backup_file} is started")
+        log.debug(f"Recovery of {backup_file} is started")
         try:
             recover_file.write_bytes(backup_file.read_bytes())
         except PermissionError as err:
             if stop_on_error == True:
-                logging.error("Stopping on error!", err)
+                log.error("Stopping on error!", err)
                 sys.exit()
             continue
         except FileNotFoundError as notfound:
             if stop_on_error == True:
-                logging.error("Stopping because backup not found!", notfound)
+                log.error("Stopping because backup not found!", notfound)
                 sys.exit()
             continue
         backup_file.unlink()
-        logging.debug(f"Recovery of {recover_file} is done!")
+        log.debug(f"Recovery of {recover_file} is done!")
         print(f"Recovering {backup_file}")
     print("Recovery done!")
-    logging.info("Recovery done!")
+    log.info("Recovery done!")
 
 
 def delete_files(files: list[Path], suffix: str = None):
@@ -86,5 +86,5 @@ def delete_files(files: list[Path], suffix: str = None):
             file = file.with_suffix(suffix)
         if file.exists():
             print(f"Deleting {file}!")
-            logging.debug(f"Deleting {file}!")
+            log.debug(f"Deleting {file}!")
             file.unlink()
