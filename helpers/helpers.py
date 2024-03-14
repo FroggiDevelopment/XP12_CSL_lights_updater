@@ -83,9 +83,10 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
                 sys.exit()
             continue
         backup_file.unlink()
-        log.debug(f"Recovery of {recover_file} is done!")
+        log.info(f"Recovery of {recover_file} is done!")
         log.debug(f"Recovering {backup_file}")
     log.info("Recovery done!")
+    log.info(f"Recoverd {len(files)} files!")
 
 
 def remove_xpmp2_files(filepath: Path) -> NoReturn:
