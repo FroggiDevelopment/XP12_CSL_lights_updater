@@ -1,7 +1,7 @@
 from pathlib import Path
 import logging
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("lights_updater")
 
 
 def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
@@ -14,7 +14,6 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
         list[str]: List of paths to the aircraft objects in the searchpath.
     """
     if Path(searchpath).is_dir() == False:
-        print(f"Path {searchpath} is not a reachable directory!")
         log.error(f"Path {searchpath} is not a reachable directory!")
 
     aircraft_desc_files: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
