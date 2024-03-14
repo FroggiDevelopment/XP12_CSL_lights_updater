@@ -266,7 +266,6 @@ def main() -> None:
     log.info(
         "Start processing! Duration depends on number of files and of course general hardware performance."
     )
-    log.info("Start processing!")
     log.info(
         "First remove possible xpmp2 files as they can 'cache' the objects. LifeTraffic will recreate them."
     )
