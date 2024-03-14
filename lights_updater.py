@@ -258,8 +258,7 @@ def main() -> None:
     remove_xpmp2_files(filepath=CSL_PATH)
 
     for file in aircraft_objects:
-        if DEBUG == True:
-            log.debug(f"Processing {file}")
+        log.debug(f"Processing {file}")
         process_obj_file(aircraft_obj_file=file)
 
     copy_new_to_old(aircraft_objects)
