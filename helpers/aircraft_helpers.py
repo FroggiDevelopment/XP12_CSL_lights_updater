@@ -1,7 +1,7 @@
 from pathlib import Path
 import logging
 
-log = logging.getLogger("lights_updater")
+log = logging.getLogger("aircraft_helpers")
 
 
 def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:

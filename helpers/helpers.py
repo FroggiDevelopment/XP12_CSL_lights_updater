@@ -3,7 +3,7 @@ from typing import NoReturn
 import logging
 import sys
 
-log = logging.getLogger("lights_updater")
+log = logging.getLogger("helpers")
 
 
 def make_backup(
@@ -67,7 +67,7 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
             continue
         backup_file.unlink()
         log.debug(f"Recovery of {recover_file} is done!")
-        log.info(f"Recovering {backup_file}")
+        log.debug(f"Recovering {backup_file}")
     log.info("Recovery done!")
 
 

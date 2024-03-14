@@ -30,20 +30,23 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_beacon",
 ]
 
-# Setup logging
+# Setup log
 logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(levelname)s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
+    level=logging.INFO,
+    format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     filename="lights_updater.log",
     filemode="w",
 )
-log = logging.getLogger("lights_updater")
-screen = logging.StreamHandler(sys.stdout)
+
+screen = logging.StreamHandler()
 screen.setLevel(logging.INFO)
-screenformatter = logging.Formatter("%(levelname)10s - %(message)s")
+screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
 screen.setFormatter(screenformatter)
-log.addHandler(screen)
+
+logging.getLogger().addHandler(screen)
+
+log = logging.getLogger("lights_updater")
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -141,8 +144,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     with open(aircraft_obj_file) as aircraft_object_file, open(
         temp_object_file, "w+"
     ) as new_obj_file:
-        if DEBUG == True:
-            log.debug(f"Processing {aircraft_object_file.name}")
+        log.debug(f"Processing {aircraft_object_file.name}")
         log.info(f"Processing {aircraft_object_file.name}")
         for line in aircraft_object_file:
             if line.startswith("#"):
