@@ -1,3 +1,5 @@
+"""Placeholder for license"""
+
 import logging
 
 logger = logging.getLogger(__name__)

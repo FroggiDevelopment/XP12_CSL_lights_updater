@@ -1,3 +1,5 @@
+"""Placeholder for license"""
+
 import sys
 import argparse
 import logging
@@ -12,7 +14,6 @@ from helpers import recover_from_backup
 from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
-
 
 DEBUG = False
 TEMP_FILE_SUFFIX = ".TEMP"
