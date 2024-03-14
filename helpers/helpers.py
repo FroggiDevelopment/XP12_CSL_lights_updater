@@ -3,7 +3,7 @@ from typing import NoReturn
 import logging
 import sys
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("lights_updater")
 
 
 def make_backup(
@@ -28,7 +28,6 @@ def make_backup(
             log.debug(f"Backup for {file} is ready!")
             continue
         log.info(f"Backup already exists for: {file.name}")
-    print("Backups done!")
     log.info("Backups done!")
 
 
@@ -38,10 +37,8 @@ def delete_backups(files: list[Path], backup_extension: str) -> NoReturn:
     Arguments: files: string
     """
     # TODO: Error handling
-    print("Start of deleting backups!")
     log.info("Start of deleting backups!")
     delete_files(files, backup_extension)
-    print("Backups deleted!")
     log.info("Backups deleted!")
 
 
@@ -70,9 +67,23 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
             continue
         backup_file.unlink()
         log.debug(f"Recovery of {recover_file} is done!")
-        print(f"Recovering {backup_file}")
-    print("Recovery done!")
+        log.info(f"Recovering {backup_file}")
     log.info("Recovery done!")
+
+
+def remove_xpmp2_files(filepath: Path) -> NoReturn:
+    """Remove the copied object files by LifeTraffic as tehy can and will cache them.
+       This is to avoid that changes are not visible with LiveTraffic.
+
+    Args:
+        filepath (Path): The path to the csl location. Is equal to csl_path in config.ini
+
+    Returns:
+        NoReturn: As it says :-)
+    """
+    xpmp2_files = list(Path(filepath).rglob("*xpmp2.obj"))
+    log.debug(xpmp2_files)
+    delete_files(files=xpmp2_files)
 
 
 def delete_files(files: list[Path], suffix: str = None):
@@ -85,6 +96,6 @@ def delete_files(files: list[Path], suffix: str = None):
         if suffix is not None:
             file = file.with_suffix(suffix)
         if file.exists():
-            print(f"Deleting {file}!")
+            log.info(f"Deleting {file}!")
             log.debug(f"Deleting {file}!")
             file.unlink()
