@@ -15,12 +15,13 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
+import json
 import logging
 
 logger = logging.getLogger(__name__)
 
 aircrafts: dict = {
-    "airliners": {
+    "airliners": [
         "B733",
         "B733fa",
         "B733ai",
@@ -93,8 +94,8 @@ aircrafts: dict = {
         "TU154",
         "TU204",
         "T154",
-    },
-    "heavy_airliners": {
+    ],
+    "heavy_airliners": [
         "B717",
         "B744",
         "B744Fge",
@@ -173,8 +174,8 @@ aircrafts: dict = {
         "B772GE",
         "B764aiGE",
         "IL76a50",
-    },
-    "props": {
+    ],
+    "props": [
         "DH8D",
         "AT42",
         "AT72",
@@ -200,8 +201,8 @@ aircrafts: dict = {
         "C130H",
         "C30J",
         "A400",
-    },
-    "general_aviation": {
+    ],
+    "general_aviation": [
         "BE20",
         "C150",
         "C172",
@@ -217,23 +218,23 @@ aircrafts: dict = {
         "C208cp",
         "PC12",
         "SF50",
-    },
-    "private_jets": {
+    ],
+    "private_jets": [
         "LJ45",
         "H25B",
         "C750",
         "F900",
         "F900W",
-    },
-    "heli": {
+    ],
+    "heli": [
         "B06",
         "EC35",
         "EC75",
         "S76",
         "Mi26",
         "AS350",
-    },
-    "fighter_jets": {
+    ],
+    "fighter_jets": [
         "F16C",
         "F16D",
         "F18C",
@@ -246,7 +247,7 @@ aircrafts: dict = {
         "EUFI",
         "F35",
         "F22",
-    },
+    ],
 }
 
 
@@ -349,6 +350,10 @@ def main():
     result = get_light_params_for_aircraft_type(to_check_aircraft)
 
     print(f"Light params for {to_check_aircraft} are: {result}")
+
+    print(json.dumps(aircrafts))
+
+    print(json.dumps(light_params))
 
 
 if __name__ == "__main__":
