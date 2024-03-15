@@ -89,7 +89,7 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
     log.info(f"Recoverd {len(files)} files!")
 
 
-def remove_xpmp2_files(filepath: Path) -> NoReturn:
+def remove_xpmp2_files(filepath: Path) -> None:
     """Remove the copied object files by LifeTraffic as tehy can and will cache them.
        This is to avoid that changes are not visible with LiveTraffic.
 
