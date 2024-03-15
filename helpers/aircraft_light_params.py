@@ -42,7 +42,7 @@ def get_aircraft_categories() -> dict[list]:
     return aircraft_categories
 
 
-def get_light_params_per_aircraft_category() -> dict[list]:
+def get_light_params_per_aircraft_category() -> dict[list[str]]:
     """Reads the light_params.json file and retunrs the data
 
     Returns:
