@@ -21,29 +21,45 @@ import logging
 
 logger = logging.getLogger("aircraft_light_params")
 
-try:
-    with open("aircrafts.json", "r") as aircrafts_definitions:
-        aircrafts = json.load(aircrafts_definitions)
-except FileNotFoundError:
-    logger.error("Missing aircrafts.json file. Stopping now!")
-    sys.exit(1)
-except json.decoder.JSONDecodeError:
-    logger.error(
-        "aircrafts.json may be corrupted. Please check the file for consistency!"
-    )
-    sys.exit(1)
 
-try:
-    with open("light_params.json", "r") as lights_definitions:
-        light_params = json.load(lights_definitions)
-except FileNotFoundError:
-    logger.error("Missing light_params.json file. Stopping now!")
-    sys.exit(1)
-except json.decoder.JSONDecodeError:
-    logger.error(
-        "light_params.json might be corrupted. Please check the file for consistency!"
-    )
-    sys.exit(1)
+def get_aircraft_categories() -> dict[list]:
+    """Reads the aircrafts json file and retunrs the data
+
+    Returns:
+        dict[list]: A dictionary with the aircrafts listed per category
+    """
+    try:
+        with open("aircrafts.json", "r") as aircrafts_definitions:
+            aircraft_categories = json.load(aircrafts_definitions)
+    except FileNotFoundError:
+        logger.error("Missing aircrafts.json file. Stopping now!")
+        sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        logger.error(
+            "aircrafts.json may be corrupted. Please check the file for consistency!"
+        )
+        sys.exit(1)
+    return aircraft_categories
+
+
+def get_light_params_per_aircraft_category() -> dict[list]:
+    """Reads the light_params.json file and retunrs the data
+
+    Returns:
+        dict[list]: A dictionary with the light parameters listed per category
+    """
+    try:
+        with open("light_params.json", "r") as lights_definitions:
+            light_params_per_category = json.load(lights_definitions)
+    except FileNotFoundError:
+        logger.error("Missing light_params.json file. Stopping now!")
+        sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        logger.error(
+            "light_params.json might be corrupted. Please check the file for consistency!"
+        )
+        sys.exit(1)
+    return light_params_per_category
 
 
 def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
@@ -55,6 +71,8 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
     Returns:
         dict[str]: A dictionary with the corresponding light parameters for the given aircraft type
     """
+    aircrafts = get_aircraft_categories()
+    light_params = get_light_params_per_aircraft_category()
 
     for key, value in aircrafts.items():
         if aircraft_type in value:
