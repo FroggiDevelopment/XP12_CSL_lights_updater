@@ -173,7 +173,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             new_obj_file.write(line)
 
 
-def copy_new_to_old(files: list[Path]) -> NoReturn:
+def copy_new_to_old(files: list[Path]) -> None:
     """Copy the new created file over the original file
     Delete the new file
     """
@@ -199,10 +199,8 @@ def copy_new_to_old(files: list[Path]) -> NoReturn:
         log.debug(f"Copy {file.name} to original object file done!")
 
 
-def main() -> None:
-    start_time = datetime.now()
-
-    # Get config
+def set_config() -> list[str]:
+    # Get config from file
     config = ConfigParser()
     config.read("config.ini")
 
@@ -212,7 +210,13 @@ def main() -> None:
     DO_BACKUP = config.getboolean("generic", "do_backup")
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
-    # Check if cli params are present TODO: argparser???
+    return DEBUG, CSL_PATH, DO_BACKUP, STOP_ON_ERROR
+
+
+def main() -> None:
+    start_time = datetime.now()
+
+    # Check if cli params are present
     parser = argparse.ArgumentParser(
         prog="lights_updater.py",
         description="This programm can convert XP11 lightparams to the new XP12 specifications\
@@ -232,6 +236,9 @@ def main() -> None:
         help="Removes the backup files. Be careful!",
     )
     args = parser.parse_args()
+
+    # Set config
+    DEBUG, CSL_PATH, DO_BACKUP, STOP_ON_ERROR = set_config()
 
     # Get the list of aircraft obj files and the number of files
     aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
