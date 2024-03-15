@@ -33,17 +33,17 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
     if Path(searchpath).is_dir() == False:
         log.error(f"Path {searchpath} is not a reachable directory!")
 
-    aircraft_objects: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
+    xsb_files: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
     aircraft_object_files: list[str] = []
 
     # Separator differ between Bluebell and X-CSL, standard is / in this case.
     _seperator: str = "/"
 
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
-    for aircraft_object in aircraft_objects:
-        parentdir: Path = aircraft_object.parent.absolute()
+    for xsb_file in xsb_files:
+        parentdir: Path = xsb_file.parent.absolute()
 
-        with open(aircraft_object, "r") as xsb_aircraft_file:
+        with open(xsb_file, "r") as xsb_aircraft_file:
             for line in xsb_aircraft_file:
                 if not line.startswith("OBJ8 SOLID YES"):
                     continue
@@ -52,19 +52,26 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
 
                 # Separator differ between Bluebell and X-CSL
                 if ":" in aircraft_dir_file_info:
-                    package = "xcsl"
                     _seperator = ":"
                 elif "/" in aircraft_dir_file_info:
-                    package = "bluebell"
                     _seperator: str = "/"
+                    number_of_path_params = len(
+                        aircraft_dir_file_info.split(_seperator)
+                    )
 
                 object_path = None
 
                 # X-CSL has texture info in this line! So the number is greater than 5
-                if len(list_of_params) > 5:
+                # if len(list_of_params) > 5:
+                if _seperator == ":":
                     object_file = aircraft_dir_file_info.split(_seperator)[1]
                     object_path = Path(parentdir, object_file)
-                elif package == "bluebell":
+                elif _seperator == "/" and number_of_path_params == 3:
+                    object_file = aircraft_dir_file_info.split(_seperator, 1)[1].rstrip(
+                        "\n"
+                    )
+                    object_path = Path(parentdir, object_file)
+                elif _seperator == "/" and number_of_path_params == 2:
                     object_file = aircraft_dir_file_info.split(_seperator, 1)[1].rstrip(
                         "\n"
                     )
