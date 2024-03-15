@@ -33,17 +33,17 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
     if Path(searchpath).is_dir() == False:
         log.error(f"Path {searchpath} is not a reachable directory!")
 
-    aircraft_desc_files: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
+    aircraft_objects: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
     aircraft_object_files: list[str] = []
 
     # Separator differ between Bluebell and X-CSL, standard is / in this case.
     _seperator: str = "/"
 
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
-    for desc_file in aircraft_desc_files:
-        parentdir: Path = desc_file.parent.absolute()
+    for aircraft_object in aircraft_objects:
+        parentdir: Path = aircraft_object.parent.absolute()
 
-        with open(desc_file, "r") as xsb_aircraft_file:
+        with open(aircraft_object, "r") as xsb_aircraft_file:
             for line in xsb_aircraft_file:
                 if not line.startswith("OBJ8 SOLID YES"):
                     continue
