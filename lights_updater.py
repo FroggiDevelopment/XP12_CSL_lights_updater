@@ -157,20 +157,25 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
     # TODO: Get all params here?
     light_params = get_light_params_for_aircraft_type(aircraft_type)
 
-    with open(aircraft_obj_file) as aircraft_object_file, open(
-        temp_object_file, "w+"
-    ) as new_obj_file:
-        log.debug(f"Processing {aircraft_object_file.name}")
-        log.info(f"Processing {aircraft_object_file.name}")
-        for line in aircraft_object_file:
-            if line.startswith("#"):
-                continue
-            if ignore_line(line) == True:
-                continue
-            if any(lighttype in line for lighttype in LIGHT_NEEDLES):
-                line = process_lights(line, light_params)
+    try:
+        with open(aircraft_obj_file) as aircraft_object_file, open(
+            temp_object_file, "w+"
+        ) as new_obj_file:
+            log.debug(f"Processing {aircraft_object_file.name}")
+            log.info(f"Processing {aircraft_object_file.name}")
+            for line in aircraft_object_file:
+                if line.startswith("#"):
+                    continue
+                if ignore_line(line) == True:
+                    continue
+                if any(lighttype in line for lighttype in LIGHT_NEEDLES):
+                    line = process_lights(line, light_params)
 
-            new_obj_file.write(line)
+                new_obj_file.write(line)
+    except FileNotFoundError as err:
+        log.error(f"{aircraft_obj_file.name} not found!", err)
+        if STOP_ON_ERROR == True:
+            sys.exit()
 
 
 def copy_new_to_old(files: list[Path]) -> None:
