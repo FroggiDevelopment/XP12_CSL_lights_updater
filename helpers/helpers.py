@@ -42,6 +42,9 @@ def make_backup(
                 if stop_on_error == True:
                     log.error("Stopping on error!", err)
                     sys.exit()
+                else:
+                    log.error(f"Backup of {file} failed!", err)
+                    continue
             log.debug(f"Backup for {file} is ready!")
             continue
         log.info(f"Backup already exists for: {file.name}")
@@ -76,11 +79,15 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
             if stop_on_error == True:
                 log.error("Stopping on error!", err)
                 sys.exit()
+            else:
+                log.error(f"Recovery of {backup_file} failed!", err)
             continue
         except FileNotFoundError as notfound:
             if stop_on_error == True:
                 log.error("Stopping because backup not found!", notfound)
                 sys.exit()
+            else:
+                log.error(f"Recovery of {backup_file} failed!", notfound)
             continue
         backup_file.unlink()
         log.info(f"Recovery of {recover_file} is done!")
@@ -115,5 +122,7 @@ def delete_files(files: list[Path], suffix: str = None):
             file = file.with_suffix(suffix)
         if file.exists():
             log.info(f"Deleting {file}!")
-            log.debug(f"Deleting {file}!")
-            file.unlink()
+            try:
+                file.unlink()
+            except PermissionError as err:
+                log.error("Deleting resulted in error!", err)
