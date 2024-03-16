@@ -45,6 +45,13 @@ def make_backup(
                 else:
                     log.error(f"Backup of {file} failed!", err)
                     continue
+            except FileNotFoundError as notfound:
+                if stop_on_error == True:
+                    log.error("Stopping because file not found!", notfound)
+                    sys.exit()
+                else:
+                    log.error(f"Backup of {file} failed!", notfound)
+                    continue
             log.debug(f"Backup for {file} is ready!")
             continue
         log.info(f"Backup already exists for: {file.name}")
