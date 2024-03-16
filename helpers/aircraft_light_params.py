@@ -81,26 +81,3 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
     else:
         logging.warning(f"{aircraft_type} not found.. Using default light params!")
         return light_params["airliners"]
-
-
-def main():
-
-    # aircrafts_definitions = "aircrafts.json"
-    # try:
-    #     with open(aircrafts_definitions, "r") as fp:
-    #         aircrafts = json.load(fp)
-    #         print("I have aircrafts!!")
-    # except FileNotFoundError:
-    #     logging.info(f"File {aircrafts_definitions} not found!")
-
-    # print(json.dumps(aircrafts))
-    # with open("aircrafts.json", "w") as fp:
-    #     fp.write(json.dumps(aircrafts, indent=4))
-
-    print(json.dumps(light_params))
-    with open("light_params.json", "w") as fp:
-        fp.write(json.dumps(light_params, indent=4))
-
-
-if __name__ == "__main__":
-    main()
