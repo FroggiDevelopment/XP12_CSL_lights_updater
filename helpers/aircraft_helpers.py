@@ -45,7 +45,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
 
         with open(xsb_file, "r") as xsb_aircraft_file:
             for line in xsb_aircraft_file:
-                if not line.startswith("OBJ8 SOLID YES"):
+                if not line.startswith(("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")):
                     continue
                 list_of_params: list[str] = line.split(" ")
                 aircraft_dir_file_info: str = list_of_params[3]
