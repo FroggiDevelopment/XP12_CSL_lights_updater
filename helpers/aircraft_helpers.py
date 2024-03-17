@@ -67,8 +67,6 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
 
                 object_path = None
 
-                # X-CSL has texture info in this line! So the number is greater than 5
-                # if len(list_of_params) > 5:
                 if _seperator == ":":
                     object_file = aircraft_dir_file_info.split(_seperator)[1].rstrip(
                         "\n"
