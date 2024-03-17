@@ -46,7 +46,7 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_beacon",
 ]
 
-# Setup log
+# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
@@ -54,7 +54,7 @@ logging.basicConfig(
     filename="lights_updater.log",
     filemode="w",
 )
-
+# Add screen handler
 screen = logging.StreamHandler()
 screen.setLevel(logging.INFO)
 screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
@@ -115,7 +115,7 @@ def ignore_line(line: str) -> bool:
         "logo",
     ]
 
-    if any(unwanted in line for unwanted in lights_to_ignore):
+    if any(to_ignore in line for to_ignore in lights_to_ignore):
         return True
     return False
 
@@ -164,7 +164,7 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
             log.debug(f"Processing {aircraft_object_file.name}")
             log.info(f"Processing {aircraft_object_file.name}")
             for line in aircraft_object_file:
-                if line.startswith("#"):
+                if line.startswith("# "):
                     continue
                 if ignore_line(line) == True:
                     continue
@@ -285,7 +285,7 @@ def main() -> None:
     remove_xpmp2_files(filepath=CSL_PATH)
 
     for file in aircraft_objects:
-        log.debug(f"Processing {file}")
+        log.info(f"Processing {file}")
         process_obj_file(aircraft_obj_file=file)
 
     copy_new_to_old(aircraft_objects)
