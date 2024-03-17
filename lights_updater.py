@@ -161,7 +161,6 @@ def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
         with open(aircraft_obj_file) as aircraft_object_file, open(
             temp_object_file, "w+"
         ) as new_obj_file:
-            log.debug(f"Processing {aircraft_object_file.name}")
             log.info(f"Processing {aircraft_object_file.name}")
             for line in aircraft_object_file:
                 if line.startswith("# "):
@@ -285,7 +284,6 @@ def main() -> None:
     remove_xpmp2_files(filepath=CSL_PATH)
 
     for file in aircraft_objects:
-        log.info(f"Processing {file}")
         process_obj_file(aircraft_obj_file=file)
 
     copy_new_to_old(aircraft_objects)
