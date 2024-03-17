@@ -45,6 +45,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
 
         with open(xsb_file, "r") as xsb_aircraft_file:
             for line in xsb_aircraft_file:
+                # Some more 'specials' from x-csl xsb_aircraft.txt files
+                if any(trigger in line.lower() for trigger in ["cars", "fan", "prop"]):
+                    continue
                 if not line.startswith(("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")):
                     continue
                 list_of_params: list[str] = line.split(" ")
@@ -64,7 +67,10 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
                 # X-CSL has texture info in this line! So the number is greater than 5
                 # if len(list_of_params) > 5:
                 if _seperator == ":":
-                    object_file = aircraft_dir_file_info.split(_seperator)[1]
+                    object_file = aircraft_dir_file_info.split(_seperator)[1].rstrip(
+                        "\n"
+                    )
+
                     object_path = Path(parentdir, object_file)
                 elif _seperator == "/" and number_of_path_params == 3:
                     object_file = aircraft_dir_file_info.split(_seperator, 1)[1].rstrip(
