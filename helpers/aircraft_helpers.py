@@ -46,7 +46,10 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
         with open(xsb_file, "r") as xsb_aircraft_file:
             for line in xsb_aircraft_file:
                 # Some more 'specials' from x-csl xsb_aircraft.txt files
-                if any(trigger in line.lower() for trigger in ["cars", "fan", "prop"]):
+                if any(
+                    trigger in line.lower()
+                    for trigger in ["light.", "cars", "fan", "prop"]
+                ):
                     continue
                 if not line.startswith(("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")):
                     continue
