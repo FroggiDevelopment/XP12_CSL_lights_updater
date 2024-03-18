@@ -16,7 +16,6 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 """
 
 from pathlib import Path
-from typing import NoReturn
 import logging
 import sys
 
@@ -25,9 +24,9 @@ log = logging.getLogger("helpers")
 
 def make_backup(
     *,
-    files: list,
-    stop_on_error: bool = "True",
-) -> NoReturn:
+    files: list[Path],
+    stop_on_error: bool = True,
+) -> None:
     """Make a backup of the files.
 
     Arguments: files: string List of files to be backed up.
@@ -58,7 +57,7 @@ def make_backup(
     log.info("Backups done!")
 
 
-def delete_backups(files: list[Path], backup_extension: str) -> NoReturn:
+def delete_backups(files: list[Path], backup_extension: str) -> None:
     """Delete the backup files
 
     Arguments: files: string
@@ -69,7 +68,7 @@ def delete_backups(files: list[Path], backup_extension: str) -> NoReturn:
     log.info("Backups deleted!")
 
 
-def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn:
+def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> None:
     """Recover the original files from the backup files
 
     Args:
@@ -103,7 +102,7 @@ def recover_from_backup(*, files: list, stop_on_error: bool = False) -> NoReturn
     log.info(f"Recoverd {len(files)} files!")
 
 
-def remove_xpmp2_files(filepath: Path) -> None:
+def remove_xpmp2_files(filepath: str) -> None:
     """Remove the copied object files by LifeTraffic as tehy can and will cache them.
        This is to avoid that changes are not visible with LiveTraffic.
 
@@ -118,14 +117,14 @@ def remove_xpmp2_files(filepath: Path) -> None:
     delete_files(files=xpmp2_files)
 
 
-def delete_files(files: list[Path], suffix: str = None):
+def delete_files(files: list[Path], suffix: str = ""):
     """Delete the files, a genric function to delete all files with a specific suffix
 
     Arguments: files: string List of files to be deleted.
     """
     # TODO: Error handling
     for file in files:
-        if suffix is not None:
+        if suffix != "":
             file = file.with_suffix(suffix)
         if file.exists():
             log.info(f"Deleting {file}!")

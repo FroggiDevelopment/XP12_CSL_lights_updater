@@ -20,7 +20,6 @@ import sys
 import argparse
 import logging
 from pathlib import Path
-from typing import NoReturn
 from configparser import ConfigParser
 from datetime import datetime
 
@@ -31,7 +30,6 @@ from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 
-DEBUG = False
 TEMP_FILE_SUFFIX = ".TEMP"
 BACKUP_SUFFIX = ".BCK"
 DO_BACKUP = True
@@ -141,7 +139,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     return line
 
 
-def process_obj_file(aircraft_obj_file: Path) -> NoReturn:
+def process_obj_file(aircraft_obj_file: Path) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
 
     Args:
@@ -204,18 +202,17 @@ def copy_new_to_old(files: list[Path]) -> None:
         log.debug(f"Copy {file.name} to original object file done!")
 
 
-def set_config() -> list[str]:
+def set_config() -> tuple[str, bool, bool]:
     # Get config from file
     config = ConfigParser()
     config.read("config.ini")
 
     # Set config(s)
-    DEBUG = config.getboolean("generic", "debug")
     CSL_PATH = config["csl"]["csl_path"]
     DO_BACKUP = config.getboolean("generic", "do_backup")
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
-    return DEBUG, CSL_PATH, DO_BACKUP, STOP_ON_ERROR
+    return CSL_PATH, DO_BACKUP, STOP_ON_ERROR
 
 
 def main() -> None:
@@ -243,10 +240,12 @@ def main() -> None:
     args = parser.parse_args()
 
     # Set config
-    DEBUG, CSL_PATH, DO_BACKUP, STOP_ON_ERROR = set_config()
+    CSL_PATH, DO_BACKUP, STOP_ON_ERROR = set_config()
 
     # Get the list of aircraft obj files and the number of files
-    aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
+    aircraft_objects: list[Path] = get_aircraft_objects_from_xsb_file(
+        searchpath=CSL_PATH
+    )
     # print(aircraft_objects)
     # sys.exit()
     number_of_objects = len(aircraft_objects)

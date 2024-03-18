@@ -21,7 +21,7 @@ import logging
 log = logging.getLogger("aircraft_helpers")
 
 
-def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
+def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
     """Get the aircraft objects from the xsb file and return the paths as a list.
 
     Args:
@@ -34,7 +34,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
         log.error(f"Path {searchpath} is not a reachable directory!")
 
     xsb_files: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
-    aircraft_object_files: list[str] = []
+    aircraft_object_files: list[Path] = []
 
     # Separator differ between Bluebell and X-CSL, standard is / in this case.
     _seperator: str = "/"
@@ -64,6 +64,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
                     continue
                 list_of_params: list[str] = line.split(" ")
                 aircraft_dir_file_info: str = list_of_params[3]
+                number_of_path_params: int = 0
 
                 # Separator differ between Bluebell and X-CSL
                 if ":" in aircraft_dir_file_info:
@@ -96,12 +97,3 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[str]:
                 if object_path is not None and object_path not in aircraft_object_files:
                     aircraft_object_files.append(object_path)
     return aircraft_object_files
-
-
-def main():
-    files = get_aircraft_objects_from_xsb_file("CSL", is_xcsl=False)
-    print(files)
-
-
-if __name__ == "__main__":
-    main()

@@ -22,8 +22,8 @@ import logging
 logger = logging.getLogger("aircraft_light_params")
 
 
-def get_aircraft_categories() -> dict[list]:
-    """Reads the aircrafts json file and retunrs the data
+def get_aircraft_categories() -> dict[str, str]:
+    """Reads the aircrafts json file and returns the data
 
     Returns:
         dict[list]: A dictionary with the aircrafts listed per category
@@ -42,7 +42,7 @@ def get_aircraft_categories() -> dict[list]:
     return aircraft_categories
 
 
-def get_light_params_per_aircraft_category() -> dict[list[str]]:
+def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
     """Reads the light_params.json file and retunrs the data
 
     Returns:
@@ -62,7 +62,7 @@ def get_light_params_per_aircraft_category() -> dict[list[str]]:
     return light_params_per_category
 
 
-def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
+def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str, str]:
     """Returns the light parameters for the given aircraft type
 
     Args:
@@ -71,8 +71,8 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str]:
     Returns:
         dict[str]: A dictionary with the corresponding light parameters for the given aircraft type
     """
-    aircrafts = get_aircraft_categories()
-    light_params = get_light_params_per_aircraft_category()
+    aircrafts: dict[str, str] = get_aircraft_categories()
+    light_params: dict[str, dict[str, str]] = get_light_params_per_aircraft_category()
 
     for key, value in aircrafts.items():
         if aircraft_type in value:
