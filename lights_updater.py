@@ -164,7 +164,7 @@ def process_obj_file(aircraft_obj_file: Path) -> None:
             for line in aircraft_object_file:
                 if line.startswith("# "):
                     continue
-                if ignore_line(line) == True:
+                if ignore_line(line) is True:
                     continue
                 if any(lighttype in line for lighttype in LIGHT_NEEDLES):
                     line = process_lights(line, light_params)
@@ -172,7 +172,7 @@ def process_obj_file(aircraft_obj_file: Path) -> None:
                 new_obj_file.write(line)
     except FileNotFoundError as err:
         log.error(f"{aircraft_obj_file.name} not found!", err)
-        if STOP_ON_ERROR == True:
+        if STOP_ON_ERROR is True:
             sys.exit()
 
 
@@ -189,7 +189,7 @@ def copy_new_to_old(files: list[Path]) -> None:
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
-            if STOP_ON_ERROR == True:
+            if STOP_ON_ERROR is True:
                 log.error("Stopping on error!", err)
                 sys.exit()
             continue
@@ -197,7 +197,7 @@ def copy_new_to_old(files: list[Path]) -> None:
             temp_object_file.unlink()
         except PermissionError as err:
             log.error(f"{temp_object_file.name} can not be deleted!", err)
-            if STOP_ON_ERROR == True:
+            if STOP_ON_ERROR is True:
                 sys.exit()
         log.debug(f"Copy {file.name} to original object file done!")
 
@@ -268,7 +268,7 @@ def main() -> None:
         sys.exit()
 
     # Start of normal execution
-    if DO_BACKUP == True:
+    if DO_BACKUP is True:
         log.info("Creating backups!")
         make_backup(
             files=aircraft_objects,
