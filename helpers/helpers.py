@@ -38,14 +38,14 @@ def make_backup(
             try:
                 backup_file.write_bytes(file.read_bytes())
             except PermissionError as err:
-                if stop_on_error == True:
+                if stop_on_error is True:
                     log.error("Stopping on error!", err)
                     sys.exit()
                 else:
                     log.error(f"Backup of {file} failed!", err)
                     continue
             except FileNotFoundError as notfound:
-                if stop_on_error == True:
+                if stop_on_error is True:
                     log.error("Stopping because file not found!", notfound)
                     sys.exit()
                 else:
@@ -75,25 +75,23 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
         files (list): the 'original' fileslist
         stop_on_error (bool, optional): Stop on any errors or continue. Defaults to False.
     """
-    for backup_file in files:
-        backup_file = backup_file.with_suffix(".BCK")
+    for file in files:
+        backup_file = file.with_suffix(".BCK")
+        print(backup_file)
         recover_file = backup_file.with_suffix(".obj")
         log.debug(f"Recovery of {backup_file} is started")
         try:
             recover_file.write_bytes(backup_file.read_bytes())
         except PermissionError as err:
-            if stop_on_error == True:
+            if stop_on_error is True:
                 log.error("Stopping on error!", err)
                 sys.exit()
             else:
                 log.error(f"Recovery of {backup_file} failed!", err)
             continue
         except FileNotFoundError as notfound:
-            if stop_on_error == True:
-                log.error("Stopping because backup not found!", notfound)
-                sys.exit()
-            else:
-                log.error(f"Recovery of {backup_file} failed!", notfound)
+            log.error(f"Recovery of {backup_file} failed!", notfound)
+            files.remove(file)
             continue
         backup_file.unlink()
         log.info(f"Recovery of {recover_file} is done!")
