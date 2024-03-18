@@ -30,8 +30,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
     Returns:
         list[str]: List of paths to the aircraft objects in the searchpath.
     """
-    if Path(searchpath).is_dir() == False:
+    if Path(searchpath).is_dir() is False:
         log.error(f"Path {searchpath} is not a reachable directory!")
+        # TODO: Raise exception??
 
     xsb_files: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
     aircraft_object_files: list[Path] = []
