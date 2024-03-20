@@ -62,7 +62,6 @@ def delete_backups(files: list[Path], backup_extension: str) -> None:
 
     Arguments: files: string
     """
-    # TODO: Error handling
     log.info("Start of deleting backups!")
     delete_files(files, backup_extension)
     log.info("Backups deleted!")
@@ -120,7 +119,6 @@ def delete_files(files: list[Path], suffix: str = ""):
 
     Arguments: files: string List of files to be deleted.
     """
-    # TODO: Error handling
     for file in files:
         if suffix != "":
             file = file.with_suffix(suffix)
@@ -130,3 +128,5 @@ def delete_files(files: list[Path], suffix: str = ""):
                 file.unlink()
             except PermissionError as err:
                 log.error("Deleting resulted in error!", err)
+            except FileNotFoundError as notfound:
+                log.error("Deleting resulted in error!", notfound)
