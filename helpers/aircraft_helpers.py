@@ -46,7 +46,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
         with open(xsb_file, "r") as xsb_aircraft_file:
             for line in xsb_aircraft_file:
-                # Some more 'specials' from x-csl xsb_aircraft.txt files
+                # Some 'specials' in xsb_aircraft.txt files to ignore
                 if any(
                     trigger in line.lower()
                     for trigger in [
@@ -61,13 +61,15 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                     ]
                 ):
                     continue
-                if not line.startswith(("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")):
+                if not line.startswith(
+                    ("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")
+                ):  # These can contain light params
                     continue
                 list_of_params: list[str] = line.split(" ")
                 aircraft_dir_file_info: str = list_of_params[3]
                 number_of_path_params: int = 0
 
-                # Separator differ between Bluebell and X-CSL
+                # Separator differ between Bluebell and X-CSL and ?? maybe
                 if ":" in aircraft_dir_file_info:
                     _seperator = ":"
                 elif "/" in aircraft_dir_file_info:
@@ -77,7 +79,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                     )
 
                 object_path = None
-
+                # TODO: Can this be done better? To be investigated.
                 if _seperator == ":":
                     object_file = aircraft_dir_file_info.split(_seperator)[1].rstrip(
                         "\n"
