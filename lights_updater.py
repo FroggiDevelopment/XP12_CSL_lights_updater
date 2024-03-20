@@ -153,7 +153,6 @@ def process_obj_file(aircraft_obj_file: Path) -> None:
     else:  # Rare case with only type in object name without airline abbreviation.
         aircraft_type = aircraft_obj_file.name.rstrip(".obj")
 
-    # TODO: Get all params here?
     light_params = get_light_params_for_aircraft_type(aircraft_type)
 
     try:
