@@ -86,7 +86,9 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
         recover_file = backup_file.with_suffix(".obj")
         log.debug(f"Recovery of {backup_file} is started")
         if backup_file.is_file() == False:
-            # log.error(f"{backup_file.name} not found! Skipping this one!")
+            log.error(
+                f"{backup_file.name} not found! Should it be there? Skipping this one!"
+            )
             files.remove(file)
             continue
         try:
