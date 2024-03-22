@@ -19,6 +19,8 @@ from pathlib import Path
 import logging
 import sys
 
+from decorators.time_benchmark import time_benchmark
+
 log = logging.getLogger("helpers")
 
 
@@ -34,26 +36,26 @@ def make_backup(
     """
     for file in files:
         backup_file = file.with_suffix(".BCK")
-        if not backup_file.exists():
-            try:
-                backup_file.write_bytes(file.read_bytes())
-            except PermissionError as err:
-                if stop_on_error is True:
-                    log.error("Stopping on error!", err)
-                    sys.exit()
-                else:
-                    log.error(f"Backup of {file} failed!", err)
-                    continue
-            except FileNotFoundError as notfound:
-                if stop_on_error is True:
-                    log.error("Stopping because file not found!", notfound)
-                    sys.exit()
-                else:
-                    log.error(f"Backup of {file} failed!", notfound)
-                    continue
-            log.debug(f"Backup for {file} is ready!")
+        log.debug(f"Making backup of {file.name}")
+        if backup_file.exists():
+            log.info(f"Backup already exists for: {file.name}")
             continue
-        log.info(f"Backup already exists for: {file.name}")
+        try:
+            backup_file.write_bytes(file.read_bytes())
+        except PermissionError as err:
+            if stop_on_error is True:
+                log.error("Stopping on error!", err)
+                sys.exit()
+            log.error(f"Backup of {file} failed!", err)
+            continue
+        except FileNotFoundError as notfound:
+            if stop_on_error is True:
+                log.error("Stopping because file not found!", notfound)
+                sys.exit()
+            log.error(f"Backup of {file} failed!", notfound)
+            continue
+        log.debug(f"Backup for {file} is ready!")
+        continue
     log.info("Backups done!")
 
 
@@ -67,6 +69,7 @@ def delete_backups(files: list[Path], backup_extension: str) -> None:
     log.info("Backups deleted!")
 
 
+@time_benchmark
 def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> None:
     """Recover the original files from the backup files
 
@@ -76,7 +79,6 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
     """
     for file in files:
         backup_file = file.with_suffix(".BCK")
-        print(backup_file)
         recover_file = backup_file.with_suffix(".obj")
         log.debug(f"Recovery of {backup_file} is started")
         try:
@@ -85,8 +87,7 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
             if stop_on_error is True:
                 log.error("Stopping on error!", err)
                 sys.exit()
-            else:
-                log.error(f"Recovery of {backup_file} failed!", err)
+            log.error(f"Recovery of {backup_file} failed!", err)
             continue
         except FileNotFoundError as notfound:
             log.error(f"Recovery of {backup_file} failed!", notfound)
