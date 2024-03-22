@@ -77,10 +77,18 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
         files (list): the 'original' fileslist
         stop_on_error (bool, optional): Stop on any errors or continue. Defaults to False.
     """
-    for file in files:
+    with open("testfile.log", "a") as files_data:
+        for filepath in files:
+            files_data.write(str(filepath) + "\n")
+
+    for file in sorted(files):
         backup_file = file.with_suffix(".BCK")
         recover_file = backup_file.with_suffix(".obj")
         log.debug(f"Recovery of {backup_file} is started")
+        if backup_file.is_file() == False:
+            # log.error(f"{backup_file.name} not found! Skipping this one!")
+            files.remove(file)
+            continue
         try:
             recover_file.write_bytes(backup_file.read_bytes())
         except PermissionError as err:
@@ -89,10 +97,7 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
                 sys.exit()
             log.error(f"Recovery of {backup_file} failed!", err)
             continue
-        except FileNotFoundError as notfound:
-            log.error(f"Recovery of {backup_file} failed!", notfound)
-            files.remove(file)
-            continue
+
         backup_file.unlink()
         log.info(f"Recovery of {recover_file} is done!")
         log.debug(f"Recovering {backup_file}")
