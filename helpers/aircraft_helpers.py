@@ -86,12 +86,12 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                     )
 
                     object_path = Path(parentdir, object_file)
-                elif _seperator == "/" and number_of_path_params == 3:
-                    object_file = aircraft_dir_file_info.split(_seperator, 1)[1].rstrip(
-                        "\n"
-                    )
-                    object_path = Path(parentdir, object_file)
-                elif _seperator == "/" and number_of_path_params == 2:
+                elif _seperator == "/" and number_of_path_params >= 2:
+                    #     object_file = aircraft_dir_file_info.split(_seperator, 1)[1].rstrip(
+                    #         "\n"
+                    #     )
+                    #     object_path = Path(parentdir, object_file)
+                    # elif _seperator == "/" and number_of_path_params == 2:
                     object_file = aircraft_dir_file_info.split(_seperator, 1)[1].rstrip(
                         "\n"
                     )
