@@ -21,7 +21,6 @@ import argparse
 import logging
 from pathlib import Path
 from configparser import ConfigParser
-from datetime import datetime
 
 from helpers import make_backup
 from helpers import delete_backups
@@ -101,8 +100,6 @@ def ignore_line(line: str) -> bool:
         "headlight",
         "_size",
         "_sp",
-        "_pm",
-        "_bb",
         "taillight",
         "_rotate",
         "_core",
@@ -131,6 +128,9 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     Returns:
         str: A line with updated light parameters
     """
+    # Just in case _pm and / or _bb are already defined, return the line unmodified
+    if any(new_light_param in line for new_light_param in ["_pm", "_bb"]):
+        return line
     lighttype = line.split()[1]
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
@@ -219,7 +219,6 @@ def set_config() -> tuple[str, bool, bool]:
 
 @time_benchmark
 def main() -> None:
-    start_time = datetime.now()
 
     # Check if cli params are present
     parser = argparse.ArgumentParser(
@@ -293,10 +292,7 @@ def main() -> None:
 
     copy_new_to_old(aircraft_objects)
 
-    end_time = datetime.now()
-    duration = end_time - start_time
     log.info(f"Processing done, {number_of_objects} files have been processed!")
-    log.info(f"It took {duration.seconds:.2f} seconds!")
 
 
 if __name__ == "__main__":
