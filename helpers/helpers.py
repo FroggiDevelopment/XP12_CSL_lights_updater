@@ -77,9 +77,6 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
         files (list): the 'original' fileslist
         stop_on_error (bool, optional): Stop on any errors or continue. Defaults to False.
     """
-    with open("testfile.log", "a") as files_data:
-        for filepath in files:
-            files_data.write(str(filepath) + "\n")
 
     for file in sorted(files):
         backup_file = file.with_suffix(".BCK")
