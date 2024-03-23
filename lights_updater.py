@@ -207,7 +207,7 @@ def copy_new_to_old(files: list[Path]) -> None:
 def set_config() -> tuple[str, bool, bool]:
     # Get config from file
     config = ConfigParser()
-    config.read("config.ini")
+    config.read("configs/config.ini")
 
     # Set config(s)
     CSL_PATH = config["csl"]["csl_path"]

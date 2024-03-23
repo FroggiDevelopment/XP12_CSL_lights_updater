@@ -21,6 +21,9 @@ import logging
 
 logger = logging.getLogger("aircraft_light_params")
 
+AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
+LIGHT_DEFINITIONS = "configs/light_params.json"
+
 
 def get_aircraft_categories() -> dict[str, str]:
     """Reads the aircrafts json file and returns the data
@@ -29,7 +32,7 @@ def get_aircraft_categories() -> dict[str, str]:
         dict[list]: A dictionary with the aircrafts listed per category
     """
     try:
-        with open("aircrafts.json", "r") as aircrafts_definitions:
+        with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
             aircraft_categories = json.load(aircrafts_definitions)
     except FileNotFoundError:
         logger.error("Missing aircrafts.json file. Stopping now!")
@@ -49,7 +52,7 @@ def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
         dict[list]: A dictionary with the light parameters listed per category
     """
     try:
-        with open("light_params.json", "r") as lights_definitions:
+        with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
             light_params_per_category = json.load(lights_definitions)
     except FileNotFoundError:
         logger.error("Missing light_params.json file. Stopping now!")
