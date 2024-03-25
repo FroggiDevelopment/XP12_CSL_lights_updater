@@ -250,8 +250,6 @@ def main() -> None:
     aircraft_objects: list[Path] = get_aircraft_objects_from_xsb_file(
         searchpath=CSL_PATH
     )
-    # print(aircraft_objects)
-    # sys.exit()
     number_of_objects = len(aircraft_objects)
 
     # Start of actions based on cli arguments
