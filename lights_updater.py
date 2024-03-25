@@ -223,9 +223,9 @@ def main() -> None:
     # Check if cli params are present
     parser = argparse.ArgumentParser(
         prog="lights_updater.py",
-        description="This programm can convert XP11 lightparams to the new XP12 specifications.\n"
-        "Developed for getting landing lights with LifeTraffic.\n"
-        "Works only prtial woth custom CSL aircraft.",
+        description="This program can convert XP11 lightparams to the new XP12 specifications.\n"
+        "Developed for getting landing lights for LifeTraffic.\n"
+        "Works only partial with custom CSL aircraft.",
         epilog="No you know!",
         formatter_class=argparse.RawTextHelpFormatter,
     )
