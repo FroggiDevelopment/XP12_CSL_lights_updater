@@ -29,7 +29,7 @@ from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 
-from decorators.time_benchmark import time_benchmark
+from decorators.time_benchmark import args_decorator, time_benchmark
 
 TEMP_FILE_SUFFIX: str = ".TEMP"
 BACKUP_SUFFIX: str = ".BCK"
@@ -217,7 +217,7 @@ def set_config() -> tuple[str, bool, bool]:
     return CSL_PATH, DO_BACKUP, STOP_ON_ERROR
 
 
-@time_benchmark
+@args_decorator("lights_updater")
 def main() -> None:
 
     # Check if cli params are present

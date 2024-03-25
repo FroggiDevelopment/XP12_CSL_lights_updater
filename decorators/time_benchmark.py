@@ -38,3 +38,23 @@ def time_benchmark(func: Callable[..., Any]) -> Any:
         return result
 
     return wrapper
+
+def args_decorator(argument: Any = None):
+    print(argument)
+    def time_benchmark(func: Callable[..., Any]) -> Any:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any):
+            start_time = perf_counter()
+            log.info(f"Starting {func.__name__}")
+            result = func(*args, **kwargs)
+            log.info(f"Finished {func.__name__}")
+            end_time = perf_counter()
+
+            duration = end_time - start_time
+            if argument is not None:
+                log.info(f"It took {duration:.2f} seconds to complete {argument}")
+            log.info(f"It took {duration:.2f} seconds to complete {func.__name__}")
+            return result
+
+        return wrapper
+    return time_benchmark
