@@ -223,9 +223,11 @@ def main() -> None:
     # Check if cli params are present
     parser = argparse.ArgumentParser(
         prog="lights_updater.py",
-        description="This programm can convert XP11 lightparams to the new XP12 specifications\
-        It is mainly developed for LifeTraffic CSL aircraft.",
+        description="This programm can convert XP11 lightparams to the new XP12 specifications.\n"
+        "Developed for getting landing lights with LifeTraffic.\n"
+        "Works only prtial woth custom CSL aircraft.",
         epilog="No you know!",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
         "-u",
