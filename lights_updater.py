@@ -31,10 +31,10 @@ from helpers import get_aircraft_objects_from_xsb_file
 
 from decorators.time_benchmark import time_benchmark
 
-TEMP_FILE_SUFFIX = ".TEMP"
-BACKUP_SUFFIX = ".BCK"
-DO_BACKUP = True
-STOP_ON_ERROR = True
+TEMP_FILE_SUFFIX: str = ".TEMP"
+BACKUP_SUFFIX: str = ".BCK"
+DO_BACKUP: bool = True
+STOP_ON_ERROR: bool = True
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
     "airplane_taxi",
