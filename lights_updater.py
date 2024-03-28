@@ -29,11 +29,10 @@ from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 
-from decorators.time_benchmark import args_decorator, time_benchmark
+from decorators.time_benchmark import named_time_benchmark, time_benchmark
 
 TEMP_FILE_SUFFIX: str = ".TEMP"
 BACKUP_SUFFIX: str = ".BCK"
-DO_BACKUP: bool = True
 STOP_ON_ERROR: bool = True
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
@@ -204,22 +203,19 @@ def copy_new_to_old(files: list[Path]) -> None:
         log.debug(f"Copy {file.name} to original object file done!")
 
 
-def set_config() -> tuple[str, bool, bool]:
+def set_config() -> tuple[str, bool]:
     # Get config from file
     config = ConfigParser()
     config.read("configs/config.ini")
 
     # Set config(s)
     CSL_PATH = config["csl"]["csl_path"]
-    DO_BACKUP = config.getboolean("generic", "do_backup")
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
-    return CSL_PATH, DO_BACKUP, STOP_ON_ERROR
+    return CSL_PATH, STOP_ON_ERROR
 
 
-@args_decorator("lights_updater")
-def main() -> None:
-
+def parse_args():
     # Check if cli params are present
     parser = argparse.ArgumentParser(
         prog="lights_updater.py",
@@ -241,10 +237,16 @@ def main() -> None:
         action="store_true",
         help="Removes the backup files. Be careful!",
     )
-    args = parser.parse_args()
+
+    return parser.parse_args()
+
+
+@named_time_benchmark("lights_updater")
+def main(args: argparse.Namespace) -> None:
+    # TODO:Still to many responsibilities for main. Must be refactored.
 
     # Set config
-    CSL_PATH, DO_BACKUP, STOP_ON_ERROR = set_config()
+    CSL_PATH, STOP_ON_ERROR = set_config()
 
     # Get the list of aircraft obj files and the number of files
     aircraft_objects: list[Path] = get_aircraft_objects_from_xsb_file(
@@ -270,12 +272,8 @@ def main() -> None:
         sys.exit()
 
     # Start of normal execution
-    if DO_BACKUP is True:
-        log.info("Creating backups!")
-        make_backup(
-            files=aircraft_objects,
-            stop_on_error=STOP_ON_ERROR,
-        )
+    log.info("Creating backups!")
+    make_backup(files=aircraft_objects, stop_on_error=STOP_ON_ERROR)
 
     # Lets do the magic stuff!
     log.info(
@@ -296,4 +294,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+
+    main(args)
