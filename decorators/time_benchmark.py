@@ -39,8 +39,10 @@ def time_benchmark(func: Callable[..., Any]) -> Any:
 
     return wrapper
 
-def args_decorator(argument: Any = None):
+
+def named_time_benchmark(argument: Any = None):
     print(argument)
+
     def time_benchmark(func: Callable[..., Any]) -> Any:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any):
@@ -57,4 +59,5 @@ def args_decorator(argument: Any = None):
             return result
 
         return wrapper
+
     return time_benchmark
