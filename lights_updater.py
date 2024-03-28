@@ -241,6 +241,24 @@ def parse_args():
     return parser.parse_args()
 
 
+def recover_files(files: list[Path], stop_on_error: bool):
+    log.info("Recovery activated!")
+    recover_from_backup(
+        files=files,
+        stop_on_error=STOP_ON_ERROR,
+    )
+    sys.exit()
+
+
+def remove_backups(files: list[Path]):
+    log.info("Backups will be removed now!")
+    yes_no = input("Are you sure? [yes/No]" or "No")
+    if yes_no.lower() == "yes" or yes_no.lower() == "y":
+        log.info("Okay! Let's do it....!!")
+        delete_backups(files)
+    sys.exit()
+
+
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace) -> None:
     # TODO:Still to many responsibilities for main. Must be refactored.
@@ -254,24 +272,14 @@ def main(args: argparse.Namespace) -> None:
     )
     number_of_objects = len(aircraft_objects)
 
-    # Start of actions based on cli arguments
+    # Specials
     if args.undo:  # Undo changes, recover object from backup.
-        log.info("Recovery activated!")
-        recover_from_backup(
-            files=aircraft_objects,
-            stop_on_error=STOP_ON_ERROR,
-        )
-        sys.exit()
+        recover_files(aircraft_objects, STOP_ON_ERROR)
 
     if args.remove_backups:  # Remove the backupfiles.
-        log.info("Backups will be removed now!")
-        yes_no = input("Are you sure? [yes/No]" or "No")
-        if yes_no.lower() == "yes" or yes_no.lower() == "y":
-            log.info("Okay! Let's do it....!!")
-            delete_backups(files=aircraft_objects, backup_extension=BACKUP_SUFFIX)
-        sys.exit()
+        remove_backups(aircraft_objects)
 
-    # Start of normal execution
+    # Main processing
     log.info("Creating backups!")
     make_backup(files=aircraft_objects, stop_on_error=STOP_ON_ERROR)
 
@@ -284,7 +292,7 @@ def main(args: argparse.Namespace) -> None:
     )
 
     remove_xpmp2_files(filepath=CSL_PATH)
-
+    # TODO: Some more error handling?
     for file in aircraft_objects:
         process_obj_file(aircraft_obj_file=file)
 
