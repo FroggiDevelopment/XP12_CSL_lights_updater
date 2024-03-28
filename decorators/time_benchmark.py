@@ -55,7 +55,8 @@ def named_time_benchmark(argument: Any = None):
             duration = end_time - start_time
             if argument is not None:
                 log.info(f"It took {duration:.2f} seconds to complete {argument}")
-            log.info(f"It took {duration:.2f} seconds to complete {func.__name__}")
+            else:
+                log.info(f"It took {duration:.2f} seconds to complete {func.__name__}")
             return result
 
         return wrapper
