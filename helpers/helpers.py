@@ -59,13 +59,13 @@ def make_backup(
     log.info("Backups done!")
 
 
-def delete_backups(files: list[Path], backup_extension: str) -> None:
+def delete_backups(files: list[Path]) -> None:
     """Delete the backup files
 
     Arguments: files: string
     """
     log.info("Start of deleting backups!")
-    delete_files(files, backup_extension)
+    delete_files(files, ".BCK")
     log.info("Backups deleted!")
 
 
