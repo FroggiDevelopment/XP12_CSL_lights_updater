@@ -210,6 +210,9 @@ def set_config() -> tuple[str, bool]:
 
     # Set config(s)
     CSL_PATH = config["csl"]["csl_path"]
+    if CSL_PATH == "":
+        log.error("No CSL path specified!")
+        sys.exit()
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
     return CSL_PATH, STOP_ON_ERROR
