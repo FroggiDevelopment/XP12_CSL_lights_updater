@@ -206,13 +206,17 @@ def copy_new_to_old(files: list[Path]) -> None:
 def set_config() -> tuple[str, bool]:
     # Get config from file
     config = ConfigParser()
-    config.read("configs/config.ini")
 
-    # Set config(s)
-    CSL_PATH = config["csl"]["csl_path"]
-    if CSL_PATH == "":
+    if config.read("configs/config.ini") != []:
+        pass
+    else:
+        log.error("No config file found!")
+        sys.exit()
+
+    if config["csl"]["csl_path"] == "":
         log.error("No CSL path specified!")
         sys.exit()
+    CSL_PATH = config["csl"]["csl_path"]
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
     return CSL_PATH, STOP_ON_ERROR
