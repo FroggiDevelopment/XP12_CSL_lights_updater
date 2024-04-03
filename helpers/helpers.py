@@ -36,7 +36,7 @@ def make_backup(
     """
     for file in files:
         backup_file = file.with_suffix(".BCK")
-        log.debug(f"Making backup of {file.name}")
+        log.info(f"Making backup of {file.name}")
         if backup_file.exists():
             log.info(f"Backup already exists for: {file.name}")
             continue
