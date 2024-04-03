@@ -228,10 +228,12 @@ def parse_args():
         prog="lights_updater.py",
         description="This program can convert XP11 lightparams to the new XP12 specifications.\n"
         "Developed for getting landing lights for LifeTraffic.\n"
-        "Works only partial with custom CSL aircraft.",
+        "Works only partial with custom CSL aircraft.\n\n"
+        "For normal start you don't need any arguments.\n",
         epilog="No you know!",
         formatter_class=argparse.RawTextHelpFormatter,
     )
+    parser._optionals.title = "Optional arguments"
     parser.add_argument(
         "-u",
         "--undo",
