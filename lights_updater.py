@@ -227,24 +227,33 @@ def parse_args():
     # Check if cli params are present
     parser = argparse.ArgumentParser(
         prog="lights_updater.py",
-        description="This program can convert XP11 lightparams to the new XP12 specifications.\n"
-        "Developed for getting landing lights for LifeTraffic.\n"
-        "Works only partial with custom CSL aircraft.\n\n"
-        "For normal start you don't need any arguments.\n"
-        "But! You must have the csl_path set in the config file!\n",
-        epilog="No you know!",
+        description="""This program can convert XP11 lightparams of CSL aircraft objetcs to the new XP12 specifications.
+Developed for getting landing lights for LifeTraffic.
+Works only partial with custom CSL aircraft.
+
+For normal start you don't need any arguments.
+But then you MUST specify the csl_path in the config.ini file!""",
+        epilog="""
+Attention!!
+If you specify a path with -p / --path when processing the objects and you want to undo your changes,
+or remove the backup files with -r / --remove-backups, you need the specify the path again!
+If you don't and there is a path specified in the config.ini, results may not be what you expected!
+
+Now you know!\n
+""",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "-p, --path",
+        "-p",
+        "--path",
         required=False,
         type=Path,
         default=False,
         action="store",
-        metavar="CSL_PATH",
+        metavar="csl_path",
         dest="csl_path",
         help="Set path to location of CSL aircrafts.\n"
-        "Be aware that if there are whitespaces in the path, you MUST use parentheses around the CSL_PATH!",
+        "Be aware that if there are whitespaces in the path, you MUST use quotation marks around the CSL_PATH!\nTo be save, always use them.",
     )
     parser._optionals.title = "Optional arguments"
     parser.add_argument(
