@@ -349,8 +349,4 @@ if __name__ == "__main__":
     args = parse_args()
     csl_path, stop_on_error = set_config(args.csl_path)
 
-    if args.csl_path != None:
-        csl_path = args.csl_path
-    print(f"CSL_PATH: {csl_path}")
-
     main(args, csl_path, stop_on_error)
