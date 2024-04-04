@@ -214,8 +214,9 @@ def set_config() -> tuple[str, bool]:
         sys.exit()
 
     if config["csl"]["csl_path"] == "":
-        log.error("No CSL path specified!")
+        log.error("No CSL path specified! Please update configs/config.ini!!")
         sys.exit()
+
     CSL_PATH = config["csl"]["csl_path"]
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
@@ -233,6 +234,11 @@ def parse_args():
         epilog="No you know!",
         formatter_class=argparse.RawTextHelpFormatter,
     )
+    # parser.add_argument(
+    #     "csl_path",
+    #     type=Path,
+    #     help="Set path to location of CSL aircrafts.",
+    # )
     parser._optionals.title = "Optional arguments"
     parser.add_argument(
         "-u",
@@ -269,11 +275,10 @@ def remove_backups(files: list[Path]):
 
 
 @named_time_benchmark("lights_updater")
-def main(args: argparse.Namespace) -> None:
+def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     # TODO:Still to many responsibilities for main. Must be refactored.
 
     # Set config
-    CSL_PATH, STOP_ON_ERROR = set_config()
 
     # Get the list of aircraft obj files and the number of files
     aircraft_objects: list[Path] = get_aircraft_objects_from_xsb_file(
@@ -311,6 +316,8 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
+
+    cls_path, stop_on_error = set_config()
     args = parse_args()
 
-    main(args)
+    main(args, cls_path, stop_on_error)
