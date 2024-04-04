@@ -30,6 +30,7 @@ from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
+from configs._version import __version__
 
 TEMP_FILE_SUFFIX: str = ".TEMP"
 BACKUP_SUFFIX: str = ".BCK"
@@ -226,7 +227,7 @@ def set_config() -> tuple[str, bool]:
 def parse_args():
     # Check if cli params are present
     parser = argparse.ArgumentParser(
-        prog="lights_updater.py",
+        prog="Lights updater for CSL objects",
         description="""This program can convert XP11 lightparams of CSL aircraft objetcs to the new XP12 specifications.
 Developed for getting landing lights for LifeTraffic.
 Works only partial with custom CSL aircraft.
@@ -255,7 +256,7 @@ Now you know!\n
         help="Set path to location of CSL aircrafts.\n"
         "Be aware that if there are whitespaces in the path, you MUST use quotation marks around the CSL_PATH!\nTo be save, always use them.",
     )
-    parser._optionals.title = "Optional arguments"
+
     parser.add_argument(
         "-u",
         "--undo",
@@ -263,6 +264,7 @@ Now you know!\n
         action="store_true",
         help="Rolls back the previous made changes!",
     )
+
     parser.add_argument(
         "-r",
         "--remove-backups",
@@ -270,6 +272,13 @@ Now you know!\n
         help="Removes the backup files. Be careful!",
     )
 
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"%(prog)s version: {__version__}",
+    )
+    parser._optionals.title = "Optional arguments"
     return parser.parse_args()
 
 
