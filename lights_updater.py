@@ -204,8 +204,9 @@ def copy_new_to_old(files: list[Path]) -> None:
         log.debug(f"Copy {file.name} to original object file done!")
 
 
-def set_config() -> tuple[str, bool]:
+def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
     # Get config from file
+
     config = ConfigParser()
 
     if config.read("configs/config.ini") != []:
@@ -214,14 +215,19 @@ def set_config() -> tuple[str, bool]:
         log.error("No config file found!")
         sys.exit()
 
-    if config["csl"]["csl_path"] == "":
-        log.error("No CSL path specified! Please update configs/config.ini!!")
+    if config["csl"]["csl_path"] == "" and args_path_to_csl == None:
+        print(f'CSL from Config {config["csl"]["csl_path"]}')
+        log.error(
+            "No CSL path specified! Please update configs/config.ini!or specify it by using -p or --path!"
+        )
         sys.exit()
 
-    CSL_PATH = config["csl"]["csl_path"]
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
-    return CSL_PATH, STOP_ON_ERROR
+    if args_path_to_csl != None:
+        return args_path_to_csl, STOP_ON_ERROR
+    else:
+        return config["csl"]["csl_path"], STOP_ON_ERROR
 
 
 def parse_args():
@@ -249,7 +255,7 @@ Now you know!\n
         "--path",
         required=False,
         type=Path,
-        default=False,
+        default=None,
         action="store",
         metavar="csl_path",
         dest="csl_path",
@@ -341,10 +347,10 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
 if __name__ == "__main__":
     args = parse_args()
-    csl_path, stop_on_error = set_config()
-    print(type(args.csl_path))
-    if args.csl_path:
+    csl_path, stop_on_error = set_config(args.csl_path)
+
+    if args.csl_path != None:
         csl_path = args.csl_path
-        print(csl_path)
+    print(f"CSL_PATH: {csl_path}")
 
     main(args, csl_path, stop_on_error)
