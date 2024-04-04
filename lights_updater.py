@@ -230,19 +230,27 @@ def parse_args():
         description="This program can convert XP11 lightparams to the new XP12 specifications.\n"
         "Developed for getting landing lights for LifeTraffic.\n"
         "Works only partial with custom CSL aircraft.\n\n"
-        "For normal start you don't need any arguments.\n",
+        "For normal start you don't need any arguments.\n"
+        "But! You must have the csl_path set in the config file!\n",
         epilog="No you know!",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    # parser.add_argument(
-    #     "csl_path",
-    #     type=Path,
-    #     help="Set path to location of CSL aircrafts.",
-    # )
+    parser.add_argument(
+        "-p, --path",
+        required=False,
+        type=Path,
+        default=False,
+        action="store",
+        metavar="CSL_PATH",
+        dest="csl_path",
+        help="Set path to location of CSL aircrafts.\n"
+        "Be aware that if there are whitespaces in the path, you MUST use parentheses around the CSL_PATH!",
+    )
     parser._optionals.title = "Optional arguments"
     parser.add_argument(
         "-u",
         "--undo",
+        required=False,
         action="store_true",
         help="Rolls back the previous made changes!",
     )
@@ -276,9 +284,7 @@ def remove_backups(files: list[Path]):
 
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
-    # TODO:Still to many responsibilities for main. Must be refactored.
-
-    # Set config
+    # TODO: Still to many responsibilities for main. Must be refactored.
 
     # Get the list of aircraft obj files and the number of files
     aircraft_objects: list[Path] = get_aircraft_objects_from_xsb_file(
@@ -316,8 +322,11 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
 
 if __name__ == "__main__":
-
-    cls_path, stop_on_error = set_config()
     args = parse_args()
+    csl_path, stop_on_error = set_config()
+    print(type(args.csl_path))
+    if args.csl_path:
+        csl_path = args.csl_path
+        print(csl_path)
 
-    main(args, cls_path, stop_on_error)
+    main(args, csl_path, stop_on_error)
