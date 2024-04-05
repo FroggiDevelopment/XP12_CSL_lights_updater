@@ -16,6 +16,7 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 """
 
 from pathlib import Path
+import sys
 import logging
 
 log = logging.getLogger("aircraft_helpers")
@@ -35,6 +36,11 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
         raise FileNotFoundError(f"Path {searchpath} is not a reachable directory")
 
     xsb_files: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
+    if xsb_files == []:
+        log.info(
+            f"No xsb_aircraft.txt files found in {searchpath}! You are digging to deep. Please adjust your path settings!"
+        )
+        sys.exit()
     aircraft_object_files: list[Path] = []
 
     # Separator differ between Bluebell and X-CSL, standard is / in this case.
