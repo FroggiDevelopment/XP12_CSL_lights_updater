@@ -27,9 +27,8 @@ def time_benchmark(func: Callable[..., Any]) -> Any:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any):
         start_time = perf_counter()
-        log.info(f"Starting {func.__name__}")
+        log.debug(f"Starting {func.__name__}")
         result = func(*args, **kwargs)
-        log.info(f"Finished {func.__name__}")
         end_time = perf_counter()
 
         duration = end_time - start_time
