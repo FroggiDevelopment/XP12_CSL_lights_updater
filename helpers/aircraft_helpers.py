@@ -42,7 +42,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
         xsb_files = get_list_of_files(searchpath, "xsb_aircraft.txt")
     except NoFilesFoundError as errormsg:
         log.error(errormsg)
-        log.info("Please verify that your path is correct!")
+        log.error("Please verify that your path is correct!")
         sys.exit()
 
     aircraft_object_files: list[Path] = []
@@ -54,59 +54,65 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
     for xsb_file in xsb_files:
         parentdir: Path = xsb_file.parent.absolute()
 
-        with open(xsb_file, "r") as xsb_aircraft_file:
-            for line in xsb_aircraft_file:
-                # Some 'specials' in xsb_aircraft.txt files to ignore
-                if any(
-                    trigger in line.lower()
-                    for trigger in [
-                        "light.",
-                        "cars",
-                        "fan",
-                        "prop",
-                        "glass",
-                        "rotor",
-                        "engine",
-                        "gear",
-                    ]
-                ):
-                    continue
-                if not line.startswith(
-                    ("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")
-                ):  # These can contain light params
-                    continue
-                list_of_params: list[str] = line.split(" ")
-                aircraft_dir_file_info: str = list_of_params[3]
-                number_of_path_params: int = 0
+        try:
+            with open(xsb_file, "r") as xsb_aircraft_file:
+                for line in xsb_aircraft_file:
+                    # Some 'specials' in xsb_aircraft.txt files to ignore
+                    if any(
+                        trigger in line.lower()
+                        for trigger in [
+                            "light.",
+                            "cars",
+                            "fan",
+                            "prop",
+                            "glass",
+                            "rotor",
+                            "engine",
+                            "gear",
+                        ]
+                    ):
+                        continue
+                    if not line.startswith(
+                        ("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")
+                    ):  # These can contain light params
+                        continue
+                    list_of_params: list[str] = line.split(" ")
+                    aircraft_dir_file_info: str = list_of_params[3]
+                    number_of_path_params: int = 0
 
-                # Separator differ between Bluebell and X-CSL and ?? maybe
-                if ":" in aircraft_dir_file_info:
-                    _seperator = ":"
-                elif "/" in aircraft_dir_file_info:
-                    _seperator: str = "/"
-                    number_of_path_params = len(
-                        aircraft_dir_file_info.split(_seperator)
-                    )
+                    # Separator differ between Bluebell and X-CSL and ?? maybe
+                    if ":" in aircraft_dir_file_info:
+                        _seperator = ":"
+                    elif "/" in aircraft_dir_file_info:
+                        _seperator: str = "/"
+                        number_of_path_params = len(
+                            aircraft_dir_file_info.split(_seperator)
+                        )
 
-                object_path = None
-                # TODO: Can this be done better? To be investigated.
-                if _seperator == ":":
-                    object_file = aircraft_dir_file_info.split(_seperator)[1].rstrip(
-                        "\n"
-                    )
+                    object_path = None
+                    # TODO: Can this be done better? To be investigated.
+                    if _seperator == ":":
+                        object_file = aircraft_dir_file_info.split(_seperator)[
+                            1
+                        ].rstrip("\n")
 
-                    object_path = Path(parentdir, object_file)
-                elif _seperator == "/" and number_of_path_params >= 2:
-                    object_file = aircraft_dir_file_info.split(_seperator, 1)[1].rstrip(
-                        "\n"
-                    )
-                    object_path = Path(parentdir, object_file)
+                        object_path = Path(parentdir, object_file)
+                    elif _seperator == "/" and number_of_path_params >= 2:
+                        object_file = aircraft_dir_file_info.split(_seperator, 1)[
+                            1
+                        ].rstrip("\n")
+                        object_path = Path(parentdir, object_file)
 
-                    # Test if file really exists
-                    if object_path.exists() is False:
-                        log.error(f"File {object_path} does not exist! Skipping!")
-                        object_path = None
+                        # Test if file really exists
+                        if object_path.exists() is False:
+                            log.error(f"File {object_path} does not exist! Skipping!")
+                            object_path = None
 
-                if object_path is not None and object_path not in aircraft_object_files:
-                    aircraft_object_files.append(object_path)
+                    if (
+                        object_path is not None
+                        and object_path not in aircraft_object_files
+                    ):
+                        aircraft_object_files.append(object_path)
+        except FileNotFoundError as notfound:
+            log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
     return aircraft_object_files
