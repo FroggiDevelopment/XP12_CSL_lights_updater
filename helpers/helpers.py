@@ -15,9 +15,11 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from pathlib import Path
 import logging
 import sys
+from pathlib import Path
+
+from .custom_exceptions import NoFilesFoundError
 
 from decorators.time_benchmark import time_benchmark
 
@@ -135,3 +137,19 @@ def delete_files(files: list[Path], suffix: str = ""):
                 log.error("Deleting resulted in error!", err)
             except FileNotFoundError as notfound:
                 log.error("Deleting resulted in error!", notfound)
+
+
+def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
+    """Get the list of files with the given filename
+
+    Arguments: searchpath (Path): The path to the csl location. Is equal to csl_path in config.ini
+               filename (str): The name of the file to be searched for.
+
+    Returns:
+        list[Path]: The list of files with the given filename.
+    """
+    files = list(Path(searchpath).rglob(filename))
+    if files == []:
+        raise NoFilesFoundError(message=f"No {filename} found in {searchpath}!")
+    log.debug(f"Found these files while globing: {files}")
+    return files
