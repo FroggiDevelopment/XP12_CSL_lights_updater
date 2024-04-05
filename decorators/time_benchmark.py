@@ -39,9 +39,7 @@ def time_benchmark(func: Callable[..., Any]) -> Any:
     return wrapper
 
 
-def named_time_benchmark(argument: Any = None):
-    print(argument)
-
+def named_time_benchmark(argument: str = ""):
     def time_benchmark(func: Callable[..., Any]) -> Any:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any):
@@ -52,7 +50,7 @@ def named_time_benchmark(argument: Any = None):
             end_time = perf_counter()
 
             duration = end_time - start_time
-            if argument is not None:
+            if argument != "":
                 log.info(f"It took {duration:.2f} seconds to complete {argument}")
             else:
                 log.info(f"It took {duration:.2f} seconds to complete {func.__name__}")
