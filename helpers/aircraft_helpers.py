@@ -15,9 +15,12 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from pathlib import Path
 import sys
 import logging
+from pathlib import Path
+
+from .helpers import get_list_of_files
+from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger("aircraft_helpers")
 
@@ -35,12 +38,13 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
         log.error(f"Path {searchpath} is not a reachable directory!")
         raise FileNotFoundError(f"Path {searchpath} is not a reachable directory")
 
-    xsb_files: list[Path] = list(Path(searchpath).rglob("xsb_aircraft.txt"))
-    if xsb_files == []:
-        log.info(
-            f"No xsb_aircraft.txt files found in {searchpath}! You are digging to deep. Please adjust your path settings!"
-        )
+    try:
+        xsb_files = get_list_of_files(searchpath, "xsb_aircraft.txt")
+    except NoFilesFoundError as errormsg:
+        log.error(errormsg)
+        log.info("Please verify that your path is correct!")
         sys.exit()
+
     aircraft_object_files: list[Path] = []
 
     # Separator differ between Bluebell and X-CSL, standard is / in this case.
@@ -97,6 +101,11 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                         "\n"
                     )
                     object_path = Path(parentdir, object_file)
+
+                    # Test if file really exists
+                    if object_path.exists() is False:
+                        log.error(f"File {object_path} does not exist! Skipping!")
+                        object_path = None
 
                 if object_path is not None and object_path not in aircraft_object_files:
                     aircraft_object_files.append(object_path)
