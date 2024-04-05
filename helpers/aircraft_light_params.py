@@ -79,8 +79,8 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str, str]:
 
     for key, value in aircrafts.items():
         if aircraft_type in value:
-            logging.debug(f"{aircraft_type} found in {key}")
+            logger.debug(f"{aircraft_type} found in {key}")
             return light_params[key]
     else:
-        logging.warning(f"{aircraft_type} not found.. Using default light params!")
+        logger.warning(f"{aircraft_type} not found.. Using default light params!")
         return light_params["airliners"]
