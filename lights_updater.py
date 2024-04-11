@@ -132,13 +132,10 @@ def rename_navlights_based_on_position(line: str) -> str:
     actual_lighttype = line.split()[1]
 
     if (coords_x) > -2.00 and coords_x < 2.00:
-        print("This must be the tail navlight!!")
         lighttype = "airplane_nav_tail"
     elif (coords_x) < -2.00:
-        print("This must be the left navlight!!")
         lighttype = "airplane_nav_left"
     else:
-        print("This must be the right navlight!!")
         lighttype = "airplane_nav_right"
 
     return line.replace(actual_lighttype, lighttype)
@@ -256,7 +253,6 @@ def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
         sys.exit()
 
     if config["csl"]["csl_path"] == "" and args_path_to_csl == None:
-        print(f'CSL from Config {config["csl"]["csl_path"]}')
         log.error(
             "No CSL path specified! Please update configs/config.ini!or specify it by using -p or --path!"
         )
