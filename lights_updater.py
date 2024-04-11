@@ -118,6 +118,32 @@ def ignore_line(line: str) -> bool:
     return False
 
 
+def rename_navlights_based_on_position(line: str) -> str:
+    """Takes the airplane_nav parameter and returns left, right, or tail params according to its position
+
+    Args:
+        line (str): The line with the aircraft_nav param(s)
+
+    Returns:
+        str: The line with nav lighttypes in old style.
+    """
+    # TODO: Can this be achived more elegant?
+    coords_x = float(line.split()[2:3][0])
+    actual_lighttype = line.split()[1]
+
+    if (coords_x) > -2.00 and coords_x < 2.00:
+        print("This must be the tail navlight!!")
+        lighttype = "airplane_nav_tail"
+    elif (coords_x) < -2.00:
+        print("This must be the left navlight!!")
+        lighttype = "airplane_nav_left"
+    else:
+        print("This must be the right navlight!!")
+        lighttype = "airplane_nav_right"
+
+    return line.replace(actual_lighttype, lighttype)
+
+
 def process_lights(line: str, light_params: dict[str, str]) -> str:
     """Changes the light parameters to XP12 specs
 
@@ -128,10 +154,24 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     Returns:
         str: A line with updated light parameters
     """
-    # Just in case _pm and / or _bb are already defined, return the line unmodified
-    if any(new_light_param in line for new_light_param in ["_pm", "_bb"]):
-        return line
+
+    # Remove possible unwanted params, keep specifier, name, x, y, z params
+    line = " ".join(line.split()[:5])
+
+    # Remove billboard lines, will be (re)build later on.
+    if "_bb" in line:
+        return ""
+
+    # Remove pm suffix
+    line = line.replace("_pm", "")
+
+    if "_nav" in line:
+        line = rename_navlights_based_on_position(line)
+
     lighttype = line.split()[1]
+
+    # TODO: Find a way to determine _nav light type as they all are defined as airplane_nav, no more left, right or tail...!!!
+
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
     line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
