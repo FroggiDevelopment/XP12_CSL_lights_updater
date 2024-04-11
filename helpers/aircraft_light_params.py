@@ -91,4 +91,4 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str, str]:
             return light_params[key]
     else:
         logger.warning(f"{aircraft_type} not found.. Using default light params!")
-        return light_params["airliners"]
+        return light_params["general_aviation"]
