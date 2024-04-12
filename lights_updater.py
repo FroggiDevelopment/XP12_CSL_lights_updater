@@ -288,9 +288,9 @@ def parse_args() -> argparse.Namespace:
     # Check if cli params are present
     parser = argparse.ArgumentParser(
         prog="Lights updater for CSL objects",
-        description="""This program can convert XP11 lightparams of CSL aircraft objetcs to the new XP12 specifications.
+        description="""This program can convert XP11 lightparams of CSL aircraft objects to the new XP12 specifications.
 Developed for getting landing lights for LifeTraffic.
-Works only partial with custom CSL aircraft.
+Works with Bluebell and X-CSL packages, works only with some custom CSL aircraft.
 
 For normal start you don't need any arguments.
 But then you MUST specify the csl_path in the config.ini file!""",
