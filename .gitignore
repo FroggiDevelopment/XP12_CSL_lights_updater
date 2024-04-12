@@ -54,3 +54,4 @@ X-CSL/*
 Custom/*
 
 test*
+.cov*
