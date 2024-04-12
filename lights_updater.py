@@ -80,9 +80,9 @@ def filter_unwanted_light_params(line: str) -> str:
     if "#LIGHT_PARAM" in line:
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
-    if "airplane_nav" in line:
-        for item in ["_left", "_right", "_tail"]:
-            line = line.replace(item, "")
+    # if "airplane_nav" in line:
+    for item in ["_left", "_right", "_tail"]:
+        line = line.replace(item, "")
 
     return line
 
@@ -118,25 +118,19 @@ def ignore_line(line: str) -> bool:
     return False
 
 
-def rename_navlights_based_on_position(line: str) -> str:
-    """Takes the airplane_nav parameter and returns left, right, or tail params according to its position
+def add_position_to_lights(line: str) -> str:
+    if any(position in line for position in ["_right", "_left", "_tail"]):
+        return line
 
-    Args:
-        line (str): The line with the aircraft_nav param(s)
-
-    Returns:
-        str: The line with nav lighttypes in old style.
-    """
-    # TODO: Can this be achived more elegant?
     coords_x = float(line.split()[2:3][0])
     actual_lighttype = line.split()[1]
 
-    if (coords_x) > -2.00 and coords_x < 2.00:
-        lighttype = "airplane_nav_tail"
-    elif (coords_x) < -2.00:
-        lighttype = "airplane_nav_left"
+    if (coords_x) > -0.50 and coords_x < 0.50:
+        lighttype = f"{actual_lighttype}_tail"
+    elif (coords_x) < -0.50:
+        lighttype = f"{actual_lighttype}_left"
     else:
-        lighttype = "airplane_nav_right"
+        lighttype = f"{actual_lighttype}_right"
 
     return line.replace(actual_lighttype, lighttype)
 
@@ -162,8 +156,8 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     # Remove pm suffix
     line = line.replace("_pm", "")
 
-    if "_nav" in line:
-        line = rename_navlights_based_on_position(line)
+    if "_nav" in line or "_strobe" in line:
+        line = add_position_to_lights(line)
 
     lighttype = line.split()[1]
 
@@ -179,40 +173,41 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 
 
 @time_benchmark
-def process_obj_file(aircraft_obj_file: Path) -> None:
+def process_object_files(aircraft_objects: list[Path]) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
 
     Args:
         file (Path): the existing aircraft object file
     """
-    temp_object_file: Path = aircraft_obj_file.with_suffix(suffix=TEMP_FILE_SUFFIX)
+    for aircraft_object in aircraft_objects:
+        temp_object_file: Path = aircraft_object.with_suffix(suffix=TEMP_FILE_SUFFIX)
 
-    # If airline is in the filename, it is sparated by "_". The 'normal' case.
-    if "_" in aircraft_obj_file.name:
-        aircraft_type: str = aircraft_obj_file.name.split("_")[0]
-    else:  # Rare case with only type in object name without airline abbreviation.
-        aircraft_type = aircraft_obj_file.name.rstrip(".obj")
+        # If airline is in the filename, it is sparated by "_". The 'normal' case.
+        if "_" in aircraft_object.name:
+            aircraft_type: str = aircraft_object.name.split("_")[0]
+        else:  # Rare case with only type in object name without airline abbreviation.
+            aircraft_type = aircraft_object.name.rstrip(".obj")
 
-    light_params = get_light_params_for_aircraft_type(aircraft_type)
+        light_params = get_light_params_for_aircraft_type(aircraft_type)
 
-    try:
-        with open(aircraft_obj_file) as aircraft_object_file, open(
-            temp_object_file, "w+"
-        ) as new_obj_file:
-            log.info(f"Processing {aircraft_object_file.name}")
-            for line in aircraft_object_file:
-                if line.startswith("# "):
-                    continue
-                if ignore_line(line) is True:
-                    continue
-                if any(lighttype in line for lighttype in LIGHT_NEEDLES):
-                    line = process_lights(line, light_params)
+        try:
+            with open(aircraft_object) as aircraft_object_file, open(
+                temp_object_file, "w+"
+            ) as new_obj_file:
+                log.info(f"Processing {aircraft_object_file.name}")
+                for line in aircraft_object_file:
+                    if line.startswith("# "):
+                        continue
+                    if ignore_line(line) is True:
+                        continue
+                    if any(lighttype in line for lighttype in LIGHT_NEEDLES):
+                        line = process_lights(line, light_params)
 
-                new_obj_file.write(line)
-    except FileNotFoundError as err:
-        log.error(f"{aircraft_obj_file.name} not found!", err)
-        if STOP_ON_ERROR is True:
-            sys.exit()
+                    new_obj_file.write(line)
+        except FileNotFoundError as err:
+            log.error(f"{aircraft_object.name} not found!", err)
+            if STOP_ON_ERROR is True:
+                sys.exit()
 
 
 def copy_new_to_old(files: list[Path]) -> None:
@@ -350,7 +345,6 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     aircraft_objects: list[Path] = get_aircraft_objects_from_xsb_file(
         searchpath=CSL_PATH
     )
-    number_of_objects = len(aircraft_objects)
 
     # Specials
     if args.undo:  # Undo changes, recover object from backup.
@@ -370,15 +364,13 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     log.info(
         "Removing possible xpmp2 files as they can 'cache' the objects. LifeTraffic will recreate them."
     )
-
     remove_xpmp2_files(filepath=CSL_PATH)
-    # TODO: Some more error handling?
-    for file in aircraft_objects:
-        process_obj_file(aircraft_obj_file=file)
+
+    process_object_files(aircraft_objects)
 
     copy_new_to_old(aircraft_objects)
 
-    log.info(f"Processing done, {number_of_objects} files have been processed!")
+    log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
 
 
 if __name__ == "__main__":
