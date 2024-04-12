@@ -78,7 +78,7 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str, str]:
     light_params: dict[str, dict[str, str]] = get_light_params_per_aircraft_category()
 
     # Just in case that the lights are in a different object than it used to be....
-    # Yeah, some CSL aircraft have multiple objetcs... don't know why
+    # Yeah, some CSL aircraft have multiple objects... don't know why
 
     aircraft_bodyparts = ["wings", "fuselage", "Wings", "Fuselage"]
     if (bodyparts in aircraft_type for bodyparts in aircraft_bodyparts):
