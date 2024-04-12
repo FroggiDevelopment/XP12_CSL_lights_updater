@@ -101,9 +101,7 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
 
         backup_file.unlink()
         log.info(f"Recovery of {recover_file} is done!")
-        log.debug(f"Recovering {backup_file}")
-    log.info("Recovery done!")
-    log.info(f"Recoverd {len(files)} files!")
+    log.info(f"Recovery ready! Recoverd {len(files)} files!")
 
 
 def remove_xpmp2_files(filepath: str) -> None:
@@ -129,14 +127,16 @@ def delete_files(files: list[Path], suffix: str = ""):
     for file in files:
         if suffix != "":
             file = file.with_suffix(suffix)
-        if file.exists():
-            log.info(f"Deleting {file}!")
-            try:
-                file.unlink()
-            except PermissionError as err:
-                log.error("Deleting resulted in error!", err)
-            except FileNotFoundError as notfound:
-                log.error("Deleting resulted in error!", notfound)
+        if not file.exists():
+            log.warning(f"File {file} does not exist! Deleting not possible!")
+            continue
+        log.info(f"Deleting {file}!")
+        try:
+            file.unlink()
+        except PermissionError as err:
+            log.error("Deleting resulted in error!", err)
+        except FileNotFoundError as notfound:
+            log.error("Deleting resulted in error!", notfound)
 
 
 def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
