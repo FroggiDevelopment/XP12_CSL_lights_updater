@@ -32,8 +32,8 @@ from helpers import get_aircraft_objects_from_xsb_file
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
+# Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
-BACKUP_SUFFIX: str = ".BCK"
 STOP_ON_ERROR: bool = True
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
@@ -118,16 +118,26 @@ def ignore_line(line: str) -> bool:
     return False
 
 
-def add_position_to_lights(line: str) -> str:
+def add_lateral_position_to_lights(line: str) -> str:
+    """To determine directional parameters set the position of this light temporarily.
+       Will be removed again later on in the process.
+
+    Args:
+        line (str): Line with light-parameters.
+
+    Returns:
+        str: Line with 'positional' light-name-parameters. I.e. airplane_nav_rigt
+    """
+    # If the line already includes position, return it unprocessed.
     if any(position in line for position in ["_right", "_left", "_tail"]):
         return line
 
-    coords_x = float(line.split()[2:3][0])
+    _x_position = float(line.split()[2:3][0])
     actual_lighttype = line.split()[1]
 
-    if (coords_x) > -0.50 and coords_x < 0.50:
+    if (_x_position) > -0.50 and _x_position < 0.50:
         lighttype = f"{actual_lighttype}_tail"
-    elif (coords_x) < -0.50:
+    elif (_x_position) < -0.50:
         lighttype = f"{actual_lighttype}_left"
     else:
         lighttype = f"{actual_lighttype}_right"
@@ -157,7 +167,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     line = line.replace("_pm", "")
 
     if "_nav" in line or "_strobe" in line:
-        line = add_position_to_lights(line)
+        line = add_lateral_position_to_lights(line)
 
     lighttype = line.split()[1]
 
@@ -237,6 +247,14 @@ def copy_new_to_old(files: list[Path]) -> None:
 
 
 def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
+    """Set a minimal configuration settings.
+
+    Args:
+        args_path_to_csl (str | None): If available the path is set by commandline param.
+
+    Returns:
+        tuple[str, bool]: Returns a path-string and a bool for STOP_ON_ERROR
+    """
     # Get config from file
 
     config = ConfigParser()
@@ -261,7 +279,12 @@ def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
         return config["csl"]["csl_path"], STOP_ON_ERROR
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
+    """Parse commandline arguments.
+
+    Returns:
+        tuple[str, bool]: Returns a path-string and a bool for STOP_ON_ERROR
+    """
     # Check if cli params are present
     parser = argparse.ArgumentParser(
         prog="Lights updater for CSL objects",
@@ -316,6 +339,7 @@ Now you know!\n
         version=f"%(prog)s version: {__version__}",
     )
     parser._optionals.title = "Optional arguments"
+
     return parser.parse_args()
 
 
