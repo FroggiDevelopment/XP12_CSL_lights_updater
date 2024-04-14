@@ -101,7 +101,7 @@ def ignore_line(line: str) -> bool:
         "_size",
         "_sp",
         "taillight",
-        "_rotate",
+        "airplane_beacon_rotate",
         "_core",
         "_size",
         "_omni",
@@ -206,9 +206,11 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
             ) as new_obj_file:
                 log.info(f"Processing {aircraft_object_file.name}")
                 for line in aircraft_object_file:
+                    # Remove some unnecessary lines. Can be done better...!!!
                     if line.startswith("# "):
                         continue
                     if ignore_line(line) is True:
+                        new_obj_file.write(line)
                         continue
                     if any(lighttype in line for lighttype in LIGHT_NEEDLES):
                         line = process_lights(line, light_params)
