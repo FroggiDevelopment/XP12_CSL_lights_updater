@@ -48,7 +48,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
     aircraft_object_files: list[Path] = []
 
     # Separator differ between Bluebell and X-CSL, standard is / in this case.
-    _seperator: str = "/"
+    _separator: str = "/"
 
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
     for xsb_file in xsb_files:
@@ -81,25 +81,35 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                     aircraft_dir_file_info: str = list_of_params[3]
                     number_of_path_params: int = 0
 
-                    # Separator differ between Bluebell and X-CSL and ?? maybe
-                    if ":" in aircraft_dir_file_info:
-                        _seperator = ":"
-                    elif "/" in aircraft_dir_file_info:
-                        _seperator: str = "/"
-                        number_of_path_params = len(
-                            aircraft_dir_file_info.split(_seperator)
+                    if any(
+                        (match := delimiter) in aircraft_dir_file_info
+                        for delimiter in [":", "/"]
+                    ):
+                        _separator = match
+                    else:
+                        log.warning(
+                            f"Could not find separator in {aircraft_dir_file_info}"
                         )
+                        sys.exit()
+                    # Separator differ between Bluebell and X-CSL and ?? maybe
+                    # if ":" in aircraft_dir_file_info:
+                    #     _separator = ":"
+                    # elif "/" in aircraft_dir_file_info:
+                    #     _separator: str = "/"
+                    number_of_path_params = len(
+                        aircraft_dir_file_info.split(_separator)
+                    )
 
                     object_path = None
                     # TODO: Can this be done better? To be investigated.
-                    if _seperator == ":":
-                        object_file = aircraft_dir_file_info.split(_seperator)[
+                    if _separator == ":":
+                        object_file = aircraft_dir_file_info.split(_separator)[
                             1
                         ].rstrip("\n")
 
                         object_path = Path(parentdir, object_file)
-                    elif _seperator == "/" and number_of_path_params >= 2:
-                        object_file = aircraft_dir_file_info.split(_seperator, 1)[
+                    elif _separator == "/" and number_of_path_params >= 2:
+                        object_file = aircraft_dir_file_info.split(_separator, 1)[
                             1
                         ].rstrip("\n")
                         object_path = Path(parentdir, object_file)
