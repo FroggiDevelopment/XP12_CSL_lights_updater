@@ -73,7 +73,8 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                     ):
                         continue
                     if not line.startswith(
-                        ("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")
+                        ("OBJ8 SOLID YES", "OBJ8 LIGHTS YES", "OBJ8 SOLID NO")
+                        # "OBJ8 " should be enough.
                     ):  # These can contain light params
                         continue
                     list_of_params: list[str] = line.split(" ")
