@@ -72,6 +72,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                         ]
                     ):
                         continue
+                    # TODO: According to LiveTraffic docs OBJ8 should be enough. 
+                    # The other two can be ignored.
+                    # Check what the consequences are!
                     if not line.startswith(
                         ("OBJ8 SOLID YES", "OBJ8 LIGHTS YES")
                     ):  # These can contain light params
