@@ -48,7 +48,7 @@ LIGHT_NEEDLES: list[str] = [
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     filename="lights_updater.log",
