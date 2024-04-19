@@ -47,17 +47,15 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
     aircraft_object_files: list[Path] = []
 
-    # Separator differ between Bluebell and X-CSL, standard is / in this case.
-    _separator: str = "/"
-
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
     for xsb_file in xsb_files:
         parentdir: Path = xsb_file.parent.absolute()
 
         try:
             with open(xsb_file, "r") as xsb_aircraft_file:
-                for line in xsb_aircraft_file:
-                    # Some 'specials' in xsb_aircraft.txt files to ignore
+                for line_num, line in enumerate(xsb_aircraft_file, start = 1):
+                    # As some CSL aircraft are made with more then one object, also not recommended,
+                    # some of those in xsb_aircraft.txt files have to be ignored!
                     if any(
                         trigger in line.lower()
                         for trigger in [
@@ -75,31 +73,30 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
                     if not line.startswith("OBJ8 "):  # Exclude the lines which have no light params
                         continue
-                    list_of_params: list[str] = line.split(" ")
-                    aircraft_dir_file_info: str = list_of_params[3]
-                    number_of_path_params: int = 0
+
+                    aircraft_file_path_info: str = line.split()[3]
 
                     if any(
-                        (_separator := delimiter) in aircraft_dir_file_info
+                        (_separator := delimiter) in aircraft_file_path_info
                         for delimiter in [":", "/"]
                     ):
                         pass
                     else:
-                        log.warning(
-                            f"Could not find separator in {aircraft_dir_file_info}! No path to object creatable!"
+                        log.error(
+                            f"Could not find separator in {aircraft_file_path_info} at line -> {line_num}! No path to object creatable!"
                         )
-                        sys.exit()
+                        continue
 
                     number_of_path_params = len(
-                        aircraft_dir_file_info.split(_separator)
+                        aircraft_file_path_info.split(_separator)
                     )
                     if number_of_path_params == 3:
-                        _, relative_path, object_name = aircraft_dir_file_info.split(_separator)
+                        _, relative_path, object_name = aircraft_file_path_info.split(_separator)
                     elif number_of_path_params == 2:
-                        relative_path, object_name = aircraft_dir_file_info.split(_separator)
+                        relative_path, object_name = aircraft_file_path_info.split(_separator)
                     else:
                         log.warning(
-                            f"Found not enough path parameters in {aircraft_dir_file_info}! xsb_aircraft.txt file is not valid!"
+                            f"Found not enough path parameters in {aircraft_file_path_info}! xsb_aircraft.txt file is not valid!"
                         )
                         sys.exit()
 
@@ -107,13 +104,11 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
                     if object_path.exists() is False:
                         log.error(f"File {object_path} does not exist! Skipping!")
-                        object_path = None
+                        continue
 
-                    if (
-                        object_path is not None
-                        and object_path not in aircraft_object_files
-                    ):
+                    if ( object_path not in aircraft_object_files):
                         aircraft_object_files.append(object_path)
+
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
     return aircraft_object_files
