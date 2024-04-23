@@ -199,18 +199,18 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
             aircraft_type = aircraft_object.name.rstrip(".obj")
 
         light_params = get_light_params_for_aircraft_type(aircraft_type)
-        aircraft_object_file = None
+        aircraft_object_content: list[str] = []
         try:
             with open(aircraft_object) as file:
-                aircraft_object_file = file.read()
+                aircraft_object_content = file.readlines()
         except FileNotFoundError as err:
             log.error(f"{aircraft_object.name} not found!", err)
 
-        if aircraft_object_file == None:
+        if aircraft_object_content == []:
             continue
         new_file_content = ""
         log.info(f"Processing {aircraft_object.name}")
-        for line in aircraft_object_file:
+        for line in aircraft_object_content:
             # Remove some unnecessary lines. Can be done better...!!!
             if line.startswith("# "):
                 continue
@@ -227,25 +227,6 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
                 new_obj_file.write(new_file_content)
         except IOError as err:
             print("Something went wrong!", err)
-
-        # try:
-        #     with open(temp_object_file, "w+") as new_obj_file:
-        #         log.info(f"Processing {aircraft_object.name}")
-        #         for line in aircraft_object_file:
-        #             # Remove some unnecessary lines. Can be done better...!!!
-        #             if line.startswith("# "):
-        #                 continue
-        #             if ignore_line(line) is True:
-        #                 new_obj_file.write(line)
-        #                 continue
-        #             if any(lighttype in line for lighttype in LIGHT_NEEDLES):
-        #                 line = process_lights(line, light_params)
-
-        #             new_obj_file.write(line)
-        # except IOError as err:
-        #     log.error(f"Something went wrong while writing!", err)
-        #     if STOP_ON_ERROR is True:
-        #         sys.exit()
 
 
 def copy_new_to_old(files: list[Path]) -> None:
