@@ -25,9 +25,8 @@ def build_new_object(object_content: str) -> str:
     new_object_content = object_content.replace(string_from_tuple, string_with_new_dataref)
     return new_object_content
 
-def repair_taxi_lights_dataref():
-    original_object_file: Path = Path("CSL/BB_GA/BE20/BE20_BGT_test.obj")
-    optimized_object_file: Path = Path("CSL/BB_GA/BE20/BE20_BGT_optimized.obj")
+def repair_taxi_lights_dataref(input_file: Path, output_file: Path) -> None:
+
     file_content = get_original_object(original_object_file)
 
     new_object_content = build_new_object(file_content)
@@ -37,4 +36,6 @@ def repair_taxi_lights_dataref():
     print("Done!")
         
 if __name__ == "__main__":
-    repair_taxi_lights_dataref()
+    original_object_file: Path = Path("CSL/BB_GA/BE20/BE20_BGT_test.obj")
+    optimized_object_file: Path = Path("CSL/BB_GA/BE20/BE20_BGT_optimized.obj")
+    repair_taxi_lights_dataref(original_object_file, optimized_object_file)
