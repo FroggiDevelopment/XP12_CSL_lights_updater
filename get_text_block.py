@@ -39,3 +39,5 @@ if __name__ == "__main__":
     original_object_file: Path = Path("CSL/BB_GA/BE20/BE20_BGT_test.obj")
     optimized_object_file: Path = Path("CSL/BB_GA/BE20/BE20_BGT_optimized.obj")
     repair_taxi_lights_dataref(original_object_file, optimized_object_file)
+
+    to_remind="https://forums.poscon.net/docs/support/manuals/pilots/csl/"
