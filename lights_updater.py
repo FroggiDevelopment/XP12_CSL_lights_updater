@@ -199,34 +199,59 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
             aircraft_type = aircraft_object.name.rstrip(".obj")
 
         light_params = get_light_params_for_aircraft_type(aircraft_type)
-
+        aircraft_object_file = None
         try:
-            with open(aircraft_object) as aircraft_object_file, open(
-                temp_object_file, "w+"
-            ) as new_obj_file:
-                log.info(f"Processing {aircraft_object_file.name}")
-                for line in aircraft_object_file:
-                    # Remove some unnecessary lines. Can be done better...!!!
-                    if line.startswith("# "):
-                        continue
-                    if ignore_line(line) is True:
-                        new_obj_file.write(line)
-                        continue
-                    if any(lighttype in line for lighttype in LIGHT_NEEDLES):
-                        line = process_lights(line, light_params)
-
-                    new_obj_file.write(line)
+            with open(aircraft_object) as file:
+                aircraft_object_file = file.read()
         except FileNotFoundError as err:
             log.error(f"{aircraft_object.name} not found!", err)
-            if STOP_ON_ERROR is True:
-                sys.exit()
+
+        if aircraft_object_file == None:
+            continue
+        new_file_content = ""
+        log.info(f"Processing {aircraft_object.name}")
+        for line in aircraft_object_file:
+            # Remove some unnecessary lines. Can be done better...!!!
+            if line.startswith("# "):
+                continue
+            if ignore_line(line) is True:
+                new_file_content += line
+                continue
+            if any(lighttype in line for lighttype in LIGHT_NEEDLES):
+                line = process_lights(line, light_params)
+
+            new_file_content += line
+
+        try:
+            with open(temp_object_file, "w+") as new_obj_file:
+                new_obj_file.write(new_file_content)
+        except IOError as err:
+            print("Something went wrong!", err)
+
+        # try:
+        #     with open(temp_object_file, "w+") as new_obj_file:
+        #         log.info(f"Processing {aircraft_object.name}")
+        #         for line in aircraft_object_file:
+        #             # Remove some unnecessary lines. Can be done better...!!!
+        #             if line.startswith("# "):
+        #                 continue
+        #             if ignore_line(line) is True:
+        #                 new_obj_file.write(line)
+        #                 continue
+        #             if any(lighttype in line for lighttype in LIGHT_NEEDLES):
+        #                 line = process_lights(line, light_params)
+
+        #             new_obj_file.write(line)
+        # except IOError as err:
+        #     log.error(f"Something went wrong while writing!", err)
+        #     if STOP_ON_ERROR is True:
+        #         sys.exit()
 
 
 def copy_new_to_old(files: list[Path]) -> None:
     """Copy the new created file over the original file
     Delete the new file
     """
-    log.debug("Start copying processed files to original file!")
     log.info("Start copying processed files to original file!")
     for file in files:
         destination_file = file.with_suffix(".obj")
