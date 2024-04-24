@@ -190,7 +190,6 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
         file (Path): the existing aircraft object file
     """
     for aircraft_object in aircraft_objects:
-        temp_object_file: Path = aircraft_object.with_suffix(suffix=TEMP_FILE_SUFFIX)
 
         # If airline is in the filename, it is sparated by "_". The 'normal' case.
         if "_" in aircraft_object.name:
@@ -200,12 +199,18 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
 
         light_params = get_light_params_for_aircraft_type(aircraft_type)
         aircraft_object_content: list[str] = []
+
         try:
             with open(aircraft_object) as file:
                 aircraft_object_content = file.readlines()
         except FileNotFoundError as err:
             log.error(f"{aircraft_object.name} not found!", err)
+            continue
+        except UnicodeDecodeError as err:
+            log.error(f"Object file seems damaged! See: {err}")
+            continue
 
+        temp_object_file: Path = aircraft_object.with_suffix(suffix=TEMP_FILE_SUFFIX)
         if aircraft_object_content == []:
             continue
         new_file_content = ""
@@ -240,12 +245,17 @@ def copy_new_to_old(files: list[Path]) -> None:
         destination_file = file.with_suffix(".obj")
         temp_object_file = file.with_suffix(TEMP_FILE_SUFFIX)
         log.info(f"Copying {temp_object_file.name} to {file} file!")
+
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
             if STOP_ON_ERROR is True:
                 log.error("Stopping on error!", err)
                 sys.exit()
+            else:
+                continue
+        except FileNotFoundError as err:
+            log.error(f"File could not be copied! See: {err}")
             continue
         try:
             temp_object_file.unlink()
