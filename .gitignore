@@ -49,7 +49,7 @@ Thumbs.db
 *.wmv
 
 # CLS files created
-CSL/*
+CSL*/*
 X-CSL/*
 Custom/*
 RuScenery_CSL/*
