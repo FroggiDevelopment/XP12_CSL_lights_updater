@@ -98,9 +98,8 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                             _separator
                         )
                     elif number_of_path_params == 2:
-                        relative_path, object_name = aircraft_file_path_info.split(
-                            _separator
-                        )
+                        _, object_name = aircraft_file_path_info.split(_separator)
+                        relative_path = "."
                     else:
                         log.warning(
                             f"Found not enough path parameters in {aircraft_file_path_info}! xsb_aircraft.txt file is not valid!"
@@ -134,7 +133,6 @@ def fix_taxilights_dataref(object_content: str) -> str:
     for item in result:
         string_from_tuple: str = ""
         if any("airplane_taxi" in value for value in item):
-            # print(item)
             for row in item:
                 string_from_tuple += row
 
