@@ -57,20 +57,20 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                 for line_num, line in enumerate(xsb_aircraft_file, start=1):
                     # As some CSL aircraft are made with more then one object, also not recommended,
                     # some of those in xsb_aircraft.txt files have to be ignored!
-                    if any(
-                        trigger in line.lower()
-                        for trigger in [
-                            "light.",
-                            "cars",
-                            "fan",
-                            "prop",
-                            "glass",
-                            "rotor",
-                            "engine",
-                            "gear",
-                        ]
-                    ):
-                        continue
+                    # if any(
+                    #     trigger in line.lower()
+                    #     for trigger in [
+                    #         "light.",
+                    #         "cars",
+                    #         "fan",
+                    #         "prop",
+                    #         "glass",
+                    #         "rotor",
+                    #         "engine",
+                    #         "gear",
+                    #     ]
+                    # ):
+                    #     continue
 
                     if not line.startswith(
                         "OBJ8 "
@@ -124,27 +124,25 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
 
 def fix_taxilights_dataref(object_content: str) -> str:
-    start_delimiter: str = (
-        "ANIM_show 0.500000 2.000000 libxplanemp/controls/landing_lites_on"
-    )
+    start_delimiter: str = "libxplanemp/controls/landing_lites_on"
     end_delimiter: str = "ANIM_end"
     result = re.findall(
         f"(?s)({start_delimiter})(.+?)({end_delimiter})", object_content
     )
 
-    string_from_tuple: str = ""
-
     # TODO: Add check if processing is necessary, else return original content
     for item in result:
+        string_from_tuple: str = ""
         if any("airplane_taxi" in value for value in item):
+            # print(item)
             for row in item:
                 string_from_tuple += row
 
-        string_with_new_dataref = string_from_tuple.replace(
-            "landing_lites_on", "taxi_lites_on"
-        )
-        new_object_content = object_content.replace(
-            string_from_tuple, string_with_new_dataref
-        )
-        return new_object_content
+            string_with_new_dataref = string_from_tuple.replace(
+                "landing_lites_on", "taxi_lites_on"
+            )
+            new_object_content = object_content.replace(
+                string_from_tuple, string_with_new_dataref
+            )
+            return new_object_content
     return object_content
