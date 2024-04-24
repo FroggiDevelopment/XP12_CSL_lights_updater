@@ -132,17 +132,19 @@ def fix_taxilights_dataref(object_content: str) -> str:
         f"(?s)({start_delimiter})(.+?)({end_delimiter})", object_content
     )
 
-    string_from_tuple = ""
+    string_from_tuple: str = ""
 
+    # TODO: Add check if processing is necessary, else return original content
     for item in result:
         if any("airplane_taxi" in value for value in item):
             for row in item:
                 string_from_tuple += row
 
-    string_with_new_dataref = string_from_tuple.replace(
-        "landing_lites_on", "taxi_lites_on"
-    )
-    new_object_content = object_content.replace(
-        string_from_tuple, string_with_new_dataref
-    )
-    return new_object_content
+        string_with_new_dataref = string_from_tuple.replace(
+            "landing_lites_on", "taxi_lites_on"
+        )
+        new_object_content = object_content.replace(
+            string_from_tuple, string_with_new_dataref
+        )
+        return new_object_content
+    return object_content
