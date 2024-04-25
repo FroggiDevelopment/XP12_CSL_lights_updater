@@ -123,6 +123,16 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
 
 def fix_taxilights_dataref(object_content: str) -> str:
+    """Fixes the wrong dataref for taxilights.
+       The original dataref for the taxilights is set to landing_lites_on instead of taxi_lites_on.
+       Gets corrected so the taxilights are visible.
+
+    Args:
+        object_content (str): Original aricraft object content.
+
+    Returns:
+        str: Fixed aricraft object content.
+    """
     start_delimiter: str = "libxplanemp/controls/landing_lites_on"
     end_delimiter: str = "ANIM_end"
     result = re.findall(
