@@ -40,7 +40,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
         raise FileNotFoundError(f"Path {searchpath} is not a reachable directory")
 
     try:
-        xsb_files = get_list_of_files(searchpath, "xsb_aircraft.txt")
+        xsb_files: list[Path] = get_list_of_files(searchpath, "xsb_aircraft.txt")
     except NoFilesFoundError as errormsg:
         log.error(errormsg)
         log.error("Please verify that your path is correct!")
