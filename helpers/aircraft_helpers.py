@@ -74,7 +74,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
                     if not line.startswith(
                         "OBJ8 "
-                    ):  # Exclude the lines which have no light params
+                    ):  # Exclude lines with no aircraft object info
                         continue
 
                     aircraft_file_path_info: str = line.split()[3]
