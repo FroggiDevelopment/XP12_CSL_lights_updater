@@ -156,7 +156,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
         str: A line with updated light parameters
     """
 
-    # Remove possible unwanted params, keep specifier, name, x, y, z params
+    # Remove possible unwanted params, keep specifier, lighttype, x, y, z params
     line = " ".join(line.split()[:5])
 
     # Remove billboard lines, will be (re)build later on.
