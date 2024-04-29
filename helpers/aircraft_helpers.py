@@ -154,3 +154,9 @@ def fix_taxilights_dataref(object_content: str) -> str:
             )
             return new_object_content
     return object_content
+
+
+def fix_landing_lights_on_gear_on_if_retracted():
+    hide_option = "ANIM_hide -1.000000 0.000000	libxplanemp/controls/gear_ratio"
+    print(hide_option)
+    pass
