@@ -21,6 +21,7 @@ import logging
 from pathlib import Path
 
 from .helpers import get_list_of_files
+from .helpers import tuple_to_string
 from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger("aircraft_helpers")
@@ -154,12 +155,17 @@ def fix_taxilights_dataref(object_content: str) -> str:
                 string_from_tuple, string_with_new_dataref
             )
             return new_object_content
+        else:
+            fix_landing_lights_on_gear_on_if_retracted(item)
     return object_content
 
 
-def fix_landing_lights_on_gear_on_if_retracted():
+def fix_landing_lights_on_gear_on_if_retracted(landing_lights: tuple[str]) -> str:
     # It's the order of show and hide.
     # Maybe show can be omited at all, see X-CSL package(s)
-    hide_option = "ANIM_hide -1.000000 0.000000	libxplanemp/controls/gear_ratio"
-    print(hide_option)
-    pass
+    landing_lights_string = tuple_to_string(landing_lights)
+    print(landing_lights_string)
+    # hide_option = "ANIM_hide -1.000000 0.000000	libxplanemp/controls/gear_ratio"
+    print("-------------------------------------------------------------")
+
+    return "Hello"

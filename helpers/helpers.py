@@ -153,3 +153,18 @@ def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
         raise NoFilesFoundError(message=f"No {filename} found in {searchpath}!")
     log.debug(f"Found these files while globing: {files}")
     return files
+
+
+def tuple_to_string(tuple_to_convert: tuple[str]):
+    """Convert a tuple to a string
+
+    Args:
+        tuple_to_convert (tuple): The tuple to convert
+
+    Returns:
+        str: The converted string
+    """
+    string_from_tuple: str = ""
+    for row in tuple_to_convert:
+        string_from_tuple += row
+    return str(string_from_tuple)
