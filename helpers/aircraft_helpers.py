@@ -140,6 +140,7 @@ def fix_taxilights_dataref(object_content: str) -> str:
     )
 
     # TODO: Add check if processing is necessary, else return original content
+    # TODO: Add fix for landing lights on retracted landing gear
     for item in result:
         string_from_tuple: str = ""
         if any("airplane_taxi" in value for value in item):
@@ -157,6 +158,8 @@ def fix_taxilights_dataref(object_content: str) -> str:
 
 
 def fix_landing_lights_on_gear_on_if_retracted():
+    # It's the order of show and hide.
+    # Maybe show can be omited at all, see X-CSL package(s)
     hide_option = "ANIM_hide -1.000000 0.000000	libxplanemp/controls/gear_ratio"
     print(hide_option)
     pass
