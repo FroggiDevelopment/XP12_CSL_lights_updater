@@ -136,12 +136,12 @@ def fix_taxilights_dataref(object_content: str) -> str:
     """
     start_delimiter: str = "libxplanemp/controls/landing_lites_on"
     end_delimiter: str = "ANIM_end"
-    result = re.findall(
+    result: list[tuple[str]] = re.findall(
         f"(?s)({start_delimiter})(.+?)({end_delimiter})", object_content
     )
-
     # TODO: Add check if processing is necessary, else return original content
     # TODO: Add fix for landing lights on retracted landing gear
+    new_object_content: str = ""
     for item in result:
         string_from_tuple: str = ""
         if any("airplane_taxi" in value for value in item):
@@ -154,18 +154,30 @@ def fix_taxilights_dataref(object_content: str) -> str:
             new_object_content = object_content.replace(
                 string_from_tuple, string_with_new_dataref
             )
-            return new_object_content
+            # return new_object_content
         else:
+            # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             fix_landing_lights_on_gear_on_if_retracted(item)
-    return object_content
+    return new_object_content
+    # return object_content
 
 
 def fix_landing_lights_on_gear_on_if_retracted(landing_lights: tuple[str]) -> str:
     # It's the order of show and hide.
     # Maybe show can be omited at all, see X-CSL package(s)
-    landing_lights_string = tuple_to_string(landing_lights)
-    print(landing_lights_string)
+    # landing_lights_string = tuple_to_string(landing_lights)
+    # print(landing_lights_string)
     # hide_option = "ANIM_hide -1.000000 0.000000	libxplanemp/controls/gear_ratio"
-    print("-------------------------------------------------------------")
+    # print("-------------------------------------------------------------")
+    print(type(landing_lights))
+    print(landing_lights)
+    for line in landing_lights:
+        print("One row:", line)
+    #     if any(needle in line for needle in "ANIM_show"):
+    #         anim_start = line
+    #         print(f"Start of animation: {anim_start}")
+        
+    #     if line.startswith("LIGHT_PARAM airplane_landing"):
+    #         print("Got a landing light@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
     return "Hello"
