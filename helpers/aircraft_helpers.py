@@ -146,7 +146,7 @@ def fix_taxilights_dataref(object_content: str) -> str:
     # print(len(result))
     for index,subresult in enumerate(result):
         print(f"Part {index} coontains:\n{subresult}")
-    sys.exit()
+    # sys.exit()
     # TODO: Add check if processing is necessary, else return original content
     # TODO: Add fix for landing lights on retracted landing gear
     new_object_content: str = ""
@@ -162,7 +162,7 @@ def fix_taxilights_dataref(object_content: str) -> str:
             new_object_content = object_content.replace(
                 string_from_tuple, string_with_new_dataref
             )
-            # return new_object_content
+            return new_object_content
         else:
             # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             fix_landing_lights_on_gear_on_if_retracted(item)
