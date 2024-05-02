@@ -6894,97 +6894,93 @@ TRIS 13470 42
 ATTR_shiny_rat 1.000000
 TRIS 13512 30
 ANIM_end
+# airplane_landing.R
 ANIM_begin
 	ANIM_hide	-1.0 0.0	libxplanemp/controls/landing_lites_on
-LIGHT_PARAM airplane_landing_pm 2.2520 2.5624 -1.3648  0.76052475 0.65837479 0.57758057 3 800000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
-LIGHT_PARAM airplane_landing_bb 2.2520 2.5624 -1.3648  0.76052475 0.65837479 0.57758057 3 800000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
+	LIGHT_NAMED	airplane_landing	   2.2520    2.5624   -1.3648
 	LIGHT_PARAM airplane_landing_core	2.2520    2.5624   -1.3648		0	0		-0.8	0	0.5
 	LIGHT_PARAM airplane_landing_glow 	2.2520    2.5624   -1.3648		0	-0.12	-1.2	0	2	
 	LIGHT_PARAM airplane_landing_flare 	2.2520    2.5624   -1.3648		0	-1.8	-18		0	1	
 	LIGHT_PARAM airplane_landing_sp		2.2520    2.5624   -1.3648 		0.85 0.85 1  0 250 0.76604
 
-LIGHT_PARAM airplane_landing_pm -2.2520 2.5616 -1.3648  0.76052475 0.65837479 0.57758057 3 800000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
-LIGHT_PARAM airplane_landing_bb -2.2520 2.5616 -1.3648  0.76052475 0.65837479 0.57758057 3 800000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
+	LIGHT_NAMED	airplane_landing	  -2.2520    2.5616   -1.3648
 	LIGHT_PARAM airplane_landing_core	-2.2520    2.5616   -1.3648		0	0		-0.8	0	0.5
 	LIGHT_PARAM airplane_landing_glow 	-2.2520    2.5616   -1.3648		0	-0.12	-1.2	0	2	
 	LIGHT_PARAM airplane_landing_flare 	-2.2520    2.5616   -1.3648		0	-1.8	-18		0	1	
 	LIGHT_PARAM airplane_landing_sp		-2.2520    2.5616   -1.3648 		0.85 0.85 1  0 250 0.76604
 ANIM_end
+# airplane_taxi.R
 ANIM_begin
 	ANIM_hide	-1.0 0.0	libxplanemp/controls/taxi_lites_on
 	ANIM_hide	-1.0 0.0	libxplanemp/controls/gear_ratio
-LIGHT_PARAM airplane_taxi_pm 0.1200 1.4066 -11.3155 0.76052475 0.65837479 0.57758057 3 100000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
-LIGHT_PARAM airplane_taxi_bb 0.1200 1.4066 -11.3155 0.76052475 0.65837479 0.57758057 3 100000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
+	LIGHT_NAMED	airplane_taxi		   0.1200    1.4066  -11.3155
 	LIGHT_PARAM airplane_taxi_core		0.1200    1.4066  -11.3155		0 0 -0.1		0	0.4	
 	LIGHT_PARAM airplane_taxi_glow		0.1200    1.4066  -11.3155		0 -0.12	-1.2	0	1	
 	LIGHT_PARAM airplane_taxi_flare		0.1200    1.4066  -11.3155		0 -1.8 -18		0	1
 	LIGHT_PARAM airplane_taxi_sp		0.1200    1.4066  -11.3155 		0.85 0.85 1 	0 	200 0.76
 	
-LIGHT_PARAM airplane_taxi_pm -0.1200 1.4066 -11.3155 0.76052475 0.65837479 0.57758057 3 100000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
-LIGHT_PARAM airplane_taxi_bb -0.1200 1.4066 -11.3155 0.76052475 0.65837479 0.57758057 3 100000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
+	LIGHT_NAMED	airplane_taxi		  -0.1200    1.4066  -11.3155
 	LIGHT_PARAM airplane_taxi_core		-0.1200    1.4066  -11.3155		0 0 -0.1		0	0.4	
 	LIGHT_PARAM airplane_taxi_glow		-0.1200    1.4066  -11.3155		0 -0.12	-1.2	0	1	
 	LIGHT_PARAM airplane_taxi_flare		-0.1200    1.4066  -11.3155		0 -1.8 -18		0	1
 	LIGHT_PARAM airplane_taxi_sp		-0.1200    1.4066  -11.3155 		0.85 0.85 1 	0 	200 0.76
 ANIM_end
+# airplane_landing.nL
 ANIM_begin
 	ANIM_hide	-1.0 0.0	libxplanemp/controls/landing_lites_on
 	ANIM_hide	-1.0 0.0	libxplanemp/controls/gear_ratio
-LIGHT_PARAM airplane_landing_pm -0.2127 1.9478 -11.3316  0.76052475 0.65837479 0.57758057 3 800000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
-LIGHT_PARAM airplane_landing_bb -0.2127 1.9478 -11.3316  0.76052475 0.65837479 0.57758057 3 800000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
+	LIGHT_NAMED	airplane_landing	  -0.2127    1.9478  -11.3316
 	LIGHT_PARAM airplane_landing_core 	-0.2127    1.9478  -11.3316		0	0		-0.8	0	0.4
 	LIGHT_PARAM airplane_landing_glow 	-0.2127    1.9478  -11.3316		0	-0.12	-1.2	0	2	
 	LIGHT_PARAM airplane_landing_flare 	0-0.2127    1.9478  -11.3316		0	-1.8	-18		0	1	
 	LIGHT_PARAM airplane_landing_sp 	-0.2127    1.9478  -11.3316 	0.85 0.85 1 0 150 0.8
 	
-LIGHT_PARAM airplane_landing_pm 0.2173 1.9478 -11.3316  0.76052475 0.65837479 0.57758057 3 800000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
-LIGHT_PARAM airplane_landing_bb 0.2173 1.9478 -11.3316  0.76052475 0.65837479 0.57758057 3 800000cd 0.034766696 -0.052357007 -0.99802303 0.90592582
+	LIGHT_NAMED	airplane_landing	   0.2173    1.9478  -11.3316
 	LIGHT_PARAM airplane_landing_core 	0.2173    1.9478  -11.3316		0	0		-0.8	0	0.4
 	LIGHT_PARAM airplane_landing_glow 	0.2173    1.9478  -11.3316		0	-0.12	-1.2	0	2	
 	LIGHT_PARAM airplane_landing_flare 	0.2173    1.9478  -11.3316		0	-1.8	-18		0	1	
 	LIGHT_PARAM airplane_landing_sp 	0.2173    1.9478  -11.3316 	0.85 0.85 1 0 150 0.8
 ANIM_end
+# airplane_nav_tail
 ANIM_begin
 	ANIM_hide	-1.0 0.0	libxplanemp/controls/nav_lites_on
-LIGHT_PARAM airplane_nav_pm -0.0147 5.1007 21.1901 0.94730663 0.82278603 0.7230553 0 3000cd -0.077866882 -0.018656421 -0.99678928 0.34202015
-LIGHT_PARAM airplane_nav_bb -0.0147 5.1007 21.1901 0.94730663 0.82278603 0.7230553 0 3000cd -0.077866882 -0.018656421 -0.99678928 0.34202015
+	LIGHT_NAMED	airplane_nav_tail	  -0.0147    5.1007   21.1901
 	
-LIGHT_PARAM airplane_nav_pm -16.8240 4.5723 4.1495 0.89626974 0.099898659 0 0 1000cd -0.077866882 -0.018656421 -0.99678928 0.34202015
-LIGHT_PARAM airplane_nav_bb -16.8240 4.5723 4.1495 0.89626974 0.099898659 0 0 1000cd -0.077866882 -0.018656421 -0.99678928 0.34202015
+	LIGHT_NAMED	airplane_nav_left	 -16.8240    4.5723    4.1495
 	LIGHT_PARAM	airplane_nav_left_size	 -16.8240    4.5723    4.1495 0.3 -0.4
 	LIGHT_PARAM	airplane_nav_sp 		 -16.8240    4.5723    4.1495 0.05 0.0 0 	0 10 0  -10  0  0
 
-LIGHT_PARAM airplane_nav_pm 16.8340 4.5723 4.1595 0.020288363 0.73791075 0.36130685 0 1000cd 0.077866882 -0.018656421 -0.99678928 0.34202015
-LIGHT_PARAM airplane_nav_bb 16.8340 4.5723 4.1595 0.020288363 0.73791075 0.36130685 0 1000cd 0.077866882 -0.018656421 -0.99678928 0.34202015
+	LIGHT_NAMED	airplane_nav_right	  16.8340    4.5723    4.1595
 	LIGHT_PARAM	airplane_nav_right_size	 16.8340    4.5723    4.1595 0.3 -0.4
 	LIGHT_PARAM	airplane_nav_sp 		 16.8340    4.5723    4.1595 0.0 0.05 0 	0 10 0  -10  0  0
 ANIM_end
+# airplane_strobe.L
 ANIM_begin
 	ANIM_hide	-1.0 0.0	libxplanemp/controls/strobe_lites_on
-LIGHT_PARAM airplane_strobe_pm -16.9131 4.5716 4.2728 1 1 1 0 15000cd -0.66745901 0.069296718 0.7414152 0.4217486
-LIGHT_PARAM airplane_strobe_bb -16.9131 4.5716 4.2728 1 1 1 0 15000cd -0.66745901 0.069296718 0.7414152 0.4217486
+	LIGHT_NAMED	airplane_strobe		 -16.9131    4.5716    4.2728
 	LIGHT_PARAM	airplane_strobe_omni   -16.9131    4.5716    4.2728 0 0 0 0 0.6
 	LIGHT_PARAM	airplane_strobe_dir	   -16.9131    4.5716    4.2728 0 0 0 0 1.5 -0.75 0 -0.25 0.25
 	LIGHT_PARAM	airplane_strobe_sp	   -16.9131    4.5716    4.2728 0.85 0.85 1 0 20 0 0 -1 0.05
 	
-LIGHT_PARAM airplane_strobe_pm 16.9180 4.5707 4.2859 1 1 1 0 15000cd 0.66745675 0.06932088 0.74141496 0.4217486
-LIGHT_PARAM airplane_strobe_bb 16.9180 4.5707 4.2859 1 1 1 0 15000cd 0.66745675 0.06932088 0.74141496 0.4217486
+	LIGHT_NAMED	airplane_strobe		  16.9180    4.5707    4.2859
 	LIGHT_PARAM	airplane_strobe_omni   16.9180    4.5707    4.2859 0 0 0 0 0.6
 	LIGHT_PARAM	airplane_strobe_dir	   16.9180    4.5707    4.2859 0 0 0 0 1.5 -0.75 0 -0.25 0.25
 	LIGHT_PARAM	airplane_strobe_sp	   16.9180    4.5707    4.2859 0.85 0.85 1 0 20 0 0 -1 0.05
 ANIM_end
+# airplane_beacon.Low
 ANIM_begin
 	ANIM_hide	-1.0 0.0	libxplanemp/controls/beacon_lites_on
-LIGHT_PARAM airplane_beacon_pm 0.0010 1.9066 -1.8219 1 0 0 0 1500cd 0 0 0 1
-LIGHT_PARAM airplane_beacon_bb 0.0010 1.9066 -1.8219 1 0 0 0 1500cd 0 0 0 1
+	LIGHT_NAMED	airplane_beacon		   0.0010    1.9066   -1.8219
 	LIGHT_PARAM	airplane_beacon_rotate	  	  0.0010    1.9066   -1.8219 1.0 0.0
 	LIGHT_PARAM	airplane_beacon_rotate_sp	  0.0010    1.9066   -1.8219 -1.544300 1.0 0.0 3 -0.5
 	
-LIGHT_PARAM airplane_beacon_pm 0.0010 6.2266 -1.8219 1 0 0 0 1500cd 0 0 0 1
-LIGHT_PARAM airplane_beacon_bb 0.0010 6.2266 -1.8219 1 0 0 0 1500cd 0 0 0 1
+	LIGHT_NAMED	airplane_beacon		   0.0010    6.2266   -1.8219
 	LIGHT_PARAM	airplane_beacon_rotate	  	  0.0010    6.2266   -1.8219 1.0 0.0
 	LIGHT_PARAM	airplane_beacon_rotate_sp	  0.0010    6.2266   -1.8219 -1.544300 1.0 0.0 3 -0.5
 ANIM_end
+# logo_light_R
 LIGHT_PARAM full_custom_halo_night	3.6215    5.3370   18.8411 	0.255 0.255 0.255 8 13.0 -0.4 1.0 -0.20 0.45
+# logo_light_L
 LIGHT_PARAM full_custom_halo_night	-3.5785    5.3370   18.8411 0.255 0.255 0.255 8 13.0 0.4 1.0 -0.20 0.45
 
+# Built with Blender 2.49. Exported with XPlane2Blender 3.10.
