@@ -21,7 +21,7 @@ import logging
 from pathlib import Path
 
 from .helpers import get_list_of_files
-from .helpers import tuple_to_string
+# from .helpers import tuple_to_string
 from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger("aircraft_helpers")
@@ -134,11 +134,19 @@ def fix_taxilights_dataref(object_content: str) -> str:
     Returns:
         str: Fixed aricraft object content.
     """
-    start_delimiter: str = "libxplanemp/controls/landing_lites_on"
+    start_delimiter: str = "ANIM_show|ANIM_hide.*libxplanemp/controls/landing_lites_on?$"
     end_delimiter: str = "ANIM_end"
     result: list[tuple[str]] = re.findall(
         f"(?s)({start_delimiter})(.+?)({end_delimiter})", object_content
     )
+    # result: list[tuple[str]] = re.findall(
+    #     f"(?s)({start_delimiter}.+?{end_delimiter})", object_content
+    # )
+    # print(result)
+    # print(len(result))
+    for index,subresult in enumerate(result):
+        print(f"Part {index} coontains:\n{subresult}")
+    sys.exit()
     # TODO: Add check if processing is necessary, else return original content
     # TODO: Add fix for landing lights on retracted landing gear
     new_object_content: str = ""
@@ -167,17 +175,29 @@ def fix_landing_lights_on_gear_on_if_retracted(landing_lights: tuple[str]) -> st
     # Maybe show can be omited at all, see X-CSL package(s)
     # landing_lights_string = tuple_to_string(landing_lights)
     # print(landing_lights_string)
-    # hide_option = "ANIM_hide -1.000000 0.000000	libxplanemp/controls/gear_ratio"
+    anim_hide = "ANIM_hide -1.000000 0.000000	libxplanemp/controls/gear_ratio"
+    anim_show = ""
     # print("-------------------------------------------------------------")
-    print(type(landing_lights))
-    print(landing_lights)
+    # print(type(landing_lights))
+    # print(landing_lights)
     for line in landing_lights:
-        print("One row:", line)
-    #     if any(needle in line for needle in "ANIM_show"):
-    #         anim_start = line
-    #         print(f"Start of animation: {anim_start}")
-        
-    #     if line.startswith("LIGHT_PARAM airplane_landing"):
-    #         print("Got a landing light@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        # print("One row:", line)
+        # create lines from second tuple
+        if "airplane_landing_pm" in line:
+            lights_definitions = line.lstrip("\n").strip("\t").replace("\t", " ").split("\n")
+            # print(lights_definitions)
+            for definition in lights_definitions:
+                if definition.startswith("ANIM_show"):
+                    anim_show = definition
+                if definition.startswith("LIGHT_PARAM airplane_landing_pm"):
+                    x_position = float(definition.split()[2])
+                    # y_position = float(definition.split()[3])
+
+                    if x_position < 0.5 and x_position > -0.5:
+                        print(definition)
+                        print("Could be the landing light on the front gear")
+                        new_landing_lights = line.replace(anim_show, f"{anim_show}\n{anim_hide}")
+                        print(new_landing_lights)
+
 
     return "Hello"
