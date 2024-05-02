@@ -6,7 +6,7 @@
 	],
 	"settings": {
 		"workbench.colorCustomizations": {
-			"tab.activeBackground": "#1b5500"
+			"tab.activeBorder": "#22aa22"
 		}
 	}
 }
