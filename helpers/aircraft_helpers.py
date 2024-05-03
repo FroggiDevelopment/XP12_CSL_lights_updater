@@ -21,6 +21,7 @@ import logging
 from pathlib import Path
 
 from .helpers import get_list_of_files
+
 # from .helpers import tuple_to_string
 from .custom_exceptions import NoFilesFoundError
 
@@ -134,70 +135,79 @@ def fix_taxilights_dataref(object_content: str) -> str:
     Returns:
         str: Fixed aricraft object content.
     """
-    start_delimiter: str = "ANIM_show|ANIM_hide.*libxplanemp/controls/landing_lites_on?$"
-    end_delimiter: str = "ANIM_end"
-    result: list[tuple[str]] = re.findall(
-        f"(?s)({start_delimiter})(.+?)({end_delimiter})", object_content
-    )
-    # result: list[tuple[str]] = re.findall(
-    #     f"(?s)({start_delimiter}.+?{end_delimiter})", object_content
+    # start_delimiter: str = (
+    #     "ANIM_show|ANIM_hide.*libxplanemp/controls/landing_lites_on?$"
     # )
-    # print(result)
-    # print(len(result))
-    for index,subresult in enumerate(result):
-        print(f"Part {index} coontains:\n{subresult}")
-    # sys.exit()
+    # end_delimiter: str = "ANIM_end"
+    # result: list[tuple[str, str, str]] = re.findall(
+    #     f"(?s)({start_delimiter})(.+?)({end_delimiter})", object_content
+    # )
+    result: list[str] = re.findall("(?s)(?=ANIM_hide)(.+?)(?=ANIM_end)", object_content)
+    for index, item in enumerate(result):
+        if "airplane_taxi_pm" in item:
+            item = item.replace("landing_lites_on", "taxi_lites_on")
+        if "landing_lites" in item:
+            anim_hide: str = (
+                "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
+            )
+            # print(f"Light #{index}\n{item}")
+            to_replace: list[str] = re.findall("^ANIM_hide.+landing_lites_on", item)
+            print(type(to_replace[0]))
+            print(item.replace(to_replace[0], f"{to_replace[0]}\n{anim_hide}"))
+
+    sys.exit()
     # TODO: Add check if processing is necessary, else return original content
     # TODO: Add fix for landing lights on retracted landing gear
     new_object_content: str = ""
     for item in result:
-        string_from_tuple: str = ""
+        (_, lights, __) = item
         if any("airplane_taxi" in value for value in item):
-            for row in item:
-                string_from_tuple += row
-
-            string_with_new_dataref = string_from_tuple.replace(
-                "landing_lites_on", "taxi_lites_on"
-            )
+            fixed_taxilights_dataref = fix_taxilights(lights)
             new_object_content = object_content.replace(
-                string_from_tuple, string_with_new_dataref
+                lights, fixed_taxilights_dataref
             )
-            return new_object_content
-        else:
-            # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            fix_landing_lights_on_gear_on_if_retracted(item)
+        if any("airplane_landing_pm" in value for value in item):
+            fixed_front_landing_lights = add_hide_option_to_front_landing_lights(item)
+            if fixed_front_landing_lights is not None:
+                if new_object_content != "":
+                    new_object_content = new_object_content.replace(
+                        lights, fixed_front_landing_lights
+                    )
+                else:
+                    new_object_content = object_content.replace(
+                        lights, fixed_front_landing_lights
+                    )
     return new_object_content
-    # return object_content
 
 
-def fix_landing_lights_on_gear_on_if_retracted(landing_lights: tuple[str]) -> str:
-    # It's the order of show and hide.
-    # Maybe show can be omited at all, see X-CSL package(s)
-    # landing_lights_string = tuple_to_string(landing_lights)
-    # print(landing_lights_string)
-    anim_hide = "ANIM_hide -1.000000 0.000000	libxplanemp/controls/gear_ratio"
-    anim_show = ""
-    # print("-------------------------------------------------------------")
-    # print(type(landing_lights))
-    # print(landing_lights)
-    for line in landing_lights:
-        # print("One row:", line)
-        # create lines from second tuple
+def fix_taxilights(taxilights_string: str) -> str:
+    string_with_new_dataref: str = ""
+    for row in taxilights_string.split("\n"):
+        if "landing_lites_on" not in row:
+            continue
+        string_with_new_dataref = taxilights_string.replace(
+            "landing_lites_on", "taxi_lites_on"
+        )
+
+    return string_with_new_dataref
+
+
+def add_hide_option_to_front_landing_lights(item: tuple[str, str, str]) -> str | None:
+    anim_hide: str = "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
+
+    (_, lightdefinition_strings, __) = item
+    param_to_replace: list[tuple[str, str, str]] = re.findall(
+        f"(?s)(ANIM_hide.*libxplanemp/controls/landing_lites_on)",
+        lightdefinition_strings,
+    )
+    print("Does it match?", param_to_replace)
+
+    for line in lightdefinition_strings.split("\n"):
         if "airplane_landing_pm" in line:
-            lights_definitions = line.lstrip("\n").strip("\t").replace("\t", " ").split("\n")
-            # print(lights_definitions)
-            for definition in lights_definitions:
-                if definition.startswith("ANIM_show"):
-                    anim_show = definition
-                if definition.startswith("LIGHT_PARAM airplane_landing_pm"):
-                    x_position = float(definition.split()[2])
-                    # y_position = float(definition.split()[3])
-
-                    if x_position < 0.5 and x_position > -0.5:
-                        print(definition)
-                        print("Could be the landing light on the front gear")
-                        new_landing_lights = line.replace(anim_show, f"{anim_show}\n{anim_hide}")
-                        print(new_landing_lights)
-
-
-    return "Hello"
+            x_position = float(line.split()[2])
+            if x_position < 0.5 and x_position > -0.5:
+                return lightdefinition_strings.replace(
+                    "libxplanemp/controls/landing_lites_on",
+                    f"libxplanemp/controls/landing_lites_on\n{anim_hide}",
+                )
+    return None
