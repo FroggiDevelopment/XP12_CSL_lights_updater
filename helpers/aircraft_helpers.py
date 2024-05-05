@@ -143,7 +143,7 @@ def fix_taxilights_dataref(object_content: str) -> str:
     #     f"(?s)({start_delimiter})(.+?)({end_delimiter})", object_content
     # )
     result: list[str] = re.findall("(?s)(?=ANIM_hide)(.+?)(?=ANIM_end)", object_content)
-    for index, item in enumerate(result):
+    for item in result:
         if "airplane_taxi_pm" in item:
             item = item.replace("landing_lites_on", "taxi_lites_on")
         if "landing_lites" in item:
@@ -154,6 +154,17 @@ def fix_taxilights_dataref(object_content: str) -> str:
             to_replace: list[str] = re.findall("^ANIM_hide.+landing_lites_on", item)
             print(type(to_replace[0]))
             print(item.replace(to_replace[0], f"{to_replace[0]}\n{anim_hide}"))
+            light_parameter: list[str] = re.findall(
+                "LIGHT_PARAM airplane_landing.+", item
+            )
+            x_position = float(light_parameter[0].split()[2])
+            if x_position < 0.5 and x_position > -0.5:
+                print(
+                    item.replace(
+                        "libxplanemp/controls/landing_lites_on",
+                        f"libxplanemp/controls/landing_lites_on\n{anim_hide}",
+                    )
+                )
 
     sys.exit()
     # TODO: Add check if processing is necessary, else return original content
