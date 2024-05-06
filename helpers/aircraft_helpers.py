@@ -124,7 +124,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
     return aircraft_object_files
 
 
-def fix_taxilights_dataref(object_content: str) -> str:
+def fix_lights_anomalies(object_content: str) -> str:
     """Fixes the wrong dataref for taxilights.
        The original dataref for the taxilights is set to landing_lites_on instead of taxi_lites_on.
        Gets corrected so the taxilights are visible.
@@ -135,43 +135,39 @@ def fix_taxilights_dataref(object_content: str) -> str:
     Returns:
         str: Fixed aricraft object content.
     """
-    # start_delimiter: str = (
-    #     "ANIM_show|ANIM_hide.*libxplanemp/controls/landing_lites_on?$"
-    # )
-    # end_delimiter: str = "ANIM_end"
-    # result: list[tuple[str, str, str]] = re.findall(
-    #     f"(?s)({start_delimiter})(.+?)({end_delimiter})", object_content
-    # )
-    result: list[str] = re.findall("(?s)(?=ANIM_hide)(.+?)(?=ANIM_end)", object_content)
+    result: list[str] = re.findall("(?s)(?=ANIM_hide|ANIM_show)(.+?)(?=ANIM_end)", object_content)
     for item in result:
         if "airplane_taxi_pm" in item:
-            item = item.replace("landing_lites_on", "taxi_lites_on")
+            new_taxilights_dataref = item.replace("landing_lites_on", "taxi_lites_on")
+            object_content = object_content.replace(item, new_taxilights_dataref)
+            continue
         if "landing_lites" in item:
             anim_hide: str = (
                 "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
             )
-            # print(f"Light #{index}\n{item}")
-            to_replace: list[str] = re.findall("^ANIM_hide.+landing_lites_on", item)
-            print(type(to_replace[0]))
-            print(item.replace(to_replace[0], f"{to_replace[0]}\n{anim_hide}"))
+            get_original_anim_hide: list[str] = re.findall("^ANIM_hide.+landing_lites_on", item)
+            if get_original_anim_hide == []:
+                continue
+            str_to_add_hide_lights_to = get_original_anim_hide[0]
             light_parameter: list[str] = re.findall(
                 "LIGHT_PARAM airplane_landing.+", item
             )
+            if light_parameter == []:
+                continue
             x_position = float(light_parameter[0].split()[2])
             if x_position < 0.5 and x_position > -0.5:
-                print(
-                    item.replace(
-                        "libxplanemp/controls/landing_lites_on",
-                        f"libxplanemp/controls/landing_lites_on\n{anim_hide}",
-                    )
-                )
+                added_hide_option_for_front_gear_landing_lights: str = item.replace(
+                        str_to_add_hide_lights_to,
+                        f"{str_to_add_hide_lights_to}\n{anim_hide}"                    )
+                object_content = object_content.replace(item, added_hide_option_for_front_gear_landing_lights)
 
+    return object_content
     sys.exit()
     # TODO: Add check if processing is necessary, else return original content
     # TODO: Add fix for landing lights on retracted landing gear
     new_object_content: str = ""
     for item in result:
-        (_, lights, __) = item
+        (__start, lights, __end) = item
         if any("airplane_taxi" in value for value in item):
             fixed_taxilights_dataref = fix_taxilights(lights)
             new_object_content = object_content.replace(
@@ -191,34 +187,34 @@ def fix_taxilights_dataref(object_content: str) -> str:
     return new_object_content
 
 
-def fix_taxilights(taxilights_string: str) -> str:
-    string_with_new_dataref: str = ""
-    for row in taxilights_string.split("\n"):
-        if "landing_lites_on" not in row:
-            continue
-        string_with_new_dataref = taxilights_string.replace(
-            "landing_lites_on", "taxi_lites_on"
-        )
+# def fix_taxilights(taxilights_string: str) -> str:
+#     string_with_new_dataref: str = ""
+#     for row in taxilights_string.split("\n"):
+#         if "landing_lites_on" not in row:
+#             continue
+#         string_with_new_dataref = taxilights_string.replace(
+#             "landing_lites_on", "taxi_lites_on"
+#         )
 
-    return string_with_new_dataref
+#     return string_with_new_dataref
 
 
-def add_hide_option_to_front_landing_lights(item: tuple[str, str, str]) -> str | None:
-    anim_hide: str = "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
+# def add_hide_option_to_front_landing_lights(item: tuple[str, str, str]) -> str | None:
+#     anim_hide: str = "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
 
-    (_, lightdefinition_strings, __) = item
-    param_to_replace: list[tuple[str, str, str]] = re.findall(
-        f"(?s)(ANIM_hide.*libxplanemp/controls/landing_lites_on)",
-        lightdefinition_strings,
-    )
-    print("Does it match?", param_to_replace)
+#     (_, lightdefinition_strings, __) = item
+#     param_to_replace: list[tuple[str, str, str]] = re.findall(
+#         f"(?s)(ANIM_hide.*libxplanemp/controls/landing_lites_on)",
+#         lightdefinition_strings,
+#     )
+#     print("Does it match?", param_to_replace)
 
-    for line in lightdefinition_strings.split("\n"):
-        if "airplane_landing_pm" in line:
-            x_position = float(line.split()[2])
-            if x_position < 0.5 and x_position > -0.5:
-                return lightdefinition_strings.replace(
-                    "libxplanemp/controls/landing_lites_on",
-                    f"libxplanemp/controls/landing_lites_on\n{anim_hide}",
-                )
-    return None
+#     for line in lightdefinition_strings.split("\n"):
+#         if "airplane_landing_pm" in line:
+#             x_position = float(line.split()[2])
+#             if x_position < 0.5 and x_position > -0.5:
+#                 return lightdefinition_strings.replace(
+#                     "libxplanemp/controls/landing_lites_on",
+#                     f"libxplanemp/controls/landing_lites_on\n{anim_hide}",
+#                 )
+#     return None

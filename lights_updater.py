@@ -28,7 +28,7 @@ from helpers import recover_from_backup
 from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
-from helpers import fix_taxilights_dataref
+from helpers import fix_lights_anomalies
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
@@ -228,7 +228,7 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
             new_file_content += line
 
         # Fix possible error in the taxilight dataref
-        new_file_content = fix_taxilights_dataref(new_file_content)
+        new_file_content = fix_lights_anomalies(new_file_content)
         try:
             with open(temp_object_file, "w+") as new_obj_file:
                 new_obj_file.write(new_file_content)
