@@ -141,14 +141,28 @@ def fix_lights_anomalies(object_content: str) -> str:
         "(?s)(?=ANIM_hide|ANIM_show)(.+?)(?=ANIM_end)", object_content
     )
     for item in result:
+        extra_anim_hide: str = (
+            "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
+        )
         if "airplane_taxi_pm" in item:
-            new_taxilights_dataref = item.replace("landing_lites_on", "taxi_lites_on")
-            object_content = object_content.replace(item, new_taxilights_dataref)
+            new_item = item.replace("landing_lites_on", "taxi_lites_on")
+            original_taxi_anim_hide: list[str] = re.findall(
+                "ANIM_hide.+taxi_lites_on", new_item
+            )
+            if original_taxi_anim_hide != []:
+                new_item = new_item.replace(
+                    original_taxi_anim_hide[0],
+                    f"{original_taxi_anim_hide[0]}\n{extra_anim_hide}",
+                )
+            original_taxi_anim_show = re.findall("ANIM_show.+taxi_lites_on", new_item)
+            if original_taxi_anim_show != []:
+                new_item = new_item.replace(
+                    original_taxi_anim_show[0],
+                    "",
+                )
+            object_content = object_content.replace(item, new_item)
             continue
         if "landing_lites" in item:
-            extra_anim_hide: str = (
-                "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
-            )
             get_original_anim_hide: list[str] = re.findall(
                 "^ANIM_hide.+landing_lites_on", item
             )
