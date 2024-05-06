@@ -125,15 +125,17 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
 
 def fix_lights_anomalies(object_content: str) -> str:
-    """Fixes the wrong dataref for taxilights.
+    """Fixes two things.
+       Missing taxilight on some airplanes.
+       Landing light son front gear were visible even if that gear is rettracted.
        The original dataref for the taxilights is set to landing_lites_on instead of taxi_lites_on.
-       Gets corrected so the taxilights are visible.
+       ANIM_hide animation is added to the front gear landing lights.
 
     Args:
         object_content (str): Original aricraft object content.
 
     Returns:
-        str: Fixed aricraft object content.
+        object_content (str): Fixed aricraft object content.
     """
     result: list[str] = re.findall("(?s)(?=ANIM_hide|ANIM_show)(.+?)(?=ANIM_end)", object_content)
     for item in result:
@@ -162,59 +164,3 @@ def fix_lights_anomalies(object_content: str) -> str:
                 object_content = object_content.replace(item, added_hide_option_for_front_gear_landing_lights)
 
     return object_content
-    sys.exit()
-    # TODO: Add check if processing is necessary, else return original content
-    # TODO: Add fix for landing lights on retracted landing gear
-    new_object_content: str = ""
-    for item in result:
-        (__start, lights, __end) = item
-        if any("airplane_taxi" in value for value in item):
-            fixed_taxilights_dataref = fix_taxilights(lights)
-            new_object_content = object_content.replace(
-                lights, fixed_taxilights_dataref
-            )
-        if any("airplane_landing_pm" in value for value in item):
-            fixed_front_landing_lights = add_hide_option_to_front_landing_lights(item)
-            if fixed_front_landing_lights is not None:
-                if new_object_content != "":
-                    new_object_content = new_object_content.replace(
-                        lights, fixed_front_landing_lights
-                    )
-                else:
-                    new_object_content = object_content.replace(
-                        lights, fixed_front_landing_lights
-                    )
-    return new_object_content
-
-
-# def fix_taxilights(taxilights_string: str) -> str:
-#     string_with_new_dataref: str = ""
-#     for row in taxilights_string.split("\n"):
-#         if "landing_lites_on" not in row:
-#             continue
-#         string_with_new_dataref = taxilights_string.replace(
-#             "landing_lites_on", "taxi_lites_on"
-#         )
-
-#     return string_with_new_dataref
-
-
-# def add_hide_option_to_front_landing_lights(item: tuple[str, str, str]) -> str | None:
-#     anim_hide: str = "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
-
-#     (_, lightdefinition_strings, __) = item
-#     param_to_replace: list[tuple[str, str, str]] = re.findall(
-#         f"(?s)(ANIM_hide.*libxplanemp/controls/landing_lites_on)",
-#         lightdefinition_strings,
-#     )
-#     print("Does it match?", param_to_replace)
-
-#     for line in lightdefinition_strings.split("\n"):
-#         if "airplane_landing_pm" in line:
-#             x_position = float(line.split()[2])
-#             if x_position < 0.5 and x_position > -0.5:
-#                 return lightdefinition_strings.replace(
-#                     "libxplanemp/controls/landing_lites_on",
-#                     f"libxplanemp/controls/landing_lites_on\n{anim_hide}",
-#                 )
-#     return None
