@@ -123,6 +123,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
     return aircraft_object_files
 
+
 def fix_taxilights(item: str, extra_hide_anim: str) -> str:
     new_item = item.replace("landing_lites_on", "taxi_lites_on")
     original_taxi_anim_hide: list[str] = re.findall(
@@ -141,6 +142,7 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
         )
     return new_item
 
+
 def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
     get_original_taxlight_anim_hide: list[str] = re.findall(
         "ANIM_hide.+landing_lites_on", item
@@ -148,9 +150,7 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
     if get_original_taxlight_anim_hide == []:
         return None
     landing_lights_anim_hide = get_original_taxlight_anim_hide[0]
-    light_parameter: list[str] = re.findall(
-        "LIGHT_PARAM airplane_landing.+", item
-    )
+    light_parameter: list[str] = re.findall("LIGHT_PARAM airplane_landing.+", item)
     if light_parameter == []:
         return None
     x_position = float(light_parameter[0].split()[2])
@@ -164,14 +164,17 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
             "ANIM_show.+landing_lites_on", new_item
         )
         if get_original_landinglights_anim_show != []:
-            new_item = new_item.replace(f"{get_original_landinglights_anim_show[0]}\n", "")
+            new_item = new_item.replace(
+                f"{get_original_landinglights_anim_show[0]}\n", ""
+            )
     return new_item
+
 
 def fix_lights_anomalies(object_content: str) -> str:
     """Fixes two things.
        Missing taxilight on some airplanes.
-       Landing light son front gear were visible even if that gear is rettracted.
        The original dataref for the taxilights is set to landing_lites_on instead of taxi_lites_on.
+       Landing lights on front gear were visible even if that gear is retracted.
        ANIM_hide animation is added to the front gear landing lights.
 
     Args:
@@ -191,7 +194,7 @@ def fix_lights_anomalies(object_content: str) -> str:
             new_item = fix_taxilights(item, extra_anim_hide)
             object_content = object_content.replace(item, new_item)
         if "landing_lites" in item:
-            new_item = fix_frontgear_landinglights(item, extra_anim_hide) 
+            new_item = fix_frontgear_landinglights(item, extra_anim_hide)
             if new_item == None or new_item == item:
                 continue
             object_content = object_content.replace(item, new_item)
