@@ -161,7 +161,7 @@ def fix_lights_anomalies(object_content: str) -> str:
                     "",
                 )
             object_content = object_content.replace(item, new_item)
-            continue
+            # continue
         if "landing_lites" in item:
             get_original_anim_hide: list[str] = re.findall(
                 "^ANIM_hide.+landing_lites_on", item
