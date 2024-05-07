@@ -233,7 +233,7 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
             with open(temp_object_file, "w+") as new_obj_file:
                 new_obj_file.write(new_file_content)
         except IOError as err:
-            print("Something went wrong!", err)
+            log.error("Something went wrong!", err)
 
 
 def copy_new_to_old(files: list[Path]) -> None:

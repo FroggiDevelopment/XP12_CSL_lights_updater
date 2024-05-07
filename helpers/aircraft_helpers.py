@@ -123,6 +123,49 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
     return aircraft_object_files
 
+def fix_taxilights(item: str, extra_hide_anim: str) -> str:
+    new_item = item.replace("landing_lites_on", "taxi_lites_on")
+    original_taxi_anim_hide: list[str] = re.findall(
+        "ANIM_hide.+taxi_lites_on", new_item
+    )
+    if original_taxi_anim_hide != []:
+        new_item = new_item.replace(
+            original_taxi_anim_hide[0],
+            f"{original_taxi_anim_hide[0]}\n{extra_hide_anim}",
+        )
+    original_taxi_anim_show = re.findall("ANIM_show.+taxi_lites_on", new_item)
+    if original_taxi_anim_show != []:
+        new_item = new_item.replace(
+            f"{original_taxi_anim_show[0]}\n",
+            "",
+        )
+    return new_item
+
+def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
+    get_original_taxlight_anim_hide: list[str] = re.findall(
+        "ANIM_hide.+landing_lites_on", item
+    )
+    if get_original_taxlight_anim_hide == []:
+        return None
+    landing_lights_anim_hide = get_original_taxlight_anim_hide[0]
+    light_parameter: list[str] = re.findall(
+        "LIGHT_PARAM airplane_landing.+", item
+    )
+    if light_parameter == []:
+        return None
+    x_position = float(light_parameter[0].split()[2])
+    new_item = item
+    if x_position < 0.5 and x_position > -0.5:
+        new_item = item.replace(
+            landing_lights_anim_hide,
+            f"{landing_lights_anim_hide}\n{extra_hide_anim}",
+        )
+        get_original_landinglights_anim_show: list[str] = re.findall(
+            "ANIM_show.+landing_lites_on", new_item
+        )
+        if get_original_landinglights_anim_show != []:
+            new_item = new_item.replace(f"{get_original_landinglights_anim_show[0]}\n", "")
+    return new_item
 
 def fix_lights_anomalies(object_content: str) -> str:
     """Fixes two things.
@@ -145,47 +188,12 @@ def fix_lights_anomalies(object_content: str) -> str:
             "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
         )
         if "airplane_taxi_pm" in item:
-            new_item = item.replace("landing_lites_on", "taxi_lites_on")
-            original_taxi_anim_hide: list[str] = re.findall(
-                "ANIM_hide.+taxi_lites_on", new_item
-            )
-            if original_taxi_anim_hide != []:
-                new_item = new_item.replace(
-                    original_taxi_anim_hide[0],
-                    f"{original_taxi_anim_hide[0]}\n{extra_anim_hide}",
-                )
-            original_taxi_anim_show = re.findall("ANIM_show.+taxi_lites_on", new_item)
-            if original_taxi_anim_show != []:
-                new_item = new_item.replace(
-                    original_taxi_anim_show[0],
-                    "",
-                )
+            new_item = fix_taxilights(item, extra_anim_hide)
             object_content = object_content.replace(item, new_item)
-            # continue
         if "landing_lites" in item:
-            get_original_anim_hide: list[str] = re.findall(
-                "^ANIM_hide.+landing_lites_on", item
-            )
-            if get_original_anim_hide == []:
+            new_item = fix_frontgear_landinglights(item, extra_anim_hide) 
+            if new_item == None or new_item == item:
                 continue
-            landing_lights_anim_hide = get_original_anim_hide[0]
-            light_parameter: list[str] = re.findall(
-                "LIGHT_PARAM airplane_landing.+", item
-            )
-            if light_parameter == []:
-                continue
-            x_position = float(light_parameter[0].split()[2])
-            if x_position < 0.5 and x_position > -0.5:
-
-                new_item = item.replace(
-                    landing_lights_anim_hide,
-                    f"{landing_lights_anim_hide}\n{extra_anim_hide}",
-                )
-                get_anim_show: list[str] = re.findall(
-                    "ANIM_show.+landing_lites_on", new_item
-                )
-                if get_anim_show != []:
-                    new_item = new_item.replace(get_anim_show[0].rstrip("\n"), "")
-                object_content = object_content.replace(item, new_item)
+            object_content = object_content.replace(item, new_item)
 
     return object_content
