@@ -125,6 +125,10 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
 
 def fix_taxilights(item: str, extra_hide_anim: str) -> str:
+    already_updated: list[str] = re.findall("libxplanemp/controls/gear_ratio", item)
+    if already_updated != []:
+        log.debug("Taxilights already updated")
+        return item
     new_item = item.replace("landing_lites_on", "taxi_lites_on")
     original_taxi_anim_hide: list[str] = re.findall(
         "ANIM_hide.+taxi_lites_on", new_item
@@ -144,12 +148,16 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
 
 
 def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
-    get_original_taxlight_anim_hide: list[str] = re.findall(
+    already_updated: list[str] = re.findall("libxplanemp/controls/gear_ratio", item)
+    if already_updated != []:
+        log.debug("Front landinglight already updated")
+        return item
+    get_original_landinglight_anim_hide: list[str] = re.findall(
         "ANIM_hide.+landing_lites_on", item
     )
-    if get_original_taxlight_anim_hide == []:
+    if get_original_landinglight_anim_hide == []:
         return None
-    landing_lights_anim_hide = get_original_taxlight_anim_hide[0]
+    landing_lights_anim_hide = get_original_landinglight_anim_hide[0]
     light_parameter: list[str] = re.findall("LIGHT_PARAM airplane_landing.+", item)
     if light_parameter == []:
         return None
