@@ -202,7 +202,7 @@ def fix_lights_anomalies(object_content: str) -> str:
     )
     for item in result:
         extra_anim_hide: str = (
-            "ANIM_hide -1.000000 0.000000 libxplanemp/controls/gear_ratio"
+            "ANIM_hide -1.000000 0.400000 libxplanemp/controls/gear_ratio"
         )
         if "airplane_taxi_pm" in item:
             new_item = fix_taxilights(item, extra_anim_hide)
