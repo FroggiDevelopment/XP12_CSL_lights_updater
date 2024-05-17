@@ -44,6 +44,8 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_nav_tail",
     "airplane_strobe",
     "airplane_beacon",
+    "airplane_beacon_rotate",
+    "airplane_beacon_strobe",
 ]
 
 # Setup logging
@@ -166,7 +168,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     # Remove pm suffix
     line = line.replace("_pm", "")
 
-    if "_nav" in line or "_strobe" in line:
+    if "airplane_nav" in line or "airplane_strobe" in line:
         line = add_lateral_position_to_lights(line)
 
     lighttype = line.split()[1]
