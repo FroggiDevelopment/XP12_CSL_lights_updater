@@ -57,22 +57,6 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
         try:
             with open(xsb_file, "r") as xsb_aircraft_file:
                 for line_num, line in enumerate(xsb_aircraft_file, start=1):
-                    # As some CSL aircraft are made with more then one object, also not recommended,
-                    # some of those in xsb_aircraft.txt files have to be ignored!
-                    # if any(
-                    #     trigger in line.lower()
-                    #     for trigger in [
-                    #         "light.",
-                    #         "cars",
-                    #         "fan",
-                    #         "prop",
-                    #         "glass",
-                    #         "rotor",
-                    #         "engine",
-                    #         "gear",
-                    #     ]
-                    # ):
-                    #     continue
 
                     if not line.startswith(
                         "OBJ8 "
@@ -92,35 +76,24 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                         )
                         continue
 
-                    number_of_path_params = len(
-                        aircraft_file_path_info.split(_separator)
+                    # Get Path from OBJ8 Param. First part "must" be the package name, so it can be ignored.
+                    # The rest is a relative path starting from the location of the xsb_aircraft textfile.
+                    aircraft_object_path = Path(
+                        aircraft_file_path_info.split(_separator, 1)[1]
                     )
-                    if number_of_path_params == 3:
-                        _, relative_path, object_name = aircraft_file_path_info.split(
-                            _separator
-                        )
-                    elif number_of_path_params == 2:
-                        _, object_name = aircraft_file_path_info.split(_separator)
-                        relative_path = "."
-                    else:
-                        log.warning(
-                            f"Found not enough path parameters in {aircraft_file_path_info}! xsb_aircraft.txt file is not valid!"
-                        )
-                        sys.exit()
+                    # Create the full path
+                    full_object_path = Path(parentdir, aircraft_object_path)
 
-                    object_path = Path(
-                        parentdir, relative_path, object_name.rstrip("\n")
-                    )
-
-                    if object_path.exists() is False:
-                        log.error(f"File {object_path} does not exist! Skipping!")
+                    if full_object_path.exists() is False:
+                        log.error(f"File {full_object_path} does not exist! Skipping!")
                         continue
 
-                    if object_path not in aircraft_object_files:
-                        aircraft_object_files.append(object_path)
+                    if full_object_path not in aircraft_object_files:
+                        aircraft_object_files.append(full_object_path)
 
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
+
     return aircraft_object_files
 
 
@@ -202,7 +175,7 @@ def fix_lights_anomalies(object_content: str) -> str:
     )
     for item in result:
         extra_anim_hide: str = (
-            "ANIM_hide -1.000000 0.400000 libxplanemp/controls/gear_ratio"
+            "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
         )
         if "airplane_taxi_pm" in item:
             new_item = fix_taxilights(item, extra_anim_hide)
