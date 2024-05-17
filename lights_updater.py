@@ -103,7 +103,6 @@ def ignore_line(line: str) -> bool:
         "_size",
         "_sp",
         "taillight",
-        "airplane_beacon_rotate",
         "_core",
         "_size",
         "_omni",
@@ -201,18 +200,18 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
 
         light_params = get_light_params_for_aircraft_type(aircraft_type)
         aircraft_object_content: list[str] = []
-
         try:
-            with open(aircraft_object) as file:
+            with open(aircraft_object, "r", errors="replace") as file:
                 aircraft_object_content = file.readlines()
         except FileNotFoundError as err:
             log.error(f"{aircraft_object.name} not found!", err)
             continue
         except UnicodeDecodeError as err:
-            log.error(f"Object file seems damaged! See: {err}")
+            log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
 
         temp_object_file: Path = aircraft_object.with_suffix(suffix=TEMP_FILE_SUFFIX)
+
         if aircraft_object_content == []:
             continue
         new_file_content = ""
@@ -231,6 +230,8 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
 
         # Fix possible error in the taxilight dataref
         new_file_content = fix_lights_anomalies(new_file_content)
+
+        # Write converted data to temp-file
         try:
             with open(temp_object_file, "w+") as new_obj_file:
                 new_obj_file.write(new_file_content)
