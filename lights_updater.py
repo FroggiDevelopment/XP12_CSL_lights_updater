@@ -108,6 +108,7 @@ def ignore_line(line: str) -> bool:
         "_omni",
         "_dir",
         "airplane_strobe_omni",
+        "airplane_beacon_",
         "full_custom_halo_night",
         "_glow",
         "_flare",
