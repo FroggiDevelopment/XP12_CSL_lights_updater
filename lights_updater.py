@@ -173,11 +173,12 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 
     lighttype = line.split()[1]
 
-    # TODO: Find a way to determine _nav light type as they all are defined as airplane_nav, no more left, right or tail...!!!
-
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
-    line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")  # Change to new notation
+
+    # Change from named light to parametrized light
+    line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
+
     line = line.replace(f"{lighttype}", f"{lighttype}_pm")
     line += line.replace("_pm", "_bb")
     line = filter_unwanted_light_params(line)
@@ -387,7 +388,6 @@ def remove_backups(files: list[Path]):
 
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
-    # TODO: Still to many responsibilities for main. Must be refactored.
 
     # Get the list of aircraft obj files and the number of files
     aircraft_objects: list[Path] = get_aircraft_objects_from_xsb_file(
