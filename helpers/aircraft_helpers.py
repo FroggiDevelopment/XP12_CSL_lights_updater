@@ -57,7 +57,10 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
         try:
             with open(xsb_file, "r") as xsb_aircraft_file:
                 for line_num, line in enumerate(xsb_aircraft_file, start=1):
-
+                    # TODO: Better way to get the aircraft type??
+                    # if line.startswith("EXPORT_NAME"):
+                    #     print(f"This is the package name: {line.split()[1]}")
+                    #     sys.exit()
                     if not line.startswith(
                         "OBJ8 "
                     ):  # Exclude lines with no aircraft object info
