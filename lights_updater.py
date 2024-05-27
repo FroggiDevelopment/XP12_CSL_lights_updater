@@ -47,6 +47,22 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_beacon_rotate",
     "airplane_beacon_strobe",
 ]
+LIGHTS_TO_IGNORE = [
+    "headlight",
+    "_size",
+    "_sp",
+    "taillight",
+    "_core",
+    "_size",
+    "_omni",
+    "_dir",
+    "airplane_strobe_omni",
+    "airplane_beacon_",
+    "full_custom_halo_night",
+    "_glow",
+    "_flare",
+    "logo",
+]
 
 # Setup logging
 logging.basicConfig(
@@ -98,24 +114,8 @@ def ignore_line(line: str) -> bool:
     Returns:
         bool: True if it can be ignored, False otherwise.
     """
-    lights_to_ignore = [
-        "headlight",
-        "_size",
-        "_sp",
-        "taillight",
-        "_core",
-        "_size",
-        "_omni",
-        "_dir",
-        "airplane_strobe_omni",
-        "airplane_beacon_",
-        "full_custom_halo_night",
-        "_glow",
-        "_flare",
-        "logo",
-    ]
 
-    if any(to_ignore in line for to_ignore in lights_to_ignore):
+    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
         return True
     return False
 
