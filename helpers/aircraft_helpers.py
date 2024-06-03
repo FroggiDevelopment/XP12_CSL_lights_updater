@@ -56,6 +56,27 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
         try:
             with open(xsb_file, "r") as xsb_aircraft_file:
+                content = xsb_aircraft_file.read()
+                aircraft_blocks = re.findall(
+                    r"(?s)OBJ8_AIRCRAFT(.*?)(ICAO \w+ \w+|LIVERY \w+ \w+|AIRLINE \w+ \w+|MATCHES \w+ \w+)",
+                    content,
+                )
+                print(aircraft_blocks[1])
+                print(f"Flugzeuge: {len(aircraft_blocks)}")
+                # type_designator_definitions: list[str] = [
+                #     "MATCHES",
+                #     "ICAO",
+                #     "AIRLINE",
+                #     "LIVERY",
+                # ]
+                # for line in aircraft_blocks[1]:
+                #     if any(
+                #         type_designator in line
+                #         for type_designator in type_designator_definitions
+                #     ):
+                #         aircraft_icao_type = line.split()
+                #         print(aircraft_icao_type)
+                sys.exit()
                 for line_num, line in enumerate(xsb_aircraft_file, start=1):
                     # TODO: Better way to get the aircraft type??
                     type_designator_definitions: list[str] = [
@@ -68,7 +89,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                         type_designator in line
                         for type_designator in type_designator_definitions
                     ):
-                        print(line.split()[1])
+                        aircraft_icao_type = line.split()[1]
+                        print(aircraft_icao_type)
+                        # sys.exit()
 
                     if not line.startswith(
                         "OBJ8 "
@@ -102,6 +125,8 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
                     if full_object_path not in aircraft_object_files:
                         aircraft_object_files.append(full_object_path)
+                        print(aircraft_object_files)
+                        sys.exit()
 
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
