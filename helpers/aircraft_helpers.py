@@ -61,21 +61,21 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                     r"(?s)OBJ8_AIRCRAFT(.*?)(ICAO \w+ \w+|LIVERY \w+ \w+|AIRLINE \w+ \w+|MATCHES \w+ \w+)",
                     content,
                 )
-                print(aircraft_blocks[1])
+                # print(aircraft_blocks)
                 print(f"Flugzeuge: {len(aircraft_blocks)}")
-                # type_designator_definitions: list[str] = [
-                #     "MATCHES",
-                #     "ICAO",
-                #     "AIRLINE",
-                #     "LIVERY",
-                # ]
-                # for line in aircraft_blocks[1]:
-                #     if any(
-                #         type_designator in line
-                #         for type_designator in type_designator_definitions
-                #     ):
-                #         aircraft_icao_type = line.split()
-                #         print(aircraft_icao_type)
+                type_designator_definitions: list[str] = [
+                    "MATCHES",
+                    "ICAO",
+                    "AIRLINE",
+                    "LIVERY",
+                ]
+                for line in aircraft_blocks:
+                    if any(
+                        type_designator in line[1]
+                        for type_designator in type_designator_definitions
+                    ):
+                        aircraft_icao_type = line[1].split()
+                        print(aircraft_icao_type[1])
                 sys.exit()
                 for line_num, line in enumerate(xsb_aircraft_file, start=1):
                     # TODO: Better way to get the aircraft type??
