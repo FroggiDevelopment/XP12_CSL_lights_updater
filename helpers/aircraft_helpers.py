@@ -53,12 +53,15 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
     for xsb_file in xsb_files:
         parentdir: Path = xsb_file.parent.absolute()
-        aircraft_object: dict[str, str | Path] = {"ICAO_TYPE": "", "full_object_path": Path()}
+        aircraft_object: dict[str, str | Path] = {
+            "ICAO_TYPE": "",
+            "full_object_path": Path(),
+        }
         try:
             with open(xsb_file, "r") as xsb_aircraft_file:
                 content: str = xsb_aircraft_file.read()
                 aircraft_blocks = re.findall(
-                    r'(?s)OBJ8_AIRCRAFT.*?(?=OBJ8_AIRCRAFT.*?)',
+                    r"(?s)OBJ8_AIRCRAFT.*?(?=OBJ8_AIRCRAFT.*?)",
                     content,
                 )
                 print(f"Flugzeuge: {len(aircraft_blocks)}")
@@ -96,14 +99,16 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
 
                             # Get Path from OBJ8 Param. First part "must" be the package name, so it can be ignored.
                             # The rest is a relative path starting from the location of the xsb_aircraft textfile.
-                            aircraft_object_path = Path(
-                                line.split(_separator, 1)[1]
-                            )
+                            aircraft_object_path = Path(line.split(_separator, 1)[1])
                             # Create the full path
-                            aircraft_object["full_object_path"] = Path(parentdir, aircraft_object_path)
+                            aircraft_object["full_object_path"] = Path(
+                                parentdir, aircraft_object_path
+                            )
 
                             if aircraft_object["full_object_path"].exists() is False:
-                                log.error(f"File {aircraft_object["full_object_path"]} does not exist! Skipping!")
+                                log.error(
+                                    f"File {aircraft_object['full_object_path']} does not exist! Skipping!"
+                                )
                                 continue
 
                     if aircraft_object not in aircraft_object_files:
