@@ -48,12 +48,12 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
         log.error("Please verify that your path is correct!")
         sys.exit()
 
-    aircraft_object_files: list[Path] = []
+    aircraft_object_files: list[dict[str, str | Path]] = []
 
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
     for xsb_file in xsb_files:
         parentdir: Path = xsb_file.parent.absolute()
-
+        aircraft_object: dict[str, str | Path] = {"ICAO_TYPE": "", "full_object_path": Path()}
         try:
             with open(xsb_file, "r") as xsb_aircraft_file:
                 content: str = xsb_aircraft_file.read()
@@ -77,40 +77,39 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                             for type_designator in type_designator_definitions
                         ):
                             aircraft_icao_type = line.split()[1]
-                            print(aircraft_icao_type)
-                # sys.exit()
+                            aircraft_object["ICAO_TYPE"] = aircraft_icao_type
+
                         if line.startswith("OBJ8 "):
 
-                            aircraft_file_path_info: str = line
+                            # aircraft_file_path_info: str = line
 
                             if any(
-                                (_separator := delimiter) in aircraft_file_path_info
+                                (_separator := delimiter) in line
                                 for delimiter in [":", "/"]
                             ):
                                 pass
                             else:
                                 log.error(
-                                    f"Could not find separator in {aircraft_file_path_info} at line -> {line_num}! No path to object creatable!"
+                                    f"Could not find separator in {line} at line -> {line_num}! No path to object creatable!"
                                 )
                                 continue
 
                             # Get Path from OBJ8 Param. First part "must" be the package name, so it can be ignored.
                             # The rest is a relative path starting from the location of the xsb_aircraft textfile.
                             aircraft_object_path = Path(
-                                aircraft_file_path_info.split(_separator, 1)[1]
+                                line.split(_separator, 1)[1]
                             )
                             # Create the full path
-                            full_object_path = Path(parentdir, aircraft_object_path)
+                            aircraft_object["full_object_path"] = Path(parentdir, aircraft_object_path)
 
-                            if full_object_path.exists() is False:
-                                log.error(f"File {full_object_path} does not exist! Skipping!")
+                            if aircraft_object["full_object_path"].exists() is False:
+                                log.error(f"File {aircraft_object["full_object_path"]} does not exist! Skipping!")
                                 continue
 
-                            if full_object_path not in aircraft_object_files:
-                                aircraft_object_files.append(full_object_path)
-                                print(aircraft_object_files)
-                                sys.exit()
-
+                    if aircraft_object not in aircraft_object_files:
+                        aircraft_object_files.append(aircraft_object)
+                    # print(aircraft_object)
+                    # sys.exit()
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
     print(aircraft_object_files)
