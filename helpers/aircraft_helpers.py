@@ -28,7 +28,7 @@ from .custom_exceptions import NoFilesFoundError
 log = logging.getLogger("aircraft_helpers")
 
 
-def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
+def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | Path]]:
     """Get the aircraft objects from the xsb file and return the paths as a list.
 
     Args:
@@ -64,6 +64,8 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                     r"(?s)OBJ8_AIRCRAFT.*?(?=OBJ8_AIRCRAFT.*?)",
                     content,
                 )
+                print(aircraft_blocks)
+                sys.exit()
                 print(f"Flugzeuge: {len(aircraft_blocks)}")
 
                 for block in aircraft_blocks:
@@ -83,9 +85,6 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                             aircraft_object["ICAO_TYPE"] = aircraft_icao_type
 
                         if line.startswith("OBJ8 "):
-
-                            # aircraft_file_path_info: str = line
-
                             if any(
                                 (_separator := delimiter) in line
                                 for delimiter in [":", "/"]
@@ -110,11 +109,12 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Path]:
                                     f"File {aircraft_object['full_object_path']} does not exist! Skipping!"
                                 )
                                 continue
-
-                    if aircraft_object not in aircraft_object_files:
+                                             
+                    if not any(entry["full_object_path"] == aircraft_object["full_object_path"] for entry in aircraft_object_files):
+                        log.info(f"{aircraft_object} will be added to list!")
                         aircraft_object_files.append(aircraft_object)
-                    # print(aircraft_object)
-                    # sys.exit()
+                
+
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
     print(aircraft_object_files)
