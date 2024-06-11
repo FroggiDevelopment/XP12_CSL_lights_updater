@@ -393,7 +393,7 @@ def remove_backups(files: list[Path]):
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     # Get the list of aircraft obj files and the number of files
-    aircraft_objects: list[dict[str, str | Path]] = get_aircraft_objects_from_xsb_file(
+    aircraft_objects: list[dict[str, Path]] = get_aircraft_objects_from_xsb_file(
         searchpath=CSL_PATH
     )
     

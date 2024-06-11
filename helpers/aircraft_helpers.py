@@ -28,7 +28,7 @@ from .custom_exceptions import NoFilesFoundError
 log = logging.getLogger("aircraft_helpers")
 
 
-def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | Path]]:
+def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]:
     """Get the aircraft objects from the xsb file and return the paths as a list.
 
     Args:
@@ -48,7 +48,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | 
         log.error("Please verify that your path is correct!")
         sys.exit()
 
-    aircraft_object_files: list[dict[str, str | Path]] = []
+    aircraft_object_files: list[dict[str, Path]] = []
 
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
     for xsb_file in xsb_files:
@@ -65,7 +65,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | 
                 print(f"Flugzeuge: {len(aircraft_blocks)}")
 
                 for block in aircraft_blocks:
-                    aircraft_object: dict[str, str | Path] = {}
+                    aircraft_object: dict[str, Path] = {}
                     type_designator_definitions: list[str] = [
                         "MATCHES",
                         "ICAO",
