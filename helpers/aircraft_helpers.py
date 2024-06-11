@@ -57,15 +57,17 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | 
             "ICAO_TYPE": "",
             "full_object_path": Path(),
         }
+
         try:
             with open(xsb_file, "r") as xsb_aircraft_file:
                 content: str = xsb_aircraft_file.read()
                 aircraft_blocks = re.findall(
-                    r"(?s)OBJ8_AIRCRAFT.*?(?=OBJ8_AIRCRAFT.*?)",
+                    r"(?s)OBJ8_AIRCRAFT.*?(?=OBJ8_AIRCRAFT|$)",
                     content,
                 )
-                print(aircraft_blocks)
-                sys.exit()
+                # for block in aircraft_blocks:
+                #     print(block)
+                # sys.exit()
                 print(f"Flugzeuge: {len(aircraft_blocks)}")
 
                 for block in aircraft_blocks:
@@ -109,9 +111,10 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | 
                                     f"File {aircraft_object['full_object_path']} does not exist! Skipping!"
                                 )
                                 continue
-                                             
-                    if not any(entry["full_object_path"] == aircraft_object["full_object_path"] for entry in aircraft_object_files):
-                        log.info(f"{aircraft_object} will be added to list!")
+                    if aircraft_object not in aircraft_object_files:
+                        print("I'll add this for you.")                                             
+                    # if not any(entry["full_object_path"] == aircraft_object["full_object_path"] for entry in aircraft_object_files):
+                    #     log.info(f"{aircraft_object} will be added to list!")
                         aircraft_object_files.append(aircraft_object)
                 
 
