@@ -112,7 +112,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | 
                                 )
                                 continue
                     if aircraft_object not in aircraft_object_files:
-                        print("I'll add this for you.")                                             
+                        print("I'll add this for you!")                                             
                     # if not any(entry["full_object_path"] == aircraft_object["full_object_path"] for entry in aircraft_object_files):
                     #     log.info(f"{aircraft_object} will be added to list!")
                         aircraft_object_files.append(aircraft_object)
