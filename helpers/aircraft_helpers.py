@@ -53,10 +53,6 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | 
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
     for xsb_file in xsb_files:
         parentdir: Path = xsb_file.parent.absolute()
-        aircraft_object: dict[str, str | Path] = {
-            "ICAO_TYPE": "",
-            "full_object_path": Path(),
-        }
 
         try:
             with open(xsb_file, "r") as xsb_aircraft_file:
@@ -65,13 +61,11 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | 
                     r"(?s)OBJ8_AIRCRAFT.*?(?=OBJ8_AIRCRAFT|$)",
                     content,
                 )
-                # for block in aircraft_blocks:
-                #     print(block)
-                # sys.exit()
+
                 print(f"Flugzeuge: {len(aircraft_blocks)}")
 
                 for block in aircraft_blocks:
-
+                    aircraft_object: dict[str, str | Path] = {}
                     type_designator_definitions: list[str] = [
                         "MATCHES",
                         "ICAO",
@@ -111,10 +105,10 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str | 
                                     f"File {aircraft_object['full_object_path']} does not exist! Skipping!"
                                 )
                                 continue
-                    if aircraft_object not in aircraft_object_files:
-                        print("I'll add this for you!")                                             
-                    # if not any(entry["full_object_path"] == aircraft_object["full_object_path"] for entry in aircraft_object_files):
-                    #     log.info(f"{aircraft_object} will be added to list!")
+                    if not any(
+                        entry.get("full_object_path") == Path(aircraft_object["full_object_path"])
+                        for entry in aircraft_object_files
+                    ):                                            
                         aircraft_object_files.append(aircraft_object)
                 
 
