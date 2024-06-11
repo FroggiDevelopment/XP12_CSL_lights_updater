@@ -368,8 +368,11 @@ Now you know!\n
     return parser.parse_args()
 
 
-def recover_files(files: list[Path], stop_on_error: bool):
+def recover_files(aircraft_objects: list[dict[str, Path]], stop_on_error: bool):
     log.info("Recovery activated!")
+    files: list[Path] = []
+    for aircraft_object in aircraft_objects:
+        files.append(aircraft_object["full_object_path"])
     recover_from_backup(
         files=files,
         stop_on_error=STOP_ON_ERROR,
@@ -390,10 +393,10 @@ def remove_backups(files: list[Path]):
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     # Get the list of aircraft obj files and the number of files
-    aircraft_objects: list[Path] = get_aircraft_objects_from_xsb_file(
+    aircraft_objects: list[dict[str, str | Path]] = get_aircraft_objects_from_xsb_file(
         searchpath=CSL_PATH
     )
-
+    
     # Specials
     if args.undo:  # Undo changes, recover object from backup.
         recover_files(aircraft_objects, STOP_ON_ERROR)
