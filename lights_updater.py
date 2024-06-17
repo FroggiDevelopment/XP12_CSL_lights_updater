@@ -186,7 +186,8 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 
 
 @time_benchmark
-def process_object_files(aircraft_objects: list[Path]) -> None:
+# def process_object_files(aircraft_objects: list[Path]) -> None:
+def process_object_files(aircraft_objects: list[dict[str, Path]]):
     """Create new aircraft obj file with X-Plane 12 light params
 
     Args:
@@ -194,30 +195,26 @@ def process_object_files(aircraft_objects: list[Path]) -> None:
     """
     for aircraft_object in aircraft_objects:
 
-        # If airline is in the filename, it is sparated by "_". The 'normal' case.
-        if "_" in aircraft_object.name:
-            aircraft_type: str = aircraft_object.name.split("_")[0]
-        else:  # Rare case with only type in object name without airline abbreviation.
-            aircraft_type = aircraft_object.name.rstrip(".obj")
-
-        light_params = get_light_params_for_aircraft_type(aircraft_type)
+        light_params: dict[str, str] = get_light_params_for_aircraft_type(str(aircraft_object["icao_type"]))
+        aircraft_object_path: Path = aircraft_object["full_object_path"]
+        
         aircraft_object_content: list[str] = []
         try:
-            with open(aircraft_object, "r", errors="replace") as file:
+            with open(aircraft_object_path, "r", errors="replace") as file:
                 aircraft_object_content = file.readlines()
         except FileNotFoundError as err:
-            log.error(f"{aircraft_object.name} not found!", err)
+            log.error(f"{aircraft_object['full_object_path']} not found!", err)
             continue
         except UnicodeDecodeError as err:
             log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
 
-        temp_object_file: Path = aircraft_object.with_suffix(suffix=TEMP_FILE_SUFFIX)
+        temp_object_file: Path = aircraft_object_path.with_suffix(suffix=TEMP_FILE_SUFFIX)
 
         if aircraft_object_content == []:
             continue
         new_file_content = ""
-        log.info(f"Processing {aircraft_object.name}")
+        log.info(f"Processing {aircraft_object_path}")
         for line in aircraft_object_content:
             # Remove some unnecessary lines. Can be done better...!!!
             if line.startswith("# "):
@@ -368,11 +365,9 @@ Now you know!\n
     return parser.parse_args()
 
 
-def recover_files(aircraft_objects: list[dict[str, Path]], stop_on_error: bool):
+def recover_files(files: list[Path], stop_on_error: bool):
     log.info("Recovery activated!")
-    files: list[Path] = []
-    for aircraft_object in aircraft_objects:
-        files.append(aircraft_object["full_object_path"])
+
     recover_from_backup(
         files=files,
         stop_on_error=STOP_ON_ERROR,
@@ -388,7 +383,6 @@ def remove_backups(files: list[Path]):
         delete_backups(files)
     sys.exit()
 
-
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
@@ -396,17 +390,22 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     aircraft_objects: list[dict[str, Path]] = get_aircraft_objects_from_xsb_file(
         searchpath=CSL_PATH
     )
-    
+    list_of_aircraft_objects_paths = [{key: value for key, value in aircraft_dictionary.items() if key != 'icao_type'} for aircraft_dictionary in aircraft_objects]
+    aircraft_files: list[Path] = []
+    for aircraft_object_path in list_of_aircraft_objects_paths:
+        aircraft_files.append(aircraft_object_path["full_object_path"])
+        
     # Specials
     if args.undo:  # Undo changes, recover object from backup.
-        recover_files(aircraft_objects, STOP_ON_ERROR)
+        recover_files(aircraft_files, STOP_ON_ERROR)
 
     if args.remove_backups:  # Remove the backupfiles.
-        remove_backups(aircraft_objects)
+        remove_backups(aircraft_files)
 
     # Main processing
     log.info("Creating backups!")
-    make_backup(files=aircraft_objects, stop_on_error=STOP_ON_ERROR)
+
+    make_backup(files=aircraft_files, stop_on_error=STOP_ON_ERROR)
 
     # Lets do the magic stuff!
     log.info(
@@ -419,7 +418,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     process_object_files(aircraft_objects)
 
-    copy_new_to_old(aircraft_objects)
+    copy_new_to_old(aircraft_files)
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
 

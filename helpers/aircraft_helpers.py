@@ -37,6 +37,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
     Returns:
         list[str]: List of paths to the aircraft objects in the searchpath.
     """
+    
+    xsb_files = []
+    
     if Path(searchpath).is_dir() is False:
         log.error(f"Path {searchpath} is not a reachable directory!")
         raise FileNotFoundError(f"Path {searchpath} is not a reachable directory")
@@ -78,7 +81,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
                             for type_designator in type_designator_definitions
                         ):
                             aircraft_icao_type = line.split()[1]
-                            aircraft_object["ICAO_TYPE"] = aircraft_icao_type
+                            aircraft_object["icao_type"] = aircraft_icao_type
 
                         if line.startswith("OBJ8 "):
                             if any(

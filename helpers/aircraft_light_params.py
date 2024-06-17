@@ -65,7 +65,7 @@ def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
     return light_params_per_category
 
 
-def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str, str]:
+def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str]:
     """Returns the light parameters for the given aircraft type
 
     Args:
@@ -81,14 +81,14 @@ def get_light_params_for_aircraft_type(aircraft_type: str) -> dict[str, str]:
     # Yeah, some CSL aircraft have multiple objects... don't know why
 
     aircraft_bodyparts = ["wings", "fuselage", "Wings", "Fuselage"]
-    if (bodyparts in aircraft_type for bodyparts in aircraft_bodyparts):
+    if (bodyparts in aircraft_icao_type for bodyparts in aircraft_bodyparts):
         for part in aircraft_bodyparts:
-            aircraft_type = aircraft_type.replace(part, "")
+            aircraft_icao_type = aircraft_icao_type.replace(part, "")
 
     for key, value in aircrafts.items():
-        if aircraft_type in value:
-            logger.debug(f"{aircraft_type} found in {key}")
+        if aircraft_icao_type in value:
+            logger.debug(f"{aircraft_icao_type} found in {key}")
             return light_params[key]
     else:
-        logger.warning(f"{aircraft_type} not found.. Using defaults!")
+        logger.warning(f"{aircraft_icao_type} not found.. Using defaults!")
         return light_params["general_aviation"]
