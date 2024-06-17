@@ -56,7 +56,7 @@ def make_backup(
                 sys.exit()
             log.error(f"Backup of {file} failed!", notfound)
             continue
-        log.info(f"BAckup for {file.name} successfully created.")
+        log.info(f"Backup for {file.name} successfully created.")
         continue
     log.info("Backups done!")
 
