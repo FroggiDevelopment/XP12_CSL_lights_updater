@@ -65,7 +65,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
                     content,
                 )
 
-                print(f"Flugzeuge: {len(aircraft_blocks)}")
+                log.debug(f"Aircrafts to convert: {len(aircraft_blocks)}")
 
                 for block in aircraft_blocks:
                     aircraft_object: dict[str, Path] = {}
@@ -117,8 +117,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
 
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
-    # print(aircraft_object_files)
-    # sys.exit()
+
     return aircraft_object_files
 
 
