@@ -1,0 +1,77 @@
+AIRBUS 	A-340-500 	A345 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	A-350-900 XWB 	A359 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-319 	A319 	Landplane 	Jet 	2 	M 	
+AIRBUS 	A-319 ACJ 	A319 	Landplane 	Jet 	2 	M 	-
+AIRBUS 	A-320 	A320 	Landplane 	Jet 	2 	M 	
+AIRBUS 	A-321 	A321 	Landplane 	Jet 	2 	M 	
+AIRBUS 	A-330-200 	A332 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-330-300 	A333 	Landplane 	Jet 	2 	H 	
+AIRBUS 	A-310 	A310 	Landplane 	Jet 	2 	H 	
+AIRBUS 	A-340-300 	A343 	Landplane 	Jet 	4 	H 	
+AIRBUS 	A-300ST Super Transporter 	A3ST 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-340-600 	A346 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	A-380-800 	A388 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	ACJ 	A319 	Landplane 	Jet 	2 	M 	-
+AIRBUS 	Beluga 	A3ST 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	CC-150 Polaris 	A310 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Polaris 	A310 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Super Transporter 	A3ST 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-340-200 	A342 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	A-300B4-100 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-350-900 XWB Prestige 	A359 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Prestige (A-350-900) 	A359 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	C-212 	C212 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	A-300B2 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-300B2-1 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-300B2-100 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-300B2-200 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-318 	A318 	Landplane 	Jet 	2 	M 	-
+AIRBUS 	A-300B4-2 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-318 Elite 	A318 	Landplane 	Jet 	2 	M 	-
+AIRBUS 	A-300B4-200 	A30B 	Landplane 	Jet 	2 	H 	
+AIRBUS 	A-300B4-600 	A306 	Landplane 	Jet 	2 	H 	
+AIRBUS 	A-300C4-200 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-300C4-600 	A306 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-300F4-200 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-300F4-600 	A306 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-300ST Beluga 	A3ST 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-300B2K-3 	A30B 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	C-295 Persuader 	C295 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	A-350-1000 XWB 	A35K 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-350-1000 XWB Prestige 	A35K 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Prestige (A-350-1000) 	A35K 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-330-200 Voyager 	A332 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Voyager 	A332 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-400M Atlas 	A400 	Landplane 	Turboprop 	4 	H 	-
+AIRBUS 	Grizzly 	A400 	Landplane 	Turboprop 	4 	H 	-
+AIRBUS 	VC-1 ACJ 	A319 	Landplane 	Jet 	2 	M 	-
+AIRBUS 	C-295 	C295 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	A-350-800 XWB 	A358 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Persuader (C-295) 	C295 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	SC-105 Amazonas 	C295 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	Amazonas 	C295 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	CN-235 	CN35 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	CN-235 Persuader 	CN35 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	Persuader (CN-235) 	CN35 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	HC-144 Ocean Sentry 	CN35 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	Atlas 	A400 	Landplane 	Turboprop 	4 	H 	-
+AIRBUS 	Prestige (A-330-200) 	A332 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Ocean Sentry 	CN35 	Landplane 	Turboprop 	2 	M 	-
+AIRBUS 	A-320 Prestige 	A320 	Landplane 	Jet 	2 	M 	-
+AIRBUS 	A-330-200 Prestige 	A332 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-340-200 Prestige 	A342 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	A-340-300 Prestige 	A343 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	A-340-500 Prestige 	A345 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	A-340-600 Prestige 	A346 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	Prestige (A-350-800) 	A358 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Prestige (A-320) 	A320 	Landplane 	Jet 	2 	M 	-
+AIRBUS 	A-350-800 XWB Prestige 	A358 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	Prestige (A-340-200) 	A342 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	Prestige (A-340-300) 	A343 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	Prestige (A-340-500) 	A345 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	Prestige (A-340-600) 	A346 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	Prestige (A-380-800) 	A388 	Landplane 	Jet 	4 	H 	-
+AIRBUS 	Elite 	A318 	Landplane 	Jet 	2 	M 	-
+AIRBUS 	KC-30 	A332 	Landplane 	Jet 	2 	H 	-
+AIRBUS 	A-400M Grizzly 	A400 	Landplane 	Turboprop 	4 	H 	-
+AIRBUS 	A-380-800 Prestige 	A388 	Landplane 	Jet 	4 	H 	-
