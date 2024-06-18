@@ -1,8 +1,3 @@
-
-
-Manufacturer = *
-Total Count: 9803
-Back
 Manufacturer 	Model 	Type Designator 	Description 	Engine Type 	Engine Count 	WTC 	Photo
 (any manufacturer) 	Sailplane 	GLID 				- 	
 (any manufacturer) 	Aircraft type not (yet) assigned a designator 	ZZZZ 				- 	-
