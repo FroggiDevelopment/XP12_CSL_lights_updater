@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import csv
+import json
 # import sys
 
 filename = "configs/doc8643.csv"
@@ -30,3 +31,6 @@ print ("Stranged categories:")
 print(strangers)
 
 print(sorted(aircraft_categories["H"]))
+
+with open("aircrafts.json", "w") as file:
+    json.dump(aircraft_categories, file, indent=4)
