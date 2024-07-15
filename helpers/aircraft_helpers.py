@@ -20,6 +20,8 @@ import re
 import logging
 from pathlib import Path
 
+from decorators.time_benchmark import time_benchmark
+
 from .helpers import get_list_of_files
 
 # from .helpers import tuple_to_string
@@ -27,7 +29,7 @@ from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger("aircraft_helpers")
 
-
+@time_benchmark
 def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]:
     """Get the aircraft objects from the xsb file and return the paths as a list.
 
@@ -54,6 +56,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
     aircraft_object_files: list[dict[str, Path]] = []
 
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
+    log.info("Starting to collect files. This can take a while depending on your system and diskspeed.")
     for xsb_file in xsb_files:
         parentdir: Path = xsb_file.parent.absolute()
 
@@ -91,7 +94,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
                                 pass
                             else:
                                 log.error(
-                                    f"Could not find separator in {line} at line -> {line_num}! No path to object creatable!"
+                                    f"Could not find separator in {line} at line -> {line_num}! Can not create path to object file!"
                                 )
                                 continue
 
