@@ -54,6 +54,13 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
         sys.exit()
 
     aircraft_object_files: list[dict[str, Path]] = []
+    
+    type_designator_definitions: set[str] = {
+        "MATCHES",
+        "ICAO",
+        "AIRLINE",
+        "LIVERY",
+    }
     log.info("Gathering all the aircraft objects.")
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
     log.info("Starting to collect files. This can take a while depending on your system and diskspeed.")
@@ -72,12 +79,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
 
                 for block in aircraft_blocks:
                     aircraft_object: dict[str, Path] = {}
-                    type_designator_definitions: list[str] = [
-                        "MATCHES",
-                        "ICAO",
-                        "AIRLINE",
-                        "LIVERY",
-                    ]
+
                     for line_num, line in enumerate(block.split("\n"), start=1):
                         if any(
                             type_designator in line
