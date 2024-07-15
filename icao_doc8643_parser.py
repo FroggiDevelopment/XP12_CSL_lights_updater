@@ -27,7 +27,7 @@ with open(filename, "r") as doc8643:
 for category in sorted(aircraft_categories):
     print(f"{category}: {len(aircraft_categories[category])}")
     
-print ("Stranged categories:")
+print ("Strange categories:")
 print(strangers)
 
 print(sorted(aircraft_categories["H"]))
