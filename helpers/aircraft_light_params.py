@@ -19,7 +19,7 @@ import sys
 import json
 import logging
 
-logger = logging.getLogger("aircraft_light_params")
+log = logging.getLogger("aircraft_light_params")
 
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params.json"
@@ -35,10 +35,10 @@ def get_aircraft_categories() -> dict[str, str]:
         with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
             aircraft_categories = json.load(aircrafts_definitions)
     except FileNotFoundError:
-        logger.error("Missing aircrafts.json file. Stopping now!")
+        log.error("Missing aircrafts.json file. Stopping now!")
         sys.exit(1)
     except json.decoder.JSONDecodeError:
-        logger.error(
+        log.error(
             "aircrafts.json may be corrupted. Please check the file for consistency!"
         )
         sys.exit(1)
@@ -55,10 +55,10 @@ def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
             light_params_per_category = json.load(lights_definitions)
     except FileNotFoundError:
-        logger.error("Missing light_params.json file. Stopping now!")
+        log.error("Missing light_params.json file. Stopping now!")
         sys.exit(1)
     except json.decoder.JSONDecodeError:
-        logger.error(
+        log.error(
             "light_params.json might be corrupted. Please check the file for consistency!"
         )
         sys.exit(1)
@@ -87,8 +87,8 @@ def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str
 
     for key, value in aircrafts.items():
         if aircraft_icao_type in value:
-            logger.debug(f"{aircraft_icao_type} found in {key}")
+            log.debug(f"{aircraft_icao_type} found in {key}")
             return light_params[key]
     else:
-        logger.warning(f"{aircraft_icao_type} not found.. Using defaults!")
-        return light_params["general_aviation"]
+        log.warning(f"{aircraft_icao_type} not found.. Using defaults!")
+        return light_params["default"]
