@@ -39,9 +39,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
     Returns:
         list[str]: List of paths to the aircraft objects in the searchpath.
     """
-    
+
     xsb_files = []
-    
+
     if Path(searchpath).is_dir() is False:
         log.error(f"Path {searchpath} is not a reachable directory!")
         raise FileNotFoundError(f"Path {searchpath} is not a reachable directory")
@@ -54,7 +54,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
         sys.exit()
 
     aircraft_object_files: list[dict[str, Path]] = []
-
+    log.info("Gathering all the aircraft objects.")
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
     log.info("Starting to collect files. This can take a while depending on your system and diskspeed.")
     for xsb_file in xsb_files:
@@ -112,11 +112,11 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
                                 )
                                 continue
                     if not any(
-                        entry.get("full_object_path") == Path(aircraft_object["full_object_path"])
+                        entry.get("full_object_path")
+                        == Path(aircraft_object["full_object_path"])
                         for entry in aircraft_object_files
-                    ):                                            
+                    ):
                         aircraft_object_files.append(aircraft_object)
-                
 
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
