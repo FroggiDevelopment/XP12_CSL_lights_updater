@@ -75,7 +75,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
                     content,
                 )
 
-                log.debug(f"Aircrafts to convert: {len(aircraft_blocks)}")
+                log.debug(f"Aircrafts to convert in {str(parentdir)}: {len(aircraft_blocks)}")
 
                 for block in aircraft_blocks:
                     aircraft_object: dict[str, Path] = {}
