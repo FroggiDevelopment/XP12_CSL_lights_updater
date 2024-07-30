@@ -102,7 +102,10 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
 
                             # Get Path from OBJ8 Param. First part "must" be the package name, so it can be ignored.
                             # The rest is a relative path starting from the location of the xsb_aircraft textfile.
-                            aircraft_object_path = Path(line.split(_separator, 1)[1])
+                            path_info = line.split()[3]
+
+                            aircraft_object_path = Path(path_info.split(_separator, 1)[1])
+
                             # Create the full path
                             aircraft_object["full_object_path"] = Path(
                                 parentdir, aircraft_object_path
