@@ -29,6 +29,7 @@ from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger("aircraft_helpers")
 
+
 @time_benchmark
 def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]:
     """Get the aircraft objects from the xsb file and return the paths as a list.
@@ -54,7 +55,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
         sys.exit()
 
     aircraft_object_files: list[dict[str, Path]] = []
-    
+
     type_designator_definitions: set[str] = {
         "MATCHES",
         "ICAO",
@@ -63,7 +64,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
     }
     log.info("Gathering all the aircraft objects.")
     # Start the search for the aircraft objects in the xsb_aircraft.txt file
-    log.info("Starting to collect files. This can take a while depending on your system and diskspeed.")
+    log.info(
+        "Starting to collect files. This can take a while depending on your system and diskspeed."
+    )
     for xsb_file in xsb_files:
         parentdir: Path = xsb_file.parent.absolute()
 
@@ -89,20 +92,23 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
                             aircraft_object["icao_type"] = aircraft_icao_type
 
                         if line.startswith("OBJ8 "):
-                            if any(
+                            if not any(
                                 (_separator := delimiter) in line
                                 for delimiter in [":", "/"]
                             ):
-                                pass
-                            else:
                                 log.error(
                                     f"Could not find separator in {line} at line -> {line_num}! Can not create path to object file!"
                                 )
                                 continue
+                            # else:
 
                             # Get Path from OBJ8 Param. First part "must" be the package name, so it can be ignored.
                             # The rest is a relative path starting from the location of the xsb_aircraft textfile.
+                            print(line.split(_separator, 1)[1].split()[0])
                             aircraft_object_path = Path(line.split(_separator, 1)[1])
+                            # print(line.split(_separator, 1)[1])
+                            # print(str(aircraft_object_path))
+                            # sys.exit()
                             # Create the full path
                             aircraft_object["full_object_path"] = Path(
                                 parentdir, aircraft_object_path
