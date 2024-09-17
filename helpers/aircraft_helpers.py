@@ -122,7 +122,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path |
                                 aircraft_object_path = Path(
                                     path_info.split(_separator, 1)[1]
                                 )
-                                log.info(aircraft_object_path)
+                                # log.info(aircraft_object_path)
 
                                 # Create the full path
                                 aircraft_object["full_object_path"] = Path(
@@ -140,7 +140,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path |
                         for entry in aircraft_object_files
                     ):
                         aircraft_object_files.append(aircraft_object)
-                        log.info(aircraft_object)
+                        # log.info(aircraft_object)
 
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
