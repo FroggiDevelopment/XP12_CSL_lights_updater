@@ -111,6 +111,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, Path]]
                             aircraft_object_path = Path(
                                 path_info.split(_separator, 1)[1]
                             )
+                            log.info(aircraft_object_path)
 
                             # Create the full path
                             aircraft_object["full_object_path"] = Path(
