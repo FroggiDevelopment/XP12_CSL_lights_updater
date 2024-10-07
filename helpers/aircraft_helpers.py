@@ -72,7 +72,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
     Returns:
         list[str]: List of paths to the aircraft objects in the searchpath.
     """
-
+    # Todo: Separate responsibilities. Functions does to much. Works fpr now but should be addressed in the near future!
     xsb_files: list[Path]
 
     if Path(searchpath).is_dir() is False:
