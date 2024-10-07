@@ -37,6 +37,7 @@ def make_backup(
                stop_on_error: bool Stop on errors or continue. Defaults to True.
     """
     for file in files:
+        print(file)
         backup_file = file.with_suffix(".BCK")
 
         if backup_file.exists():

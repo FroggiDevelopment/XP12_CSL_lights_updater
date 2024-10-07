@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 """
 Copyright (C) 2024  Richard J.M. Muller / Froggi
 
@@ -195,9 +195,11 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]):
     """
     for aircraft_object in aircraft_objects:
 
-        light_params: dict[str, str] = get_light_params_for_aircraft_type(str(aircraft_object["icao_type"]))
+        light_params: dict[str, str] = get_light_params_for_aircraft_type(
+            str(aircraft_object["icao_type"])
+        )
         aircraft_object_path: Path = aircraft_object["full_object_path"]
-        
+
         aircraft_object_content: list[str] = []
         try:
             with open(aircraft_object_path, "r", errors="replace") as file:
@@ -209,7 +211,9 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]):
             log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
 
-        temp_object_file: Path = aircraft_object_path.with_suffix(suffix=TEMP_FILE_SUFFIX)
+        temp_object_file: Path = aircraft_object_path.with_suffix(
+            suffix=TEMP_FILE_SUFFIX
+        )
 
         if aircraft_object_content == []:
             continue
@@ -383,18 +387,23 @@ def remove_backups(files: list[Path]):
         delete_backups(files)
     sys.exit()
 
+
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     # Get the list of aircraft obj files and the number of files
-    aircraft_objects: list[dict[str, Path]] = get_aircraft_objects_from_xsb_file(
-        searchpath=CSL_PATH
-    )
-    list_of_aircraft_objects_paths = [{key: value for key, value in aircraft_dictionary.items() if key != 'icao_type'} for aircraft_dictionary in aircraft_objects]
+    aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
+
+    list_of_aircraft_objects_paths = [
+        {key: value for key, value in aircraft_dictionary.items() if key != "icao_type"}
+        for aircraft_dictionary in aircraft_objects
+    ]
+
     aircraft_files: list[Path] = []
     for aircraft_object_path in list_of_aircraft_objects_paths:
-        aircraft_files.append(aircraft_object_path["full_object_path"])
-        
+        if aircraft_object_path["full_object_path"].exists():
+            aircraft_files.append(aircraft_object_path["full_object_path"])
+
     # Specials
     if args.undo:  # Undo changes, recover object from backup.
         recover_files(aircraft_files, STOP_ON_ERROR)
