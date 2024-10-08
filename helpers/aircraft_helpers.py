@@ -102,6 +102,16 @@ def get_aircraft_object_filepath(aircraft_description: str) -> str | None:
                 return path_info.split(_separator, 1)[1]
     return None
 
+def filepath_is_valid(filepath: Path) -> bool:
+    result = True
+    if (filepath.exists() is False):
+        result = False
+
+    if filepath == Path("Dummy"):
+        result = False
+
+    return result
+
 @time_benchmark
 def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
     """Get the aircraft objects from the xsb file and return the paths as a list.
@@ -163,24 +173,17 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
                         continue
 
                     aircraft_object["full_object_path"] = Path(parentdir, aircraft_object_relative_path)
-
-                    if (aircraft_object["full_object_path"].exists() is False):
-                        log.error(f"File {aircraft_object['full_object_path']} does not exist! Skipping!")
-                        continue
-
-                    if aircraft_object["full_object_path"] == Path("Dummy"):
-                        log.warning(
-                            f"Path not set! Possible missing object file. Skipping!"
-                        )
-                        continue
                 
-                    if not any(
-                        entry.get("full_object_path")
-                        == Path(aircraft_object["full_object_path"])
-                        for entry in aircraft_object_files
-                    ):
-                        aircraft_object_files.append(aircraft_object)
-
+                    if filepath_is_valid(aircraft_object["full_object_path"]) == True:
+                        if not any(
+                            entry.get("full_object_path")
+                            == Path(aircraft_object["full_object_path"])
+                            for entry in aircraft_object_files
+                        ):
+                            aircraft_object_files.append(aircraft_object)
+                    else:
+                        log.error(f"Filepath {aircraft_object['full_object_path']} is not valid. Missing file? Skipping this one!")
+                        continue
         except FileNotFoundError as notfound:
             log.error(f"{xsb_file.name} not found! Skipping this one!", notfound)
 
