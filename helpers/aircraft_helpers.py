@@ -113,7 +113,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
     Returns:
         list[str]: List of paths to the aircraft objects in the searchpath.
     """
-    # Todo: Separate responsibilities. Functions does to much. Works fpr now but should be addressed in the near future!
+
     xsb_files: list[Path]
 
     if Path(searchpath).is_dir() is False:
@@ -182,6 +182,14 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
 
 
 def is_lights_upgrade_already_done(item: str) -> bool:
+    """Check if the conversion already is done
+
+    Args:
+        item (str): Textblock with the lights part
+
+    Returns:
+        bool: True if already done, False otherwise
+    """
     already_updated: list[str] = re.findall("libxplanemp/controls/gear_ratio", item)
     if already_updated != []:
         log.debug("Taxilights already updated")
@@ -190,6 +198,17 @@ def is_lights_upgrade_already_done(item: str) -> bool:
 
 
 def fix_taxilights(item: str, extra_hide_anim: str) -> str:
+    """Fixes the wrong dataref for taxilights where applicable
+
+    Args:
+        item (str): Textblock with the lights
+        extra_hide_anim (str): String with the hide 'animation' to kill the lights when retracted.
+
+    Returns:
+        str : Fixed textblock
+    """
+    if is_lights_upgrade_already_done(item) is True:
+        return item
     if is_lights_upgrade_already_done(item) is True:
         return item
 
@@ -212,6 +231,15 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
 
 
 def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
+    """Fixes the case where the frontgear landinglights were still visibel after the landing gear is retracted
+
+    Args:
+        item (str): Textblock with the lights
+        extra_hide_anim (str): String with the hide 'animation' to kill the lights when retracted.
+
+    Returns:
+        str | None: Fixed textblock, None if nothing has changed
+    """
     if is_lights_upgrade_already_done(item) is True:
         return item
 
