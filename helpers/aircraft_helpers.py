@@ -167,7 +167,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
                         aircraft_object_files.append(aircraft_object)
 
         except FileNotFoundError as notfound:
-            log.error(f"{xsb_file.name} not found! Skipping these!", notfound)
+            log.error(f"{xsb_file.name} not found! Skipping this one!", notfound)
 
     return aircraft_object_files
 
