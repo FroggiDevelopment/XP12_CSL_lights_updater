@@ -24,6 +24,7 @@ from typing import TypedDict
 from decorators.time_benchmark import time_benchmark
 
 from .helpers import get_list_of_files
+from .helpers import filepath_is_valid
 
 from .custom_exceptions import NoFilesFoundError
 
@@ -101,16 +102,6 @@ def get_aircraft_object_filepath(aircraft_description: str) -> str | None:
 
                 return path_info.split(_separator, 1)[1]
     return None
-
-def filepath_is_valid(filepath: Path) -> bool:
-    result = True
-    if (filepath.exists() is False):
-        result = False
-
-    if filepath == Path("Dummy"):
-        result = False
-
-    return result
 
 @time_benchmark
 def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
