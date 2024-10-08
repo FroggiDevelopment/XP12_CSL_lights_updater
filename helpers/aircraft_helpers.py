@@ -252,7 +252,7 @@ def fix_lights_anomalies(object_content: str) -> str:
         object_content (str): Original aricraft object content.
 
     Returns:
-        object_content (str): Fixed aricraft object content.
+        object_content (str): Fixed aircraft object content.
     """
     result: list[str] = re.findall(
         "(?s)(?=ANIM_hide|ANIM_show)(.+?)(?=ANIM_end)", object_content
