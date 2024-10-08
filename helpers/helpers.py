@@ -154,6 +154,12 @@ def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
     log.debug(f"Found these files while globing: {files}")
     return files
 
+def filepath_is_valid(filepath: Path) -> bool:
+    result = True
+    if (filepath.exists() is False):
+        result = False
+
+    return result
 
 def tuple_to_string(tuple_to_convert: tuple[str]):
     """Convert a tuple to a string
