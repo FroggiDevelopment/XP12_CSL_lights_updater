@@ -155,6 +155,14 @@ def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
     return files
 
 def filepath_is_valid(filepath: Path) -> bool:
+    """Check if the filepath given is valid.
+
+    Args:
+        filepath (Path): Path to specific file
+
+    Returns:
+        bool: True if valid, False otherwise
+    """
     result = True
     if (filepath.exists() is False):
         result = False
