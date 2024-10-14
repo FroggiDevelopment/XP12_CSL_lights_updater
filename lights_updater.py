@@ -66,7 +66,7 @@ LIGHTS_TO_IGNORE = [
 
 # Setup logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     filename="lights_updater.log",
