@@ -209,8 +209,6 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
     """
     if is_lights_upgrade_already_done(item) is True:
         return item
-    if is_lights_upgrade_already_done(item) is True:
-        return item
 
     new_item = item.replace("landing_lites_on", "taxi_lites_on")
     original_taxi_anim_hide: list[str] = re.findall(
