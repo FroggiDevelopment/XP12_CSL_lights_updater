@@ -24,6 +24,30 @@ log = logging.getLogger("aircraft_light_params")
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params.json"
 
+def check_if_files_are_in_correct_json_format() -> None:
+    try:
+        with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
+            json.load(aircrafts_definitions)
+    except FileNotFoundError:
+        log.error("Missing aircrafts.json file. Stopping now!")
+        sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        log.error(
+            "aircrafts.json may be corrupted. Please check the file for consistency!"
+        )
+        sys.exit(1)
+        
+    try:
+        with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
+            json.load(lights_definitions)
+    except FileNotFoundError:
+        log.error("Missing light_params.json file. Stopping now!")
+        sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        log.error(
+            "light_params.json might be corrupted. Please check the file for consistency!"
+        )
+        sys.exit(1)
 
 def get_aircraft_categories() -> dict[str, str]:
     """Reads the aircrafts json file and returns the data

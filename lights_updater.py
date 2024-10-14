@@ -29,6 +29,7 @@ from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 from helpers import fix_lights_anomalies
+from helpers import check_if_files_are_in_correct_json_format
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
@@ -390,7 +391,8 @@ def remove_backups(files: list[Path]):
 
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
-
+    # TODO: Check aircrafts.josn and light_params.json for consistancy: If json format is oincorrect stop here and don't run the rest!
+    check_if_files_are_in_correct_json_format()
     # Get the list of aircraft obj files and the number of files
     aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
 
