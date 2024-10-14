@@ -391,7 +391,7 @@ def remove_backups(files: list[Path]):
 
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
-    # TODO: Check aircrafts.josn and light_params.json for consistancy: If json format is oincorrect stop here and don't run the rest!
+    # Check if aircrafts.json and light_params.json exist and are correct 
     check_if_files_are_in_correct_json_format()
     # Get the list of aircraft obj files and the number of files
     aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
