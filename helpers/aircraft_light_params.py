@@ -33,7 +33,7 @@ def get_aircraft_categories() -> dict[str, str]:
     """
     try:
         with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
-            aircraft_categories = json.load(aircrafts_definitions)
+            aircraft_categories: dict[str, str] = json.load(aircrafts_definitions)
     except FileNotFoundError:
         log.error("Missing aircrafts.json file. Stopping now!")
         sys.exit(1)
@@ -53,7 +53,7 @@ def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
     """
     try:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
-            light_params_per_category = json.load(lights_definitions)
+            light_params_per_category: dict[str, dict[str, str]] = json.load(lights_definitions)
     except FileNotFoundError:
         log.error("Missing light_params.json file. Stopping now!")
         sys.exit(1)
