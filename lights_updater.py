@@ -28,6 +28,7 @@ from helpers import recover_from_backup
 from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
+from helpers import create_file_list_from_aircraft_objects
 from helpers import fix_lights_anomalies
 from helpers import check_if_files_are_in_correct_json_format
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
@@ -388,19 +389,14 @@ def remove_backups(files: list[Path]):
         delete_backups(files)
     sys.exit()
 
-
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     check_if_files_are_in_correct_json_format()
 
-    # Get the list of aircraft obj files to be processed and the number of files
-    aircraft_files: list[Path] = []
+    # Get the list of aircraft objects and its file locations
     aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
-    
-    for aircraft_object in aircraft_objects:
-        if aircraft_object["full_object_path"].exists():
-            aircraft_files.append(aircraft_object["full_object_path"])
+    aircraft_files: list[Path] = create_file_list_from_aircraft_objects(aircraft_objects)
 
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
@@ -411,17 +407,16 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     # Start of main processing
     log.info("Creating backups!")
-
     make_backup(files=aircraft_files, stop_on_error=STOP_ON_ERROR)
 
     log.info(
-        "Start processing! Duration depends on number of files and of course general hardware performance."
-    )
-    log.info(
-        "Removing possible xpmp2 files as they can 'cache' the objects. LifeTraffic will recreate them."
+        "Removing possible xpmp2 files as they can 'cache' the objects. They should be recreated on the fly if you user X-Plane."
     )
     remove_xpmp2_files(filepath=CSL_PATH)
-
+    
+    log.info(
+        "Start processing! Duration depends on number of files and of course general hardware performance."
+    )
     process_object_files(aircraft_objects)
 
     copy_new_to_old(aircraft_files)
