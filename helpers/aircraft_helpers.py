@@ -179,8 +179,8 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
             log.error(f"{xsb_file.name} not found! Skipping this one!", notfound)
 
     return aircraft_object_files
-
-
+    
+ 
 def is_lights_upgrade_already_done(item: str) -> bool:
     """Check if the conversion already is done
 
