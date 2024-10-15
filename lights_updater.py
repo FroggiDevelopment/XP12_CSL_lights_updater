@@ -391,34 +391,29 @@ def remove_backups(files: list[Path]):
 
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
-    # Check if aircrafts.json and light_params.json exist and are correct 
+    # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     check_if_files_are_in_correct_json_format()
-    # Get the list of aircraft obj files and the number of files
-    aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
 
-    list_of_aircraft_objects_paths = [
-        {key: value for key, value in aircraft_dictionary.items() if key != "icao_type"}
-        for aircraft_dictionary in aircraft_objects
-    ]
-
+    # Get the list of aircraft obj files to be processed and the number of files
     aircraft_files: list[Path] = []
-    for aircraft_object_path in list_of_aircraft_objects_paths:
-        if aircraft_object_path["full_object_path"].exists():
-            aircraft_files.append(aircraft_object_path["full_object_path"])
+    aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
+    
+    for aircraft_object in aircraft_objects:
+        if aircraft_object["full_object_path"].exists():
+            aircraft_files.append(aircraft_object["full_object_path"])
 
-    # Specials
+    # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
         recover_files(aircraft_files, STOP_ON_ERROR)
 
     if args.remove_backups:  # Remove the backupfiles.
         remove_backups(aircraft_files)
 
-    # Main processing
+    # Start of main processing
     log.info("Creating backups!")
 
     make_backup(files=aircraft_files, stop_on_error=STOP_ON_ERROR)
 
-    # Lets do the magic stuff!
     log.info(
         "Start processing! Duration depends on number of files and of course general hardware performance."
     )
