@@ -22,6 +22,9 @@ import logging
 from pathlib import Path
 from configparser import ConfigParser
 
+import tkinter
+import tkinter.messagebox
+
 from helpers import make_backup
 from helpers import delete_backups
 from helpers import recover_from_backup
@@ -84,6 +87,11 @@ logging.getLogger().addHandler(screen)
 
 log = logging.getLogger("lights_updater")
 
+def success_message(message: str):
+    root = tkinter.Tk()
+    root.withdraw()
+    tkinter.messagebox.showinfo(title="Done!", message=message)
+    root.mainloop()
 
 def filter_unwanted_light_params(line: str) -> str:
     """Filter out light params that are old or otherwise wrong.
@@ -422,6 +430,8 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     copy_new_to_old(aircraft_files)
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
+
+    success_message(message = f"Processing done, {len(aircraft_objects)} files have been processed!")
 
 
 if __name__ == "__main__":
