@@ -31,10 +31,11 @@ def make_backup(
     files: list[Path],
     stop_on_error: bool = True,
 ) -> None:
-    """Make a backup of the files.
+    """ Creates backups of the existing object files
 
-    Arguments: files: string List of files to be backed up.
-               stop_on_error: bool Stop on errors or continue. Defaults to True.
+    Args:
+        files (list[Path]): List of paths to the objetcfiles
+        stop_on_error (bool, optional): To stop on errors or continue. Defaults to True.
     """
     for file in files:
         backup_file = file.with_suffix(".BCK")
@@ -62,9 +63,10 @@ def make_backup(
 
 
 def delete_backups(files: list[Path]) -> None:
-    """Delete the backup files
+    """ Deletes all backups
 
-    Arguments: files: string
+    Args:
+        files (list[Path]): List of paths to the objetcfiles
     """
     log.info("Start of deleting backups!")
     delete_files(files, ".BCK")
@@ -120,9 +122,11 @@ def remove_xpmp2_files(filepath: str) -> None:
 
 
 def delete_files(files: list[Path], suffix: str = ""):
-    """Delete the files, a genric function to delete all files with a specific suffix
+    """Delete files descibed in the list of files
 
-    Arguments: files: string List of files to be deleted.
+    Args:
+        files (list[Path]): List of filepaths to delete
+        suffix (str, optional): Suffix if it differs from the suffix in the list of files. Defaults to "".
     """
     for file in files:
         if suffix != "":
@@ -141,13 +145,17 @@ def delete_files(files: list[Path], suffix: str = ""):
 
 def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
     """Get the list of files with the given filename
+    Args:
+        searchpath (str): Directory from where to search
+        filename (str): The needle, filename to search for._
 
-    Arguments: searchpath (Path): The path to the csl location. Is equal to csl_path in config.ini
-               filename (str): The name of the file to be searched for.
+    Raises:
+        NoFilesFoundError: As the name says.
 
     Returns:
-        list[Path]: The list of files with the given filename.
+        list[Path]: ist of files with the searchresults for the specified filename
     """
+
     files = list(Path(searchpath).rglob(filename))
     if files == []:
         raise NoFilesFoundError(message=f"No {filename} found in {searchpath}!")
