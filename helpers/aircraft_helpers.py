@@ -180,7 +180,13 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
 
     return aircraft_object_files
     
- 
+def create_file_list_from_aircraft_objects(aircraft_objects: list[Aircraftobject]) -> list[Path]:
+    aircraft_files: list[Path] = []
+    for aircraft_object in aircraft_objects:
+        if aircraft_object["full_object_path"].exists():
+            aircraft_files.append(aircraft_object["full_object_path"])
+    return aircraft_files
+
 def is_lights_upgrade_already_done(item: str) -> bool:
     """Check if the conversion already is done
 

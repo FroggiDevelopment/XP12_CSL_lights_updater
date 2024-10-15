@@ -9,5 +9,6 @@ from .aircraft_light_params import get_light_params_for_aircraft_type as get_lig
 from .aircraft_light_params import check_if_files_are_in_correct_json_format as check_if_files_are_in_correct_json_format
 from .aircraft_helpers import get_aircraft_objects_from_xsb_file as get_aircraft_objects_from_xsb_file
 from .aircraft_helpers import fix_lights_anomalies as fix_lights_anomalies
+from .aircraft_helpers import create_file_list_from_aircraft_objects as create_file_list_from_aircraft_objects
 
 from .custom_exceptions import NoFilesFoundError as NoFilesFoundError
