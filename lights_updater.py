@@ -304,7 +304,7 @@ def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
 
     if config["csl"]["csl_path"] == "" and args_path_to_csl == None:
         log.error(
-            "No CSL path specified! Please update configs/config.ini!or specify it by using -p or --path!"
+            "No CSL path specified! Please update configs/config.ini or specify it by using -p or --path!"
         )
         sys.exit()
 
