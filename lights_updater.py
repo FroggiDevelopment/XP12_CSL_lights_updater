@@ -330,12 +330,12 @@ Developed for getting landing lights for LifeTraffic.
 Works with Bluebell and X-CSL packages, works only with some custom CSL aircraft.
 
 For normal start you don't need any arguments.
-But then you MUST specify the csl_path in the config.ini file!""",
+But then you \x1b[1;31mMUST\x1b[0m specify the csl_path in the config.ini file!""",
         epilog="""
-Attention!!
+\x1b[1;31mAttention!!
 If you specify a path with -p / --path when processing the objects and you want to undo your changes,
 or remove the backup files with -r / --remove-backups, you need the specify the path again!
-If you don't and there is a path specified in the config.ini, results may not be what you expected!
+If you don't and there is a path specified in the config.ini, results may not be what you expected!\x1b[0m
 
 Now you know!\n
 """,
