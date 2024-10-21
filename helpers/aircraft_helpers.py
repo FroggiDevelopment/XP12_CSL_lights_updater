@@ -197,10 +197,10 @@ def is_lights_upgrade_already_done(item: str) -> bool:
         bool: True if already done, False otherwise
     """
     already_updated: list[str] = re.findall("libxplanemp/controls/gear_ratio", item)
-    if already_updated != []:
-        log.debug("Taxilights already updated")
-        return True
-    return False
+    if already_updated == []:
+        return False
+    log.debug("Taxilights already updated")
+    return True
 
 
 def fix_taxilights(item: str, extra_hide_anim: str) -> str:
