@@ -90,7 +90,7 @@ log = logging.getLogger("lights_updater")
 def success_message(message: str):
     root = tkinter.Tk()
     root.withdraw()
-    tkinter.messagebox.showinfo(title="Done!", message=message)
+    tkinter.messagebox.showinfo(title="Done!", message=message) # type: ignore
     root.mainloop()
 
 def filter_unwanted_light_params(line: str) -> str:
