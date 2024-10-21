@@ -131,7 +131,8 @@ def ignore_line(line: str) -> bool:
 
 
 def add_lateral_position_to_lights(line: str) -> str:
-    """To determine directional parameters set the position of this light temporarily.
+    """To determine directional parameters add left, right or tail to the light param
+       based on x-y-position of the light.
        Will be removed again later on in the process.
 
     Args:
