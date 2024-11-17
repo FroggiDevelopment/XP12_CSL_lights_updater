@@ -67,6 +67,7 @@ LIGHTS_TO_IGNORE = [
     "_glow",
     "_flare",
     "logo",
+    "PLN_",
 ]
 
 # Setup logging
@@ -87,11 +88,23 @@ logging.getLogger().addHandler(screen)
 
 log = logging.getLogger("lights_updater")
 
-def success_message(message: str):
+
+def success_message(title: str, message: str):
     root = tkinter.Tk()
     root.withdraw()
-    tkinter.messagebox.showinfo(title="Done!", message=message) # type: ignore
+
+    def close_infobox():
+        # root.deiconify()
+        root.destroy()
+
+    if (
+        tkinter.messagebox.showinfo(title=title, message=message)  # type: ignore
+        == tkinter.messagebox.OK
+    ):
+        close_infobox()
+
     root.mainloop()
+
 
 def filter_unwanted_light_params(line: str) -> str:
     """Filter out light params that are old or otherwise wrong.
@@ -398,6 +411,7 @@ def remove_backups(files: list[Path]):
         delete_backups(files)
     sys.exit()
 
+
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
@@ -405,7 +419,9 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     # Get the list of aircraft objects and its file locations
     aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
-    aircraft_files: list[Path] = create_file_list_from_aircraft_objects(aircraft_objects)
+    aircraft_files: list[Path] = create_file_list_from_aircraft_objects(
+        aircraft_objects
+    )
 
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
@@ -422,7 +438,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
         "Removing possible xpmp2 files as they can 'cache' the objects. They should be recreated on the fly if you user X-Plane."
     )
     remove_xpmp2_files(filepath=CSL_PATH)
-    
+
     log.info(
         "Start processing! Duration depends on number of files and of course general hardware performance."
     )
@@ -432,7 +448,10 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
 
-    success_message(message = f"Processing done, {len(aircraft_objects)} files have been processed!")
+    success_message(
+        title="Processing done!",
+        message=f"Processing done, {len(aircraft_objects)} files have been processed!",
+    )
 
 
 if __name__ == "__main__":
