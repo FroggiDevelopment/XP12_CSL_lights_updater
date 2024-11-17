@@ -94,7 +94,6 @@ def success_message(title: str, message: str):
     root.withdraw()
 
     def close_infobox():
-        # root.deiconify()
         root.destroy()
 
     if (
