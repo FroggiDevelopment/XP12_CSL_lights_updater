@@ -212,7 +212,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 # def process_object_files(aircraft_objects: list[Path]) -> None:
 def process_object_files(aircraft_objects: list[dict[str, Path]]):
     """Create new aircraft obj file with X-Plane 12 light params
-
+    TODO: Correct the nonsense below... file is not an argument to this function
     Args:
         file (Path): the existing aircraft object file
     """
