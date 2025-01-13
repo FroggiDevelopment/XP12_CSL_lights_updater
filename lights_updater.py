@@ -71,6 +71,7 @@ LIGHTS_TO_IGNORE = [
     "_core",
     "_flare",
     "_glow",
+    "LIGHT_SPILL_CUSTOM",
 ]
 
 # Setup logging
