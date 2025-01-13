@@ -68,6 +68,9 @@ LIGHTS_TO_IGNORE = [
     "_flare",
     "logo",
     "PLN_",
+    "_core",
+    "_flare",
+    "_glow",
 ]
 
 # Setup logging
@@ -247,7 +250,7 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]):
             if line.startswith("# "):
                 continue
             if ignore_line(line) is True:
-                new_file_content += line
+                # new_file_content += line
                 continue
             if any(lighttype in line for lighttype in LIGHT_NEEDLES):
                 line = process_lights(line, light_params)
