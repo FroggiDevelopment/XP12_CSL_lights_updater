@@ -22,8 +22,8 @@ import logging
 from pathlib import Path
 from configparser import ConfigParser
 
-import tkinter
-import tkinter.messagebox
+# import tkinter
+# import tkinter.messagebox
 
 from helpers import make_backup
 from helpers import delete_backups
@@ -89,20 +89,20 @@ logging.getLogger().addHandler(screen)
 log = logging.getLogger("lights_updater")
 
 
-def success_message(title: str, message: str):
-    root = tkinter.Tk()
-    root.withdraw()
+# def success_message(title: str, message: str):
+#     root = tkinter.Tk()
+#     root.withdraw()
 
-    def close_infobox():
-        root.destroy()
+#     def close_infobox():
+#         root.destroy()
 
-    if (
-        tkinter.messagebox.showinfo(title=title, message=message)  # type: ignore
-        == tkinter.messagebox.OK
-    ):
-        close_infobox()
+#     if (
+#         tkinter.messagebox.showinfo(title=title, message=message)  # type: ignore
+#         == tkinter.messagebox.OK
+#     ):
+#         close_infobox()
 
-    root.mainloop()
+#     root.mainloop()
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -447,14 +447,14 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
 
-    success_message(
-        title="Processing done!",
-        message=f"Processing done, {len(aircraft_objects)} files have been processed!",
-    )
+    # success_message(
+    #     title="Processing done!",
+    #     message=f"Processing done, {len(aircraft_objects)} files have been processed!",
+    # )
 
 
 if __name__ == "__main__":
     args = parse_args()
     csl_path, stop_on_error = set_config(args.csl_path)
-
+    print(type(csl_path))
     main(args, csl_path, stop_on_error)
