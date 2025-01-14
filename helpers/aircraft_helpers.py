@@ -160,7 +160,8 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
                     aircraft_object_relative_path = get_aircraft_object_filepath(aircraft_description)
                     
                     if aircraft_object_relative_path is None:
-                        log.error("No object path could be specified. Skipping this one!")
+                        log.debug("No object path could be specified. Skipping this one!")
+                        log.debug(f"{aircraft_description}")
                         continue
 
                     aircraft_object["full_object_path"] = Path(parentdir, aircraft_object_relative_path)
