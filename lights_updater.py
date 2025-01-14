@@ -460,5 +460,4 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 if __name__ == "__main__":
     args = parse_args()
     csl_path, stop_on_error = set_config(args.csl_path)
-    print(type(csl_path))
     main(args, csl_path, stop_on_error)
