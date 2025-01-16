@@ -28,7 +28,9 @@ def parse_xsb_files(xsb_files: list[Path]):
 def get_aircract_objects(searchpath: str):
     xsb_files = get_xsb_files(searchpath)
     list_of_aircraft_objects = parse_xsb_files(xsb_files)
-    print(list_of_aircraft_objects)
+    return list_of_aircraft_objects
                 
 if __name__ == "__main__":
-    get_aircract_objects(PATH)
+    aircraft_objects = get_aircract_objects(PATH)
+    print(aircraft_objects)
+    print(f"Found {len(aircraft_objects)} objects to convert!")
