@@ -30,6 +30,12 @@ from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger("aircraft_helpers")
 
+ICAO_IDENTIFIERS: set[str] = {
+    "MATCHES",
+    "ICAO",
+    "AIRLINE",
+    "LIVERY"
+}
 
 class Aircraftobject(TypedDict):
     icao_type: str
@@ -47,15 +53,10 @@ def get_aircraft_icao_type(data_aircraft_description: str) -> str:
     """
 
     aircraft_icao_type: str = ""
-    _type_designator_definitions: set[str] = {
-        "MATCHES",
-        "ICAO",
-        "AIRLINE",
-        "LIVERY",
-    }
+
     for line in data_aircraft_description.split("\n"):
         if any(
-            type_designator in line for type_designator in _type_designator_definitions
+            type_designator in line for type_designator in ICAO_IDENTIFIERS
         ):
             aircraft_icao_type = line.split()[1]
         else:
