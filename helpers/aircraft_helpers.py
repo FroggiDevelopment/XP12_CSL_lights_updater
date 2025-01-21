@@ -30,7 +30,7 @@ from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger("aircraft_helpers")
 
-IGNORE_OBJECTS: list[str] = ["glass", "prop", "contrail", "fan", "rotor"]
+IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor"]
 ICAO_IDENTIFIERS: list[str] = [
     "MATCHES",
     "ICAO",
@@ -251,7 +251,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
                 
                 for line in aircraft_description.split("\n"):
                     # Get ICAO identifier for this aircraft
-                    if any (iaco_identifier in line for iaco_identifier in ICAO_IDENTIFIERS):
+                    if line.startswith("#"):
+                        continue
+                    if any (iaco_identifier in line for iaco_identifier in ICAO_IDENTIFIERS) and not line.startswith("#"):
                         icao = line.split()[1]
                         if icao in aircraft_object:
                             log.debug(f"ICAO {icao} is already set!")
@@ -262,17 +264,15 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
                     # Ignore lines with no usefull information
                     if not line.startswith("OBJ8 "):
                         continue
-                    if any (ignore_object in line.lower() for ignore_object in IGNORE_OBJECTS):
+                    if any (ignore_object in line for ignore_object in IGNORE_OBJECTS):
                         continue
                     
                     #Get the path to this aircraft object
-                        
-                        continue
                     path = get_path_to_aircraft_object(line)
                     full_path = parentdir + "/" + path
                     aircraft_object["full_object_path"] = full_path
-                    
-                aircraft_object_files.append(aircraft_object)
+                if aircraft_object != {}:    
+                    aircraft_object_files.append(aircraft_object)
     
         [unique_aircraft_objects.append(val) for val in aircraft_object_files if val not in unique_aircraft_objects]
     return unique_aircraft_objects

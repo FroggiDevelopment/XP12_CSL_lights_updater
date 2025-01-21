@@ -225,7 +225,7 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]):
         light_params: dict[str, str] = get_light_params_for_aircraft_type(
             str(aircraft_object["icao_type"])
         )
-        aircraft_object_path: Path = aircraft_object["full_object_path"]
+        aircraft_object_path: Path = Path(aircraft_object["full_object_path"])
 
         aircraft_object_content: list[str] = []
         try:
@@ -238,7 +238,7 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]):
             log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
 
-        temp_object_file: Path = aircraft_object_path.with_suffix(
+        temp_object_file: Path = Path(aircraft_object_path).with_suffix(
             suffix=TEMP_FILE_SUFFIX
         )
 

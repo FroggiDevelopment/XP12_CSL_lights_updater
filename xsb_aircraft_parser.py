@@ -6,8 +6,8 @@ from helpers import get_list_of_files
 
 log = logging.getLogger("xsb_aircraft_parser")
 
-PATH = "X-CSL"
-IGNORE_OBJECTS: list[str] = ["glass", "prop", "contrail", "fan", "rotor"]
+PATH = "CSL/BB_Props"
+IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor"]
 ICAO_IDENTIFIERS: list[str] = [
     "MATCHES",
     "ICAO",
@@ -34,6 +34,7 @@ def get_path_to_aircraft_object(line: str) -> str:
     Returns:
         str: string representation of the path
     """
+    print(line)
     if not any((_separator := delimiter) in line for delimiter in [":", "/"]):
         log.error(f"Could not find separator in {line} Can not create path to object file!")
         return "no sep error"
@@ -69,23 +70,25 @@ def parse_xsb_files(xsb_files: list[Path]):
                 
                 for line in aircraft_description.split("\n"):
                     # Get ICAO identifier for this aircraft
-                    if any (iaco_identifier in line for iaco_identifier in ICAO_IDENTIFIERS):
+                    if any (icao_identifier in line for icao_identifier in ICAO_IDENTIFIERS):
                         icao = line.split()[1]
                         if icao in aircraft_object:
-                            log.debug(f"ICAO {icao} is already set!")
+                            print(f"ICAO {icao} is already set!")
                             continue
                         else:
+                            # print(f"Adding {icao} to aircraft_object, found from {line.split()[0]}")
                             aircraft_object["icao_type"] = icao
                             
                     # Ignore lines with no usefull information
                     if not line.startswith("OBJ8 "):
+                        print(f"Line is wrong:\n{line}")
                         continue
-                    if any (ignore_object in line.lower() for ignore_object in IGNORE_OBJECTS):
+                    if any (ignore_object in line for ignore_object in IGNORE_OBJECTS):
+                        print(f"Ignored one!\n{line}")
                         continue
                     
                     #Get the path to this aircraft object
-                        
-                        continue
+                    # print(line)
                     path = get_path_to_aircraft_object(line)
                     full_path = parentdir + "/" + path
                     aircraft_object["full_object_path"] = full_path
@@ -103,4 +106,4 @@ def get_aircraft_objects(searchpath: str):
                 
 if __name__ == "__main__":
     print("This is a library. Not usabel on its own!")
-    get_aircraft_objects("X-CSL")
+    get_aircraft_objects("CSL/BB_Props")
