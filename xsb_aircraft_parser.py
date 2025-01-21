@@ -2,7 +2,7 @@ import re
 import logging
 from pathlib import Path
 
-from .helpers import get_list_of_files
+from helpers import get_list_of_files
 
 log = logging.getLogger("xsb_aircraft_parser")
 
@@ -25,7 +25,7 @@ def get_xsb_files(searchpath: str):
     """
     return get_list_of_files(searchpath, "xsb_aircraft.txt")
 
-def get_path_part_from_line(line: str) -> str:
+def get_path_to_aircraft_object(line: str) -> str:
     """Extracts the path to the aircraft object from the line
 
     Args:
@@ -72,7 +72,8 @@ def parse_xsb_files(xsb_files: list[Path]):
                     if any (iaco_identifier in line for iaco_identifier in ICAO_IDENTIFIERS):
                         icao = line.split()[1]
                         if icao in aircraft_object:
-                            print("Alreaddy set!")
+                            log.debug(f"ICAO {icao} is already set!")
+                            continue
                         else:
                             aircraft_object["icao_type"] = icao
                             
@@ -85,7 +86,7 @@ def parse_xsb_files(xsb_files: list[Path]):
                     #Get the path to this aircraft object
                         
                         continue
-                    path = get_path_part_from_line(line)
+                    path = get_path_to_aircraft_object(line)
                     full_path = parentdir + "/" + path
                     aircraft_object["full_object_path"] = full_path
                     
@@ -98,7 +99,8 @@ def parse_xsb_files(xsb_files: list[Path]):
 def get_aircraft_objects(searchpath: str):
     xsb_files = get_xsb_files(searchpath)
     list_of_aircraft_objects = parse_xsb_files(xsb_files)
-    return list_of_aircraft_objects
+    print(list_of_aircraft_objects)
                 
 if __name__ == "__main__":
     print("This is a library. Not usabel on its own!")
+    get_aircraft_objects("X-CSL")
