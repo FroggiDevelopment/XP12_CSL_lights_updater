@@ -37,6 +37,28 @@ from helpers import check_if_files_are_in_correct_json_format
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    filename="lights_updater.log",
+    filemode="w",
+)
+# Add screen handler
+screen = logging.StreamHandler()
+screen.setLevel(logging.INFO)
+screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
+screen.setFormatter(screenformatter)
+
+# logging.getLogger().addHandler(screen)
+
+log = logging.getLogger()
+logging.getLogger().addHandler(screen)
+
+# print(log.handlers)
+# sys.exit()
+
 # Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
 STOP_ON_ERROR: bool = True
@@ -73,25 +95,6 @@ LIGHTS_TO_IGNORE = [
     "_glow",
     "LIGHT_SPILL_CUSTOM",
 ]
-
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    filename="lights_updater.log",
-    filemode="w",
-)
-# Add screen handler
-screen = logging.StreamHandler()
-screen.setLevel(logging.INFO)
-screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
-screen.setFormatter(screenformatter)
-
-logging.getLogger().addHandler(screen)
-
-log = logging.getLogger("lights_updater")
-
 
 # def success_message(title: str, message: str):
 #     root = tkinter.Tk()
