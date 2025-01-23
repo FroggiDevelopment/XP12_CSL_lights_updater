@@ -446,7 +446,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     make_backup(files=aircraft_files, stop_on_error=STOP_ON_ERROR)
 
     log.info(
-        "Removing possible xpmp2 files as they can 'cache' the objects. They should be recreated on the fly if you user X-Plane."
+        "Removing possible xpmp2 files as they can 'cache' the objects. They should be recreated on the fly while you use X-Plane."
     )
     remove_xpmp2_files(filepath=CSL_PATH)
 
