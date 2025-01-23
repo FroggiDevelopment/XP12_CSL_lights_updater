@@ -232,7 +232,15 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]):
             with open(aircraft_object_path, "r", errors="replace") as file:
                 aircraft_object_content = file.readlines()
         except FileNotFoundError as err:
-            log.error(f"{aircraft_object['full_object_path']} not found!", err)
+            log.error(f"{str(aircraft_object['full_object_path'])} not found! Trying with lowercase extension! You Windows guys will never learn it :-)")
+            fix_for_wrong_case_of_extension = aircraft_object_path.with_suffix(".obj")
+            log.info(f"New try with {str(fix_for_wrong_case_of_extension)}")
+            try:
+                with open(fix_for_wrong_case_of_extension, "r", errors="replace") as file:
+                    aircraft_object_content = file.readlines()
+            except FileNotFoundError as err:
+                log.error(f"{str(fix_for_wrong_case_of_extension)} also not found!", err)
+                sys.exit()
             continue
         except UnicodeDecodeError as err:
             log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
