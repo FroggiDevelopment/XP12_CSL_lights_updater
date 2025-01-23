@@ -30,7 +30,7 @@ from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger("aircraft_helpers")
 
-IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor"]
+IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor", "car", "BLUR"]
 ICAO_IDENTIFIERS: list[str] = [
     "MATCHES",
     "ICAO",
@@ -108,84 +108,6 @@ def get_aircraft_object_filepath(aircraft_description: str) -> str | None:
 
                 return path_info.split(_separator, 1)[1]
     return None
-
-# @time_benchmark
-# def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[Aircraftobject]:
-#     """Get the aircraft objects from the xsb file and return the paths as a list.
-
-#     Args:
-#         searchpath (str): Topdirectory from which to search for the xsb_aircraft.txt file
-
-#     Returns:
-#         list[str]: List of paths to the aircraft objects in the searchpath.
-#     """
-
-#     xsb_files: list[Path]
-
-#     if Path(searchpath).is_dir() is False:
-#         log.error(f"Path {searchpath} is not a reachable directory!")
-#         raise FileNotFoundError(f"Path {searchpath} is not a reachable directory")
-
-#     try:
-#         xsb_files: list[Path] = get_list_of_files(searchpath, "xsb_aircraft.txt")
-#     except NoFilesFoundError as errormsg:
-#         log.error(errormsg)
-#         log.error("Please verify that your path is correct!")
-#         sys.exit()
-
-#     aircraft_object_files: list[Aircraftobject] = []
-
-#     log.info("Gathering all the aircraft objects.")
-#     # Start the search for the aircraft objects in the xsb_aircraft.txt file
-#     log.info(
-#         "Starting to collect files. This can take a while depending on your system and diskspeed."
-#     )
-#     for xsb_file in xsb_files:
-#         parentdir: Path = xsb_file.parent.absolute()
-
-#         try:
-#             with open(xsb_file, "r") as xsb_aircraft_file:
-#                 content: str = xsb_aircraft_file.read()
-#                 aircraft_descriptions = re.findall(
-#                     r"(?s)OBJ8_AIRCRAFT.*?(?=OBJ8_AIRCRAFT|$)",
-#                     content,
-#                 )
-
-#                 log.debug(
-#                     f"Aircrafts to convert in {str(parentdir)}: {len(aircraft_descriptions)}"
-#                 )
-
-#                 for aircraft_description in aircraft_descriptions:
-
-#                     aircraft_object: Aircraftobject = {
-#                         "icao_type": "",
-#                         "full_object_path": Path("Dummy"),
-#                     }
-                    
-#                     aircraft_object["icao_type"] = get_aircraft_icao_type(aircraft_description)
-#                     aircraft_object_relative_path = get_aircraft_object_filepath(aircraft_description)
-                    
-#                     if aircraft_object_relative_path is None:
-#                         log.debug("No object path could be specified. Skipping this one!")
-#                         log.debug(f"{aircraft_description}")
-#                         continue
-
-#                     aircraft_object["full_object_path"] = Path(parentdir, aircraft_object_relative_path)
-                
-#                     if filepath_is_valid(aircraft_object["full_object_path"]) == True:
-#                         if not any(
-#                             entry.get("full_object_path")
-#                             == Path(aircraft_object["full_object_path"])
-#                             for entry in aircraft_object_files
-#                         ):
-#                             aircraft_object_files.append(aircraft_object)
-#                     else:
-#                         log.error(f"Filepath {aircraft_object['full_object_path']} is not valid. Missing file? Skipping this one!")
-#                         continue
-#         except FileNotFoundError as notfound:
-#             log.error(f"{xsb_file.name} not found! Skipping this one!", notfound)
-
-#     return aircraft_object_files
 
 def get_path_to_aircraft_object(line: str) -> str:
     """Extracts the path to the aircraft object from the line
@@ -281,7 +203,6 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
 def create_file_list_from_aircraft_objects(aircraft_objects: list[dict[str,str]]) -> list[Path]:
     aircraft_files: list[Path] = []
     for aircraft_object in aircraft_objects:
-        print(aircraft_object)
         if Path(aircraft_object["full_object_path"]).exists():
             aircraft_files.append(Path(aircraft_object["full_object_path"]))
     return aircraft_files
