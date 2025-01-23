@@ -7,7 +7,7 @@ from helpers import get_list_of_files
 log = logging.getLogger("xsb_aircraft_parser")
 
 PATH = "CSL/BB_Props"
-IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor", "BLUR"]
+IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor", "BLUR", "car"]
 ICAO_IDENTIFIERS: list[str] = [
     "MATCHES",
     "ICAO",
@@ -72,7 +72,7 @@ def parse_xsb_files(xsb_files: list[Path]):
                     if any (icao_identifier in line for icao_identifier in ICAO_IDENTIFIERS):
                         icao = line.split()[1]
                         if icao in aircraft_object:
-                            print(f"ICAO {icao} is already set!")
+                            log.info(f"ICAO {icao} is already set!")
                             continue
                         else:
                             # print(f"Adding {icao} to aircraft_object, found from {line.split()[0]}")
@@ -82,10 +82,10 @@ def parse_xsb_files(xsb_files: list[Path]):
                     if not line.startswith("OBJ8 "):
                         continue
                     if any (ignore_object in line for ignore_object in IGNORE_OBJECTS):
+                        print(line)
                         continue
                     
                     #Get the path to this aircraft object
-                    # print(line)
                     path = get_path_to_aircraft_object(line)
                     full_path = parentdir + "/" + path
                     aircraft_object["full_object_path"] = full_path
