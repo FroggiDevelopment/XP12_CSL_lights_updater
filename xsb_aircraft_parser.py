@@ -7,7 +7,7 @@ from helpers import get_list_of_files
 log = logging.getLogger("xsb_aircraft_parser")
 
 PATH = "CSL/BB_Props"
-IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor"]
+IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor", "BLUR"]
 ICAO_IDENTIFIERS: list[str] = [
     "MATCHES",
     "ICAO",
@@ -34,7 +34,6 @@ def get_path_to_aircraft_object(line: str) -> str:
     Returns:
         str: string representation of the path
     """
-    print(line)
     if not any((_separator := delimiter) in line for delimiter in [":", "/"]):
         log.error(f"Could not find separator in {line} Can not create path to object file!")
         return "no sep error"
@@ -81,10 +80,8 @@ def parse_xsb_files(xsb_files: list[Path]):
                             
                     # Ignore lines with no usefull information
                     if not line.startswith("OBJ8 "):
-                        print(f"Line is wrong:\n{line}")
                         continue
                     if any (ignore_object in line for ignore_object in IGNORE_OBJECTS):
-                        print(f"Ignored one!\n{line}")
                         continue
                     
                     #Get the path to this aircraft object
