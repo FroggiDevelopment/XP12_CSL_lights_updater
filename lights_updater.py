@@ -19,6 +19,7 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 import sys
 import argparse
 import logging
+import logging.handlers
 from pathlib import Path
 from configparser import ConfigParser
 
@@ -38,26 +39,35 @@ from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    filename="lights_updater.log",
-    filemode="w",
-)
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
+#     datefmt="%Y-%m-%d %H:%M:%S",
+#     filename="lights_updater.log",
+#     filemode="w",
+# )
+
+# def setup_logger():
+log = logging.getLogger("lights_updater")
+log.setLevel(logging.INFO)  # Set the logging level to DEBUG
+log.propagate = False
+
 # Add screen handler
-screen = logging.StreamHandler()
+screen = logging.StreamHandler(sys.stdout)
 screen.setLevel(logging.INFO)
 screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
 screen.setFormatter(screenformatter)
 
-# logging.getLogger().addHandler(screen)
+# Add file handler
+file_handler = logging.handlers.RotatingFileHandler("lights_updater.log", mode="a", maxBytes=1000000, backupCount=2)
+file_handler.setLevel(logging.WARNING)
+file_formatter = logging.Formatter("%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s")
+file_handler.setFormatter(file_formatter)
 
-log = logging.getLogger()
-logging.getLogger().addHandler(screen)
+log.addHandler(screen)
+log.addHandler(file_handler)
 
-# print(log.handlers)
-# sys.exit()
+# return log
 
 # Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
