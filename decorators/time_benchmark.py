@@ -15,12 +15,22 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
+import logging
+import sys
+
 from typing import Callable, Any
 from functools import wraps
 from time import perf_counter
-import logging
 
 log = logging.getLogger("benchmark")
+log.setLevel(logging.INFO)
+
+screen = logging.StreamHandler(sys.stdout)
+screen.setLevel(logging.INFO)
+screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
+screen.setFormatter(screenformatter)
+
+log.addHandler(screen)
 
 
 def time_benchmark(func: Callable[..., Any]) -> Any:
