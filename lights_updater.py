@@ -23,8 +23,8 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from configparser import ConfigParser
 
-# import tkinter
-# import tkinter.messagebox
+import tkinter
+import tkinter.messagebox
 
 from helpers import make_backup
 from helpers import delete_backups
@@ -40,7 +40,7 @@ from configs._version import __version__
 
 # Setup logging
 logging.basicConfig(
-    handlers=[RotatingFileHandler("lights_updater.log", "a+",maxBytes=10000000, backupCount=10)],
+    handlers=[RotatingFileHandler("lights_updater.log", "a+",maxBytes=10000000, backupCount=2)],
     level=logging.DEBUG,
     format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -48,8 +48,6 @@ logging.basicConfig(
 
 # def setup_logger():
 log = logging.getLogger("lights_updater")
-# log.setLevel(logging.DEBUG)
-# log.propagate = False
 
 # Add screen handler
 screen = logging.StreamHandler(sys.stdout)
@@ -57,21 +55,7 @@ screen.setLevel(logging.INFO)
 screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
 screen.setFormatter(screenformatter)
 
-# Add file handler
-# file_handler = logging.FileHandler("lights_updater.log", mode="w")
-# file_handler.setLevel(logging.INFO)
-# file_formatter = logging.Formatter("%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s")
-# file_handler.setFormatter(file_formatter)
-
-# error_file_handler = logging.FileHandler("lights_updater_error.log", mode="w")
-# error_file_handler.setLevel(logging.ERROR)
-# error_file_handler.setFormatter(file_formatter)
-
 log.addHandler(screen)
-# log.addHandler(file_handler)
-# log.addHandler(error_file_handler)
-
-# return log
 
 # Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
@@ -110,20 +94,20 @@ LIGHTS_TO_IGNORE = [
     "LIGHT_SPILL_CUSTOM",
 ]
 
-# def success_message(title: str, message: str):
-#     root = tkinter.Tk()
-#     root.withdraw()
+def success_message(title: str, message: str):
+    root = tkinter.Tk()
+    root.withdraw()
 
-#     def close_infobox():
-#         root.destroy()
+    def close_infobox():
+        root.destroy()
 
-#     if (
-#         tkinter.messagebox.showinfo(title=title, message=message)  # type: ignore
-#         == tkinter.messagebox.OK
-#     ):
-#         close_infobox()
+    if (
+        tkinter.messagebox.showinfo(title=title, message=message)  # type: ignore
+        == tkinter.messagebox.OK
+    ):
+        close_infobox()
 
-#     root.mainloop()
+    root.mainloop()
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -476,10 +460,10 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
 
-    # success_message(
-    #     title="Processing done!",
-    #     message=f"Processing done, {len(aircraft_objects)} files have been processed!",
-    # )
+    success_message(
+        title="Processing done!",
+        message=f"Processing done, {len(aircraft_objects)} files have been processed!",
+    )
 
 
 if __name__ == "__main__":

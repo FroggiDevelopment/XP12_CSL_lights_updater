@@ -23,7 +23,7 @@ from .custom_exceptions import NoFilesFoundError
 
 from decorators.time_benchmark import time_benchmark
 
-log = logging.getLogger("helpers")
+log = logging.getLogger(__name__)
 
 # Add screen handler
 screen = logging.StreamHandler()
@@ -31,14 +31,7 @@ screen.setLevel(logging.INFO)
 screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
 screen.setFormatter(screenformatter)
 
-# Add file handler
-# file_handler = logging.FileHandler("lights_updater.log", mode="w")
-# file_handler.setLevel(logging.INFO)
-# file_formatter = logging.Formatter("%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s")
-# file_handler.setFormatter(file_formatter)
-
 log.addHandler(screen)
-# log.addHandler(file_handler)
 
 def make_backup(
     *,

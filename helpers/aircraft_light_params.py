@@ -19,7 +19,14 @@ import sys
 import json
 import logging
 
-log = logging.getLogger("aircraft_light_params")
+log = logging.getLogger(__name__)
+
+screen = logging.StreamHandler(sys.stdout)
+screen.setLevel(logging.INFO)
+screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
+screen.setFormatter(screenformatter)
+
+log.addHandler(screen)
 
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params.json"
