@@ -214,8 +214,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 
 
 @time_benchmark
-# def process_object_files(aircraft_objects: list[Path]) -> None:
-def process_object_files(aircraft_objects: list[dict[str, Path]]):
+def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
     TODO: Correct the nonsense below... file is not an argument to this function
     Args:
