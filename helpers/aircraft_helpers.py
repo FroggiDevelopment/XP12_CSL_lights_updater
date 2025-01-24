@@ -29,6 +29,7 @@ from .helpers import get_list_of_files
 from .custom_exceptions import NoFilesFoundError
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 log.propagate = False
 
 # Add screen handler
@@ -39,7 +40,7 @@ screen.setFormatter(screenformatter)
 
 # Add file handler
 file_handler = logging.FileHandler("lights_updater.log", mode="w")
-file_handler.setLevel(logging.INFO)
+file_handler.setLevel(logging.DEBUG)
 file_formatter = logging.Formatter("%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s")
 file_handler.setFormatter(file_formatter)
 
