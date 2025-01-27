@@ -228,7 +228,6 @@ def is_lights_upgrade_already_done(item: str) -> bool:
     already_updated: list[str] = re.findall("libxplanemp/controls/gear_ratio", item)
     if already_updated == []:
         return False
-    log.debug("Taxilights already updated")
     return True
 
 
@@ -243,8 +242,9 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
         str : Fixed textblock
     """
     if is_lights_upgrade_already_done(item) is True:
+        log.debug("Front gear taxilights already fixed.")
         return item
-
+    log.debug("Fixing frontgear taxilights hide animation.")
     new_item = item.replace("landing_lites_on", "taxi_lites_on")
     original_taxi_anim_hide: list[str] = re.findall(
         "ANIM_hide.+taxi_lites_on", new_item
@@ -274,8 +274,9 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
         str | None: Fixed textblock, None if nothing has changed
     """
     if is_lights_upgrade_already_done(item) is True:
+        log.debug("Front gear landinglights already fixed.")
         return item
-
+    log.debug("Fixing frontgear landinglights hide animation.")
     get_original_landinglight_anim_hide: list[str] = re.findall(
         "ANIM_hide.+landing_lites_on", item
     )
