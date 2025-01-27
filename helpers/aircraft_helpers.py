@@ -144,7 +144,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
         searchpath (str): Topdirectory from which to search for the xsb_aircraft.txt file
 
     Returns:
-        list[str]: List of paths to the aircraft objects in the searchpath.
+        list[dict[str, str]]: List of dictionaries with path and object dat of aircrafts.
     """
 
     xsb_files: list[Path]
