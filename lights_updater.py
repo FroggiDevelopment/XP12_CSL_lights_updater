@@ -202,7 +202,7 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
         file (Path): the existing aircraft object file
     """
     for aircraft_object in aircraft_objects:
-
+        print(aircraft_object)
         light_params: dict[str, str] = get_light_params_for_aircraft_type(
             str(aircraft_object["icao_type"])
         )
@@ -219,10 +219,10 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
             try:
                 with open(fix_for_wrong_case_of_extension, "r", errors="replace") as file:
                     aircraft_object_content = file.readlines()
+                    log.debug(f"New try with {fix_for_wrong_case_of_extension} succesful.")
             except FileNotFoundError as err:
                 log.error(f"{str(fix_for_wrong_case_of_extension)} also not found!", err)
                 sys.exit()
-            continue
         except UnicodeDecodeError as err:
             log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
