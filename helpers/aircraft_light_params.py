@@ -120,7 +120,7 @@ def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str
 
     for key, value in aircrafts.items():
         if aircraft_icao_type in value:
-            log.debug(f"{aircraft_icao_type} found in {key}")
+            log.debug(f"{aircraft_icao_type} found in aircraft type {key}")
             return light_params[key]
     else:
         log.warning(f"{aircraft_icao_type} not found.. Using defaults!")
