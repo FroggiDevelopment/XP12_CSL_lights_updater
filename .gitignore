@@ -53,6 +53,7 @@ CSL*/*
 X-CSL/*
 Custom/*
 RuScenery_CSL/*
+xsb_aircraft_parser.py
 
 test*
 .cov*

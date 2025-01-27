@@ -75,14 +75,12 @@ def parse_xsb_files(xsb_files: list[Path]):
                             log.info(f"ICAO {icao} is already set!")
                             continue
                         else:
-                            # print(f"Adding {icao} to aircraft_object, found from {line.split()[0]}")
                             aircraft_object["icao_type"] = icao
                             
                     # Ignore lines with no usefull information
                     if not line.startswith("OBJ8 "):
                         continue
                     if any (ignore_object in line for ignore_object in IGNORE_OBJECTS):
-                        print(line)
                         continue
                     
                     #Get the path to this aircraft object
