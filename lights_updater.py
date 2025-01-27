@@ -19,12 +19,8 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 import sys
 import argparse
 import logging
-from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from configparser import ConfigParser
-
-import tkinter
-import tkinter.messagebox
 
 from helpers import make_backup
 from helpers import delete_backups
@@ -38,9 +34,11 @@ from helpers import check_if_files_are_in_correct_json_format
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
+
 # Setup logging
 logging.basicConfig(
-    handlers=[RotatingFileHandler("lights_updater.log", "a+",maxBytes=10000000, backupCount=2)],
+    filename="lights_updater.log",
+    filemode="w",
     level=logging.DEBUG,
     format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -93,23 +91,6 @@ LIGHTS_TO_IGNORE = [
     "_glow",
     "LIGHT_SPILL_CUSTOM",
 ]
-
-def success_message(title: str, message: str):
-    root = tkinter.Tk()
-    root.withdraw()
-
-    def close_infobox():
-        root.destroy()
-
-    if (
-        tkinter.messagebox.showinfo(title=title, message=message)  # type: ignore
-        == tkinter.messagebox.OK
-    ):
-        close_infobox()
-
-    root.mainloop()
-
-
 def filter_unwanted_light_params(line: str) -> str:
     """Filter out light params that are old or otherwise wrong.
        Can be expanded for future cases.
@@ -429,7 +410,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     check_if_files_are_in_correct_json_format()
 
     # Get the list of aircraft objects and its file locations
-    aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
+    aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
     aircraft_files: list[Path] = create_file_list_from_aircraft_objects(
         aircraft_objects
     )
@@ -458,12 +439,6 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     copy_new_to_old(aircraft_files)
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
-
-    success_message(
-        title="Processing done!",
-        message=f"Processing done, {len(aircraft_objects)} files have been processed!",
-    )
-
 
 if __name__ == "__main__":
     args = parse_args()
