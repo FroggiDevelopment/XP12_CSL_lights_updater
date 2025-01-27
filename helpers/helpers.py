@@ -81,7 +81,7 @@ def delete_backups(files: list[Path]) -> None:
 
 
 @time_benchmark
-def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> None:
+def recover_from_backup(files: list[Path], stop_on_error: bool = False) -> None:
     """Recover the original files from the backup files
 
     Args:
