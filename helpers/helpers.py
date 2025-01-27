@@ -124,7 +124,10 @@ def remove_xpmp2_files(filepath: str) -> None:
         NoReturn: As it says :-)
     """
     xpmp2_files = list(Path(filepath).rglob("*xpmp2.obj"))
-    log.debug(xpmp2_files)
+    if len(xpmp2_files) > 0:
+        log.debug(xpmp2_files)
+    else:
+        log.debug("No xpmp2.obj files found.")
     delete_files(files=xpmp2_files)
 
 
@@ -166,7 +169,8 @@ def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
     files = list(Path(searchpath).rglob(filename))
     if files == []:
         raise NoFilesFoundError(message=f"No {filename} found in {searchpath}!")
-    log.debug(f"Found these files while globing: {files}")
+    # log.debug(f"Found these files while globing: {files}")
+    log.debug(f"Found {len(files)} xsb_aircraft.txt files!")
     return files
 
 def filepath_is_valid(filepath: Path) -> bool:
