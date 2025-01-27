@@ -202,7 +202,6 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
         file (Path): the existing aircraft object file
     """
     for aircraft_object in aircraft_objects:
-        print(aircraft_object)
         light_params: dict[str, str] = get_light_params_for_aircraft_type(
             str(aircraft_object["icao_type"])
         )
@@ -384,17 +383,6 @@ Now you know!\n
 
     return parser.parse_args()
 
-
-def recover_files(files: list[Path], stop_on_error: bool):
-    log.info("Recovery activated!")
-
-    recover_from_backup(
-        files=files,
-        stop_on_error=STOP_ON_ERROR,
-    )
-    sys.exit()
-
-
 def remove_backups(files: list[Path]):
     log.info("Backups will be removed now!")
     yes_no = input("Are you sure? [yes/No]" or "No")
@@ -403,13 +391,13 @@ def remove_backups(files: list[Path]):
         delete_backups(files)
     sys.exit()
 
-
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     check_if_files_are_in_correct_json_format()
 
     # Get the list of aircraft objects and its file locations
+    #TODO: Is it possible (yes it is) to have only one set of data?
     aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
     aircraft_files: list[Path] = create_file_list_from_aircraft_objects(
         aircraft_objects
@@ -417,7 +405,9 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
-        recover_files(aircraft_files, STOP_ON_ERROR)
+        # recover_files(aircraft_files, STOP_ON_ERROR)
+        recover_from_backup(aircraft_files, STOP_ON_ERROR)
+        sys.exit()
 
     if args.remove_backups:  # Remove the backupfiles.
         remove_backups(aircraft_files)
