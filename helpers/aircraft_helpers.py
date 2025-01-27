@@ -214,6 +214,11 @@ def create_file_list_from_aircraft_objects(aircraft_objects: list[dict[str,str]]
     for aircraft_object in aircraft_objects:
         if Path(aircraft_object["full_object_path"]).exists():
             aircraft_files.append(Path(aircraft_object["full_object_path"]))
+        else:
+            log.error(f"File {aircraft_object['full_object_path']} does not exist!")
+            log.info(f"Trying {aircraft_object['full_object_path'].replace('.OBJ', '.obj')}")
+            if Path(aircraft_object["full_object_path"].replace('.OBJ', '.obj')).exists():
+                aircraft_files.append(Path(aircraft_object["full_object_path"].replace('.OBJ', '.obj')))
     return aircraft_files
 
 def is_lights_upgrade_already_done(item: str) -> bool:
