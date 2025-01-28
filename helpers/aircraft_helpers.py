@@ -201,25 +201,20 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
                     #Get the path to this aircraft object
                     path = get_path_to_aircraft_object(line)
                     full_path = parentdir + "/" + path
+                    if not Path(full_path).exists():
+                        log.error(f"File {full_path} does not exist! Windows mentality? :-) Trying with lowercase extension.")
+                        path = path.replace(".OBJ", ".obj")
+                        full_path = parentdir + "/" + path
+                        if not Path(full_path).exists():
+                            log.error(f"File {full_path} does not exist either! Giving up on this one.")
+                            continue
+                        log.debug(f"Path {full_path} seems ok.")
                     aircraft_object["full_object_path"] = full_path
                 if aircraft_object != {}:    
                     aircraft_object_files.append(aircraft_object)
     
         [unique_aircraft_objects.append(val) for val in aircraft_object_files if val not in unique_aircraft_objects]
     return unique_aircraft_objects
-
-#TODO: Can this be handled with strings? Has impact on lights_updater.py!
-def create_file_list_from_aircraft_objects(aircraft_objects: list[dict[str,str]]) -> list[Path]:
-    aircraft_files: list[Path] = []
-    for aircraft_object in aircraft_objects:
-        if Path(aircraft_object["full_object_path"]).exists():
-            aircraft_files.append(Path(aircraft_object["full_object_path"]))
-        else:
-            log.error(f"File {aircraft_object['full_object_path']} does not exist!")
-            log.info(f"Trying {aircraft_object['full_object_path'].replace('.OBJ', '.obj')}")
-            if Path(aircraft_object["full_object_path"].replace('.OBJ', '.obj')).exists():
-                aircraft_files.append(Path(aircraft_object["full_object_path"].replace('.OBJ', '.obj')))
-    return aircraft_files
 
 def is_lights_upgrade_already_done(item: str) -> bool:
     """Check if the conversion already is done
