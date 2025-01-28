@@ -1,6 +1,6 @@
 from .helpers import make_backup as make_backup
 from .helpers import recover_from_backup as recover_from_backup
-from .helpers import delete_backups as delete_backups
+from .helpers import delete_files as delete_files
 from .helpers import remove_xpmp2_files as remove_xpmp2_files
 from .helpers import get_list_of_files as get_list_of_files
 from .helpers import filepath_is_valid as filepath_is_valid
@@ -9,6 +9,5 @@ from .aircraft_light_params import get_light_params_for_aircraft_type as get_lig
 from .aircraft_light_params import check_if_files_are_in_correct_json_format as check_if_files_are_in_correct_json_format
 from .aircraft_helpers import get_aircraft_objects_from_xsb_file as get_aircraft_objects_from_xsb_file
 from .aircraft_helpers import fix_lights_anomalies as fix_lights_anomalies
-from .aircraft_helpers import create_file_list_from_aircraft_objects as create_file_list_from_aircraft_objects
 
 from .custom_exceptions import NoFilesFoundError as NoFilesFoundError
