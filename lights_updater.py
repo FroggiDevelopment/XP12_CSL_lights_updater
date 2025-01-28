@@ -23,12 +23,11 @@ from pathlib import Path
 from configparser import ConfigParser
 
 from helpers import make_backup
-from helpers import delete_backups
+from helpers import delete_files
 from helpers import recover_from_backup
 from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
-from helpers import create_file_list_from_aircraft_objects
 from helpers import fix_lights_anomalies
 from helpers import check_if_files_are_in_correct_json_format
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
@@ -212,16 +211,8 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
             with open(aircraft_object_path, "r", errors="replace") as file:
                 aircraft_object_content = file.readlines()
         except FileNotFoundError as err:
-            log.error(f"{str(aircraft_object['full_object_path'])} not found! Trying with lowercase extension! You Windows guys will never learn it :-)")
-            fix_for_wrong_case_of_extension = aircraft_object_path.with_suffix(".obj")
-            log.info(f"New try with {str(fix_for_wrong_case_of_extension)}")
-            try:
-                with open(fix_for_wrong_case_of_extension, "r", errors="replace") as file:
-                    aircraft_object_content = file.readlines()
-                    log.debug(f"New try with {fix_for_wrong_case_of_extension} succesful.")
-            except FileNotFoundError as err:
-                log.error(f"{str(fix_for_wrong_case_of_extension)} also not found!", err)
-                sys.exit()
+            log.error(f"{aircraft_object['full_object_path']} not found!")
+            continue
         except UnicodeDecodeError as err:
             log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
@@ -257,15 +248,15 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
             log.error("Something went wrong!", err)
 
 
-def copy_new_to_old(files: list[Path]) -> None:
+def copy_new_to_old(aircraft_objects: list[dict[str,str]]) -> None:
     """Copy the new created file over the original file
     Delete the new file
     """
     log.info("Start copying processed files to original file!")
-    for file in files:
-        destination_file = file.with_suffix(".obj")
-        temp_object_file = file.with_suffix(TEMP_FILE_SUFFIX)
-        log.info(f"Copying {temp_object_file.name} to {file} file!")
+    for aircraft_object in aircraft_objects:
+        destination_file = Path(aircraft_object["full_object_path"]).with_suffix(".obj")
+        temp_object_file = Path(aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
+        log.info(f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file!")
 
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
@@ -284,7 +275,7 @@ def copy_new_to_old(files: list[Path]) -> None:
             log.error(f"{temp_object_file.name} can not be deleted!", err)
             if STOP_ON_ERROR is True:
                 sys.exit()
-        log.debug(f"Copy {file.name} to original object file done!")
+        log.debug(f"Copy {temp_object_file.name} to original object file done!")
 
 
 def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
@@ -383,12 +374,17 @@ Now you know!\n
 
     return parser.parse_args()
 
-def remove_backups(files: list[Path]):
+@time_benchmark
+def remove_backups(aircraft_objects: list[dict[str, str]]):
+    files_to_remove: list[Path] = []
     log.info("Backups will be removed now!")
     yes_no = input("Are you sure? [yes/No]" or "No")
     if yes_no.lower() == "yes" or yes_no.lower() == "y":
         log.info("Okay! Let's do it....!!")
-        delete_backups(files)
+        for aircraft_object in aircraft_objects:
+            files_to_remove.append(Path(aircraft_object["full_object_path"]))      
+        delete_files(files_to_remove, ".BCK")
+        log.info("Backup files removed successfully!")
     sys.exit()
 
 @named_time_benchmark("lights_updater")
@@ -397,24 +393,19 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     check_if_files_are_in_correct_json_format()
 
     # Get the list of aircraft objects and its file locations
-    #TODO: Is it possible (yes it is) to have only one set of data?
     aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
-    aircraft_files: list[Path] = create_file_list_from_aircraft_objects(
-        aircraft_objects
-    )
 
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
-        # recover_files(aircraft_files, STOP_ON_ERROR)
-        recover_from_backup(aircraft_files, STOP_ON_ERROR)
+        recover_from_backup(aircraft_objects, STOP_ON_ERROR)
         sys.exit()
 
     if args.remove_backups:  # Remove the backupfiles.
-        remove_backups(aircraft_files)
+        remove_backups(aircraft_objects)
 
     # Start of main processing
     log.info("Creating backups!")
-    make_backup(files=aircraft_files, stop_on_error=STOP_ON_ERROR)
+    make_backup(aircraft_objects=aircraft_objects, stop_on_error=STOP_ON_ERROR)
 
     log.info(
         "Removing possible xpmp2 files as they can 'cache' the objects. They should be recreated on the fly while you use X-Plane."
@@ -426,7 +417,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     )
     process_object_files(aircraft_objects)
 
-    copy_new_to_old(aircraft_files)
+    copy_new_to_old(aircraft_objects)
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
 
