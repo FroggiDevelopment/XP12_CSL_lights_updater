@@ -129,10 +129,6 @@ def delete_files(files: list[Path], suffix: str = ""):
     for file in files:
         if suffix != "":
             file = file.with_suffix(suffix)
-        if not file.exists():
-            log.warning(f"File {file} does not exist! Deleting not possible!")
-            continue
-        log.debug(f"Deleting {file}!")
         try:
             file.unlink()
         except PermissionError as err:
