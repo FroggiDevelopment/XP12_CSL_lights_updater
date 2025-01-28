@@ -100,32 +100,22 @@ def filter_unwanted_light_params(line: str) -> str:
     Returns:
         str: Corrected line with light parameters
     """
-
+    
     # Some lines are commented out... Must be undone
-    if "#LIGHT_PARAM" in line:
+    if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
+        log.debug(f"Removing leading # from line {line}")
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
+        line = line.replace("#LIGHT_NAMED", "LIGHT_NAMED")        
+    
+    # If light is on the ignore list, ignore it and retrun empty line
+    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
+        return ""
 
     # if "airplane_nav" in line:
     for item in ["_left", "_right", "_tail"]:
         line = line.replace(item, "")
 
     return line
-
-
-def ignore_line(line: str) -> bool:
-    """Test if line contains ignorable light parameters
-
-    Args:
-        line (str): String of light parameters
-
-    Returns:
-        bool: True if it can be ignored, False otherwise.
-    """
-
-    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
-        return True
-    return False
-
 
 def add_lateral_position_to_lights(line: str) -> str:
     """To determine directional parameters add left, right or tail to the light param
@@ -154,6 +144,11 @@ def add_lateral_position_to_lights(line: str) -> str:
 
     return line.replace(actual_lighttype, lighttype)
 
+def remove_positional_name_from_line(line: str):
+    line = line.replace("_right", "")
+    line = line.replace("_left", "")
+    line = line.replace("_tail", "")
+    return line
 
 def process_lights(line: str, light_params: dict[str, str]) -> str:
     """Changes the light parameters to XP12 specs
@@ -165,7 +160,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     Returns:
         str: A line with updated light parameters
     """
-
+    
     # Remove possible unwanted params, keep specifier, lighttype, x, y, z params
     line = " ".join(line.split()[:5])
 
@@ -189,7 +184,10 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 
     line = line.replace(f"{lighttype}", f"{lighttype}_pm")
     line += line.replace("_pm", "_bb")
-    line = filter_unwanted_light_params(line)
+    
+    if any(position in line for position in ["_right", "_left", "_tail"]):
+        line = remove_positional_name_from_line(line)
+        
     return line
 
 
@@ -226,12 +224,13 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
         new_file_content = ""
         log.info(f"Processing {aircraft_object_path}")
         for line in aircraft_object_content:
+            # First filter the lights
+            line = filter_unwanted_light_params(line)
+            
             # Remove some unnecessary lines. Can be done better...!!!
             if line.startswith("# "):
                 continue
-            if ignore_line(line) is True:
-                # new_file_content += line
-                continue
+
             if any(lighttype in line for lighttype in LIGHT_NEEDLES):
                 line = process_lights(line, light_params)
 
