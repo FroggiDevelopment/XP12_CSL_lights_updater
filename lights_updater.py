@@ -43,7 +43,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# def setup_logger():
 log = logging.getLogger("lights_updater")
 
 # Add screen handler
@@ -152,7 +151,15 @@ def add_lateral_position_to_lights(line: str) -> str:
 
     return line.replace(actual_lighttype, lighttype)
 
-def remove_positional_name_from_line(line: str):
+def remove_positional_name_from_line(line: str) -> str:
+    """Removes added or existing positional identifiers from line
+
+    Args:
+        line (str): line with positional identiefers
+
+    Returns:
+        str: line without positional identifiers
+    """
     line = line.replace("_right", "")
     line = line.replace("_left", "")
     line = line.replace("_tail", "")
@@ -252,7 +259,7 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
             log.error("Something went wrong!", err)
 
 
-def copy_new_to_old(aircraft_objects: list[dict[str,str]]) -> None:
+def copy_new_to_old(aircraft_objects: list[dict[str,str]])-> None:
     """Copy the new created file over the original file
     Delete the new file
     """
@@ -379,7 +386,13 @@ Now you know!\n
     return parser.parse_args()
 
 @time_benchmark
-def remove_backups(aircraft_objects: list[dict[str, str]]):
+def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
+    """Removes previous backups. This is not reversible!
+
+    Args:
+        aircraft_objects (list[dict[str, str]]): A list with all aircraft objects
+                                                 including path information
+    """
     files_to_remove: list[Path] = []
     log.info("Backups will be removed now!")
     yes_no = input("Are you sure? [yes/No]" or "No")
@@ -393,6 +406,13 @@ def remove_backups(aircraft_objects: list[dict[str, str]]):
 
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
+    """Here all the magic happens.
+
+    Args:
+        args (argparse.Namespace): coammndline arguments See -h for help
+        CSL_PATH (str): The startpath for searching the xsb_aircraft.txt files
+        STOP_ON_ERROR (bool): A boolean to determine the behevior on errors.
+    """
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     check_if_files_are_in_correct_json_format()
 
