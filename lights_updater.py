@@ -101,19 +101,20 @@ def filter_unwanted_light_params(line: str) -> str:
         str: Corrected line with light parameters
     """
     
+    # If light is on the ignore list, ignore it and retrun empty line
+    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
+        return ""
+    
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
         log.debug(f"Removing leading # from line {line}")
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
         line = line.replace("#LIGHT_NAMED", "LIGHT_NAMED")        
-    
-    # If light is on the ignore list, ignore it and retrun empty line
-    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
-        return ""
 
-    # if "airplane_nav" in line:
-    for item in ["_left", "_right", "_tail"]:
-        line = line.replace(item, "")
+    # Remove positional name from line
+    if any(position in line for position in ["_left", "_right", "_tail"]):
+        for item in ["_left", "_right", "_tail"]:
+            line = line.replace(item, "")
 
     return line
 
