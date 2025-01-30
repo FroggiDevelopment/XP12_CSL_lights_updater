@@ -108,11 +108,15 @@ def filter_unwanted_light_params(line: str) -> str:
     if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
         return ""
     
+    # Check if old LIGHT_NAMED param exists and replace it with the new one
+    if "LIGHT_NAMED" in line:
+        log.debug(f"Replacing LIGHT_NAMED in line {line} to LIGHT_PARAM")
+        line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
+    
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
         log.debug(f"Removing leading # from line {line}")
-        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
-        line = line.replace("#LIGHT_NAMED", "LIGHT_NAMED")        
+        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")      
 
     # Remove positional name from line
     if any(position in line for position in POSITION_IDENTIFIERS):
