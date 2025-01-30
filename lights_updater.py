@@ -90,6 +90,9 @@ LIGHTS_TO_IGNORE = [
     "_glow",
     "LIGHT_SPILL_CUSTOM",
 ]
+
+POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
+
 def filter_unwanted_light_params(line: str) -> str:
     """Filter out light params that are old or otherwise wrong.
        Can be expanded for future cases.
@@ -112,8 +115,8 @@ def filter_unwanted_light_params(line: str) -> str:
         line = line.replace("#LIGHT_NAMED", "LIGHT_NAMED")        
 
     # Remove positional name from line
-    if any(position in line for position in ["_left", "_right", "_tail"]):
-        for item in ["_left", "_right", "_tail"]:
+    if any(position in line for position in POSITION_IDENTIFIERS):
+        for item in POSITION_IDENTIFIERS:
             line = line.replace(item, "")
 
     return line
@@ -130,7 +133,7 @@ def add_lateral_position_to_lights(line: str) -> str:
         str: Line with 'positional' light-name-parameters. I.e. airplane_nav_rigt
     """
     # If the line already includes position, return it unprocessed.
-    if any(position in line for position in ["_right", "_left", "_tail"]):
+    if any(position in line for position in POSITION_IDENTIFIERS):
         return line
 
     _x_position = float(line.split()[2:3][0])
@@ -183,7 +186,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     line = line.replace(f"{lighttype}", f"{lighttype}_pm")
     line += line.replace("_pm", "_bb")
     
-    if any(position in line for position in ["_right", "_left", "_tail"]):
+    if any(position in line for position in POSITION_IDENTIFIERS):
         line = remove_positional_name_from_line(line)
         
     return line
