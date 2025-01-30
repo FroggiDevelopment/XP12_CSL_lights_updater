@@ -179,9 +179,6 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
 
-    # Change from named light to parametrized light
-    line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
-
     line = line.replace(f"{lighttype}", f"{lighttype}_pm")
     line += line.replace("_pm", "_bb")
     
