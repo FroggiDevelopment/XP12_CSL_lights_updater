@@ -16,6 +16,8 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 """
 
 import logging
+import logging.config
+import json
 import sys
 from pathlib import Path
 
@@ -23,15 +25,14 @@ from .custom_exceptions import NoFilesFoundError
 
 from decorators.time_benchmark import time_benchmark
 
+# Setup logging
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
+
 log = logging.getLogger(__name__)
 
-# Add screen handler
-screen = logging.StreamHandler()
-screen.setLevel(logging.INFO)
-screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
-screen.setFormatter(screenformatter)
-
-log.addHandler(screen)
 
 def make_backup(
     aircraft_objects: list[dict[str, str]],

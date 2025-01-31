@@ -16,21 +16,20 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 """
 
 import logging
-import sys
+import logging.config
+import json
 
 from typing import Callable, Any
 from functools import wraps
 from time import perf_counter
 
-log = logging.getLogger("benchmark")
-log.setLevel(logging.INFO)
+# Setup logging
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
 
-screen = logging.StreamHandler(sys.stdout)
-screen.setLevel(logging.INFO)
-screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
-screen.setFormatter(screenformatter)
-
-log.addHandler(screen)
+log = logging.getLogger(__name__)
 
 
 def time_benchmark(func: Callable[..., Any]) -> Any:

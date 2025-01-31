@@ -1,10 +1,19 @@
 import re
 import logging
+import logging.config
+import json
+import sys
+
 from pathlib import Path
 
 from helpers import get_list_of_files
 
-log = logging.getLogger("xsb_aircraft_parser")
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
+
+log = logging.getLogger("Testfile")
 
 PATH = "CSL/BB_Props"
 IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor", "BLUR", "car"]
@@ -95,6 +104,9 @@ def parse_xsb_files(xsb_files: list[Path]):
 
                     
 def get_aircraft_objects(searchpath: str):
+    log.info("get_aircraft_objects")
+    log.debug("This is debug")
+    sys.exit()
     xsb_files = get_xsb_files(searchpath)
     list_of_aircraft_objects = parse_xsb_files(xsb_files)
     print(list_of_aircraft_objects)

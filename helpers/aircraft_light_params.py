@@ -18,15 +18,15 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 import sys
 import json
 import logging
+import logging.config
+
+# Setup logging
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
 
 log = logging.getLogger(__name__)
-
-screen = logging.StreamHandler(sys.stdout)
-screen.setLevel(logging.INFO)
-screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
-screen.setFormatter(screenformatter)
-
-log.addHandler(screen)
 
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params.json"

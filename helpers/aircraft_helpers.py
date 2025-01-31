@@ -18,6 +18,8 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 import sys
 import re
 import logging
+import logging.config
+import json
 from pathlib import Path
 # from typing import TypedDict
 
@@ -28,16 +30,13 @@ from .helpers import get_list_of_files
 
 from .custom_exceptions import NoFilesFoundError
 
+# Setup logging
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
+
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-
-# Add screen handler
-screen = logging.StreamHandler()
-screen.setLevel(logging.INFO)
-screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
-screen.setFormatter(screenformatter)
-
-log.addHandler(screen)
 
 IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor", "car", "BLUR"]
 ICAO_IDENTIFIERS: list[str] = [

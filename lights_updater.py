@@ -19,6 +19,8 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 import sys
 import argparse
 import logging
+import logging.config
+import json
 from pathlib import Path
 from configparser import ConfigParser
 
@@ -35,23 +37,12 @@ from configs._version import __version__
 
 
 # Setup logging
-logging.basicConfig(
-    filename="lights_updater.log",
-    filemode="w",
-    level=logging.DEBUG,
-    format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
 
 log = logging.getLogger("lights_updater")
-
-# Add screen handler
-screen = logging.StreamHandler(sys.stdout)
-screen.setLevel(logging.INFO)
-screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
-screen.setFormatter(screenformatter)
-
-log.addHandler(screen)
 
 # Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
@@ -267,7 +258,6 @@ def copy_new_to_old(aircraft_objects: list[dict[str,str]])-> None:
     for aircraft_object in aircraft_objects:
         destination_file = Path(aircraft_object["full_object_path"]).with_suffix(".obj")
         temp_object_file = Path(aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
-        log.info(f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file!")
 
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
@@ -286,7 +276,7 @@ def copy_new_to_old(aircraft_objects: list[dict[str,str]])-> None:
             log.error(f"{temp_object_file.name} can not be deleted!", err)
             if STOP_ON_ERROR is True:
                 sys.exit()
-        log.debug(f"Copy {temp_object_file.name} to original object file done!")
+        log.info(f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
 
 
 def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
