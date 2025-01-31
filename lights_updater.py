@@ -35,7 +35,6 @@ from helpers import check_if_files_are_in_correct_json_format
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
-
 # Setup logging
 with open('configs/logging.conf', 'r') as configfile:
     logger_config = json.load(configfile)
