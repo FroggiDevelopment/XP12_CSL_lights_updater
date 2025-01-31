@@ -99,6 +99,7 @@ def recover_from_backup(aircraft_objects: list[dict[str,str]], stop_on_error: bo
 
         backup_file.unlink()
         log.info(f"Recovery of {recover_file} is done!")
+        log.debug(f"Recovery of {recover_file} succesful!")
     log.info(f"Recovery ready! Recoverd {len(aircraft_objects)} files!")
 
 
