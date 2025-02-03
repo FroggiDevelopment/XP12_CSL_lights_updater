@@ -201,7 +201,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
                     path = get_path_to_aircraft_object(line)
                     full_path = parentdir + "/" + path
                     if not Path(full_path).exists():
-                        log.error(f"File {full_path} does not exist! Windows mentality? :-) Trying with lowercase extension.")
+                        log.debug(f"File {full_path} does not exist! Windows mentality? :-) Trying with lowercase extension.")
                         path = path.replace(".OBJ", ".obj")
                         full_path = parentdir + "/" + path
                         if not Path(full_path).exists():
