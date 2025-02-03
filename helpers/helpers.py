@@ -133,10 +133,12 @@ def delete_files(files: list[Path], suffix: str = ""):
             file = file.with_suffix(suffix)
         try:
             file.unlink()
-        except PermissionError as err:
-            log.error("Deleting resulted in error!", err)
-        except FileNotFoundError as notfound:
-            log.error("Deleting resulted in error!", notfound)
+        except PermissionError:
+            log.warning(f"Permission denied for deleting {file.name}!")
+            continue
+        except FileNotFoundError:
+            log.warning(f"{file.name} can not be deleted! It doesn't exist")
+            continue
 
 
 def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
@@ -173,17 +175,3 @@ def filepath_is_valid(filepath: Path) -> bool:
         result = False
 
     return result
-
-def tuple_to_string(tuple_to_convert: tuple[str]):
-    """Convert a tuple to a string
-
-    Args:
-        tuple_to_convert (tuple): The tuple to convert
-
-    Returns:
-        str: The converted string
-    """
-    string_from_tuple: str = ""
-    for row in tuple_to_convert:
-        string_from_tuple += row
-    return str(string_from_tuple)
