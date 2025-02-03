@@ -18,8 +18,15 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 import sys
 import json
 import logging
+import logging.config
 
-log = logging.getLogger("aircraft_light_params")
+# Setup logging
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
+
+log = logging.getLogger(__name__)
 
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params.json"
@@ -113,7 +120,7 @@ def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str
 
     for key, value in aircrafts.items():
         if aircraft_icao_type in value:
-            log.debug(f"{aircraft_icao_type} found in {key}")
+            log.debug(f"{aircraft_icao_type} found in aircraft type {key}")
             return light_params[key]
     else:
         log.warning(f"{aircraft_icao_type} not found.. Using defaults!")

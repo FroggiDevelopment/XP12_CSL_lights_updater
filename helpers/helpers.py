@@ -16,6 +16,8 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 """
 
 import logging
+import logging.config
+import json
 import sys
 from pathlib import Path
 
@@ -23,12 +25,17 @@ from .custom_exceptions import NoFilesFoundError
 
 from decorators.time_benchmark import time_benchmark
 
-log = logging.getLogger("helpers")
+# Setup logging
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
+
+log = logging.getLogger(__name__)
 
 
 def make_backup(
-    *,
-    files: list[Path],
+    aircraft_objects: list[dict[str, str]],
     stop_on_error: bool = True,
 ) -> None:
     """ Creates backups of the existing object files
@@ -37,11 +44,12 @@ def make_backup(
         files (list[Path]): List of paths to the objetcfiles
         stop_on_error (bool, optional): To stop on errors or continue. Defaults to True.
     """
-    for file in files:
+    for aircraft_object in aircraft_objects:
+        file = Path(aircraft_object["full_object_path"])
         backup_file = file.with_suffix(".BCK")
 
         if backup_file.exists():
-            log.info(f"Backup already exists for: {file.name}")
+            log.info(f"Backup already exists for: {file}")
             continue
         try:
             backup_file.write_bytes(file.read_bytes())
@@ -53,28 +61,16 @@ def make_backup(
             continue
         except FileNotFoundError as notfound:
             if stop_on_error is True:
-                log.error("Stopping because file not found!", notfound)
+                log.error(f"Stopping because file {file} not found!", notfound)
                 sys.exit()
             log.error(f"Backup of {file} failed!", notfound)
             continue
-        log.info(f"Backup for {file.name} successfully created.")
+        log.info(f"Backup for {file} successfully created.")
         continue
     log.info("Backups done!")
 
-
-def delete_backups(files: list[Path]) -> None:
-    """ Deletes all backups
-
-    Args:
-        files (list[Path]): List of paths to the objetcfiles
-    """
-    log.info("Start of deleting backups!")
-    delete_files(files, ".BCK")
-    log.info("Backups deleted!")
-
-
 @time_benchmark
-def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> None:
+def recover_from_backup(aircraft_objects: list[dict[str,str]], stop_on_error: bool = False) -> None:
     """Recover the original files from the backup files
 
     Args:
@@ -82,15 +78,15 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
         stop_on_error (bool, optional): Stop on any errors or continue. Defaults to False.
     """
 
-    for file in sorted(files):
-        backup_file = file.with_suffix(".BCK")
+    for aircraft_object in aircraft_objects:
+        backup_file = Path(aircraft_object["full_object_path"]).with_suffix(".BCK")
         recover_file = backup_file.with_suffix(".obj")
         log.debug(f"Recovery of {backup_file} is started")
         if backup_file.is_file() == False:
             log.warning(
                 f"{backup_file.name} not found! Should it be there? Skipping this one!"
             )
-            files.remove(file)
+            aircraft_objects.remove(aircraft_object)
             continue
         try:
             recover_file.write_bytes(backup_file.read_bytes())
@@ -103,7 +99,8 @@ def recover_from_backup(*, files: list[Path], stop_on_error: bool = False) -> No
 
         backup_file.unlink()
         log.info(f"Recovery of {recover_file} is done!")
-    log.info(f"Recovery ready! Recoverd {len(files)} files!")
+        log.debug(f"Recovery of {recover_file} succesful!")
+    log.info(f"Recovery ready! Recoverd {len(aircraft_objects)} files!")
 
 
 def remove_xpmp2_files(filepath: str) -> None:
@@ -117,7 +114,10 @@ def remove_xpmp2_files(filepath: str) -> None:
         NoReturn: As it says :-)
     """
     xpmp2_files = list(Path(filepath).rglob("*xpmp2.obj"))
-    log.debug(xpmp2_files)
+    if len(xpmp2_files) > 0:
+        log.debug(xpmp2_files)
+    else:
+        log.debug("No xpmp2.obj files found.")
     delete_files(files=xpmp2_files)
 
 
@@ -131,10 +131,6 @@ def delete_files(files: list[Path], suffix: str = ""):
     for file in files:
         if suffix != "":
             file = file.with_suffix(suffix)
-        if not file.exists():
-            log.warning(f"File {file} does not exist! Deleting not possible!")
-            continue
-        log.info(f"Deleting {file}!")
         try:
             file.unlink()
         except PermissionError as err:
@@ -159,7 +155,8 @@ def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
     files = list(Path(searchpath).rglob(filename))
     if files == []:
         raise NoFilesFoundError(message=f"No {filename} found in {searchpath}!")
-    log.debug(f"Found these files while globing: {files}")
+    # log.debug(f"Found these files while globing: {files}")
+    log.debug(f"Found {len(files)} xsb_aircraft.txt files!")
     return files
 
 def filepath_is_valid(filepath: Path) -> bool:

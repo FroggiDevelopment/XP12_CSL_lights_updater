@@ -15,12 +15,21 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
+import logging
+import logging.config
+import json
+
 from typing import Callable, Any
 from functools import wraps
 from time import perf_counter
-import logging
 
-log = logging.getLogger("benchmark")
+# Setup logging
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
+
+log = logging.getLogger(__name__)
 
 
 def time_benchmark(func: Callable[..., Any]) -> Any:

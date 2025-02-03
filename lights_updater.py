@@ -19,20 +19,29 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 import sys
 import argparse
 import logging
+import logging.config
+import json
 from pathlib import Path
 from configparser import ConfigParser
 
 from helpers import make_backup
-from helpers import delete_backups
+from helpers import delete_files
 from helpers import recover_from_backup
 from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
-from helpers import create_file_list_from_aircraft_objects
 from helpers import fix_lights_anomalies
 from helpers import check_if_files_are_in_correct_json_format
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
+
+# Setup logging
+with open('configs/logging.conf', 'r') as configfile:
+    logger_config = json.load(configfile)
+    
+logging.config.dictConfig(logger_config)
+
+log = logging.getLogger("lights_updater")
 
 # Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
@@ -71,23 +80,7 @@ LIGHTS_TO_IGNORE = [
     "LIGHT_SPILL_CUSTOM",
 ]
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)-12s: %(levelname)-8s - (%(asctime)s) at line: %(lineno)d [%(filename)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    filename="lights_updater.log",
-    filemode="w",
-)
-# Add screen handler
-screen = logging.StreamHandler()
-screen.setLevel(logging.INFO)
-screenformatter = logging.Formatter("%(name)-12s: %(levelname)-8s - %(message)s")
-screen.setFormatter(screenformatter)
-
-logging.getLogger().addHandler(screen)
-
-log = logging.getLogger("lights_updater")
+POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
 
 def filter_unwanted_light_params(line: str) -> str:
     """Filter out light params that are old or otherwise wrong.
@@ -99,32 +92,27 @@ def filter_unwanted_light_params(line: str) -> str:
     Returns:
         str: Corrected line with light parameters
     """
-
+    
+    # If light is on the ignore list, ignore it and retrun empty line
+    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
+        return ""
+    
+    # Check if old LIGHT_NAMED param exists and replace it with the new one
+    if "LIGHT_NAMED" in line:
+        log.debug(f"Replacing LIGHT_NAMED in line {line} to LIGHT_PARAM")
+        line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
+    
     # Some lines are commented out... Must be undone
-    if "#LIGHT_PARAM" in line:
-        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
+    if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
+        log.debug(f"Removing leading # from line {line}")
+        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")      
 
-    # if "airplane_nav" in line:
-    for item in ["_left", "_right", "_tail"]:
-        line = line.replace(item, "")
+    # Remove positional name from line
+    if any(position in line for position in POSITION_IDENTIFIERS):
+        for item in POSITION_IDENTIFIERS:
+            line = line.replace(item, "")
 
     return line
-
-
-def ignore_line(line: str) -> bool:
-    """Test if line contains ignorable light parameters
-
-    Args:
-        line (str): String of light parameters
-
-    Returns:
-        bool: True if it can be ignored, False otherwise.
-    """
-
-    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
-        return True
-    return False
-
 
 def add_lateral_position_to_lights(line: str) -> str:
     """To determine directional parameters add left, right or tail to the light param
@@ -138,7 +126,7 @@ def add_lateral_position_to_lights(line: str) -> str:
         str: Line with 'positional' light-name-parameters. I.e. airplane_nav_rigt
     """
     # If the line already includes position, return it unprocessed.
-    if any(position in line for position in ["_right", "_left", "_tail"]):
+    if any(position in line for position in POSITION_IDENTIFIERS):
         return line
 
     _x_position = float(line.split()[2:3][0])
@@ -153,6 +141,19 @@ def add_lateral_position_to_lights(line: str) -> str:
 
     return line.replace(actual_lighttype, lighttype)
 
+def remove_positional_name_from_line(line: str) -> str:
+    """Removes added or existing positional identifiers from line
+
+    Args:
+        line (str): line with positional identiefers
+
+    Returns:
+        str: line without positional identifiers
+    """
+    line = line.replace("_right", "")
+    line = line.replace("_left", "")
+    line = line.replace("_tail", "")
+    return line
 
 def process_lights(line: str, light_params: dict[str, str]) -> str:
     """Changes the light parameters to XP12 specs
@@ -164,7 +165,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     Returns:
         str: A line with updated light parameters
     """
-
+    
     # Remove possible unwanted params, keep specifier, lighttype, x, y, z params
     line = " ".join(line.split()[:5])
 
@@ -183,42 +184,40 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
 
-    # Change from named light to parametrized light
-    line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
-
     line = line.replace(f"{lighttype}", f"{lighttype}_pm")
     line += line.replace("_pm", "_bb")
-    line = filter_unwanted_light_params(line)
+    
+    if any(position in line for position in POSITION_IDENTIFIERS):
+        line = remove_positional_name_from_line(line)
+        
     return line
 
 
 @time_benchmark
-# def process_object_files(aircraft_objects: list[Path]) -> None:
-def process_object_files(aircraft_objects: list[dict[str, Path]]):
+def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
     TODO: Correct the nonsense below... file is not an argument to this function
     Args:
         file (Path): the existing aircraft object file
     """
     for aircraft_object in aircraft_objects:
-
         light_params: dict[str, str] = get_light_params_for_aircraft_type(
             str(aircraft_object["icao_type"])
         )
-        aircraft_object_path: Path = aircraft_object["full_object_path"]
+        aircraft_object_path: Path = Path(aircraft_object["full_object_path"])
 
         aircraft_object_content: list[str] = []
         try:
             with open(aircraft_object_path, "r", errors="replace") as file:
                 aircraft_object_content = file.readlines()
         except FileNotFoundError as err:
-            log.error(f"{aircraft_object['full_object_path']} not found!", err)
+            log.error(f"{aircraft_object['full_object_path']} not found!")
             continue
         except UnicodeDecodeError as err:
             log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
 
-        temp_object_file: Path = aircraft_object_path.with_suffix(
+        temp_object_file: Path = Path(aircraft_object_path).with_suffix(
             suffix=TEMP_FILE_SUFFIX
         )
 
@@ -227,12 +226,13 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]):
         new_file_content = ""
         log.info(f"Processing {aircraft_object_path}")
         for line in aircraft_object_content:
+            # First filter the lights
+            line = filter_unwanted_light_params(line)
+            
             # Remove some unnecessary lines. Can be done better...!!!
             if line.startswith("# "):
                 continue
-            if ignore_line(line) is True:
-                # new_file_content += line
-                continue
+
             if any(lighttype in line for lighttype in LIGHT_NEEDLES):
                 line = process_lights(line, light_params)
 
@@ -249,15 +249,14 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]):
             log.error("Something went wrong!", err)
 
 
-def copy_new_to_old(files: list[Path]) -> None:
+def copy_new_to_old(aircraft_objects: list[dict[str,str]])-> None:
     """Copy the new created file over the original file
     Delete the new file
     """
     log.info("Start copying processed files to original file!")
-    for file in files:
-        destination_file = file.with_suffix(".obj")
-        temp_object_file = file.with_suffix(TEMP_FILE_SUFFIX)
-        log.info(f"Copying {temp_object_file.name} to {file} file!")
+    for aircraft_object in aircraft_objects:
+        destination_file = Path(aircraft_object["full_object_path"]).with_suffix(".obj")
+        temp_object_file = Path(aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
 
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
@@ -276,7 +275,7 @@ def copy_new_to_old(files: list[Path]) -> None:
             log.error(f"{temp_object_file.name} can not be deleted!", err)
             if STOP_ON_ERROR is True:
                 sys.exit()
-        log.debug(f"Copy {file.name} to original object file done!")
+        log.info(f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
 
 
 def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
@@ -375,50 +374,54 @@ Now you know!\n
 
     return parser.parse_args()
 
+@time_benchmark
+def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
+    """Removes previous backups. This is not reversible!
 
-def recover_files(files: list[Path], stop_on_error: bool):
-    log.info("Recovery activated!")
-
-    recover_from_backup(
-        files=files,
-        stop_on_error=STOP_ON_ERROR,
-    )
-    sys.exit()
-
-
-def remove_backups(files: list[Path]):
+    Args:
+        aircraft_objects (list[dict[str, str]]): A list with all aircraft objects
+                                                 including path information
+    """
+    files_to_remove: list[Path] = []
     log.info("Backups will be removed now!")
     yes_no = input("Are you sure? [yes/No]" or "No")
     if yes_no.lower() == "yes" or yes_no.lower() == "y":
         log.info("Okay! Let's do it....!!")
-        delete_backups(files)
+        for aircraft_object in aircraft_objects:
+            files_to_remove.append(Path(aircraft_object["full_object_path"]))      
+        delete_files(files_to_remove, ".BCK")
+        log.info("Backup files removed successfully!")
     sys.exit()
-
 
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
+    """Here all the magic happens.
+
+    Args:
+        args (argparse.Namespace): coammndline arguments See -h for help
+        CSL_PATH (str): The startpath for searching the xsb_aircraft.txt files
+        STOP_ON_ERROR (bool): A boolean to determine the behevior on errors.
+    """
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     check_if_files_are_in_correct_json_format()
 
     # Get the list of aircraft objects and its file locations
-    aircraft_objects = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
-    aircraft_files: list[Path] = create_file_list_from_aircraft_objects(
-        aircraft_objects
-    )
+    aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
 
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
-        recover_files(aircraft_files, STOP_ON_ERROR)
+        recover_from_backup(aircraft_objects, STOP_ON_ERROR)
+        sys.exit()
 
     if args.remove_backups:  # Remove the backupfiles.
-        remove_backups(aircraft_files)
+        remove_backups(aircraft_objects)
 
     # Start of main processing
     log.info("Creating backups!")
-    make_backup(files=aircraft_files, stop_on_error=STOP_ON_ERROR)
+    make_backup(aircraft_objects=aircraft_objects, stop_on_error=STOP_ON_ERROR)
 
     log.info(
-        "Removing possible xpmp2 files as they can 'cache' the objects. They should be recreated on the fly if you user X-Plane."
+        "Removing possible xpmp2 files as they can 'cache' the objects. They should be recreated on the fly while you use X-Plane."
     )
     remove_xpmp2_files(filepath=CSL_PATH)
 
@@ -427,10 +430,9 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     )
     process_object_files(aircraft_objects)
 
-    copy_new_to_old(aircraft_files)
+    copy_new_to_old(aircraft_objects)
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
-
 
 if __name__ == "__main__":
     args = parse_args()
