@@ -383,8 +383,8 @@ def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
                                                  including path information
     """
     files_to_remove: list[Path] = []
-    log.info("Backups will be removed now!")
-    yes_no = input("Are you sure? [yes/No]" or "No")
+    log.info("\x1b[1;31mBackups will be removed now! This is permanent!\x1b[0m")
+    yes_no = input("Are you sure? \x1b[1;31myes\x1b[0m/\x1b[1;32mNo\x1b[0m]" or "No")
     if yes_no.lower() == "yes" or yes_no.lower() == "y":
         log.info("Okay! Let's do it....!!")
         for aircraft_object in aircraft_objects:
