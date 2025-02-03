@@ -61,10 +61,15 @@ def get_aircraft_icao_type(data_aircraft_description: str) -> str:
     """
 
     aircraft_icao_type: str = ""
-
+    _type_designator_definitions: set[str] = {
+        "MATCHES",
+        "ICAO",
+        "AIRLINE",
+        "LIVERY",
+    }
     for line in data_aircraft_description.split("\n"):
         if any(
-            type_designator in line for type_designator in ICAO_IDENTIFIERS
+            type_designator in line for type_designator in _type_designator_definitions
         ):
             aircraft_icao_type = line.split()[1]
         else:
