@@ -205,9 +205,9 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 @time_benchmark
 def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
-    TODO: Correct the nonsense below... file is not an argument to this function
     Args:
-        file (Path): the existing aircraft object file
+        aircraft_objects: A list with dictionaries containing icao_type of aircraft and
+                          path to the object file.
     """
     for aircraft_object in aircraft_objects:
         light_params: dict[str, str] = get_light_params_for_aircraft_type(
@@ -288,7 +288,7 @@ def copy_new_to_old(aircraft_objects: list[dict[str,str]])-> None:
 
 
 def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
-    """Set a minimal configuration settings.
+    """Set a minimal configurationq.
 
     Args:
         args_path_to_csl (str | None): If available the path is set by commandline param.
@@ -407,9 +407,9 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     """Here all the magic happens.
 
     Args:
-        args (argparse.Namespace): coammndline arguments See -h for help
+        args (argparse.Namespace): commandline arguments See -h for help
         CSL_PATH (str): The startpath for searching the xsb_aircraft.txt files
-        STOP_ON_ERROR (bool): A boolean to determine the behevior on errors.
+        STOP_ON_ERROR (bool): A boolean to determine the behavior on errors.
     """
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     check_if_files_are_in_correct_json_format()
