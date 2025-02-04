@@ -68,10 +68,10 @@ def check_if_files_are_in_correct_json_format() -> None:
         sys.exit(1)
 
 def get_aircraft_categories() -> dict[str, str]:
-    """Reads the aircrafts json file and returns the data
+    """returns data from the aircrafts.json file
 
     Returns:
-        dict[list]: A dictionary with the aircrafts listed per category
+        dict[str, str]: A dictionary with aircraft type and icao codes
     """
     try:
         with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
@@ -88,10 +88,10 @@ def get_aircraft_categories() -> dict[str, str]:
 
 
 def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
-    """Reads the light_params.json file and retunrs the data
+    """Returns data from the light_params.json file
 
     Returns:
-        dict[list]: A dictionary with the light parameters listed per category
+        dict[str, dict[str,str]]: A dictionary with the light parameters listed per category
     """
     try:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
@@ -111,21 +111,13 @@ def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str
     """Returns the light parameters for the given aircraft type
 
     Args:
-        aircraft_type (str): Aircraft type e.g. B733 for Boeing 737-300
+        aircraft_icao_type (str): Aircraft type e.g. B733 for Boeing 737-300
 
     Returns:
-        dict[str]: A dictionary with the corresponding light parameters for the given aircraft type
+        dict[str, str]: A dictionary with the corresponding light parameters for the given aircraft type
     """
     aircrafts: dict[str, str] = get_aircraft_categories()
     light_params: dict[str, dict[str, str]] = get_light_params_per_aircraft_category()
-
-    # Just in case that the lights are in a different object than it used to be....
-    # Yeah, some CSL aircraft have multiple objects... don't know why
-
-    aircraft_bodyparts = ["wings", "fuselage", "Wings", "Fuselage"]
-    if (bodyparts in aircraft_icao_type for bodyparts in aircraft_bodyparts):
-        for part in aircraft_bodyparts:
-            aircraft_icao_type = aircraft_icao_type.replace(part, "")
 
     for key, value in aircrafts.items():
         if aircraft_icao_type in value:
