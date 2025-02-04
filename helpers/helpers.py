@@ -27,7 +27,16 @@ from decorators.time_benchmark import time_benchmark
 
 # Setup logging
 with open('configs/logging.conf', 'r') as configfile:
-    logger_config = json.load(configfile)
+    try:
+        logger_config = json.load(configfile)
+    except FileNotFoundError:
+        ("Missing logging.conf file. Stopping now!")
+        sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        print(
+            "Logging config might be corrupted. Please check the configfile for consistency!"
+        )
+        sys.exit(1)
     
 logging.config.dictConfig(logger_config)
 
