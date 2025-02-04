@@ -59,11 +59,11 @@ ICAO_IDENTIFIERS: list[str] = [
 #     full_object_path: Path
 
 
-def get_aircraft_icao_type(data_aircraft_description: str) -> str:
+def get_aircraft_icao_type(aircraft_description: str) -> str:
     """Gets the type of aircraft in ICAO format
 
     Args:
-        data_aircraft_description (str): aircraft_description of data regarding the aircraft
+        data_aircraft_description (str): aircraft description from xsb_aircraft.txt
 
     Returns:
         str: ICAO designator of the aircraft
@@ -76,7 +76,7 @@ def get_aircraft_icao_type(data_aircraft_description: str) -> str:
         "AIRLINE",
         "LIVERY",
     }
-    for line in data_aircraft_description.split("\n"):
+    for line in aircraft_description.split("\n"):
         if any(
             type_designator in line for type_designator in _type_designator_definitions
         ):
@@ -84,47 +84,6 @@ def get_aircraft_icao_type(data_aircraft_description: str) -> str:
         else:
             continue
     return aircraft_icao_type
-
-def get_aircraft_object_filepath(aircraft_description: str) -> str | None:
-    """Create the filepath of the aircraft object from the given definition
-
-    Args:
-        aircraft_definition (str): aircraft definition
-    Raises:
-        FileNotFoundError: Raised if the file is not found with at the created path
-
-    Returns:
-        Path: Path to file if file exists.
-        None: If no path could be created
-    """
-    for line_num, line in enumerate(aircraft_description.split("\n"), start=1):
-        xsb_data = line.split()
-        if len(xsb_data) > 0:
-            # Get Path from OBJ8 Param. First part "must" be the package name, so it can be ignored.
-            # The rest is a relative path starting from the location of the xsb_aircraft textfile.
-            if xsb_data[0] != "OBJ8":
-                continue
-            else:
-                # Check if line contains separator. If this is missing, the path can not be created!
-                if not any(
-                    (_separator := delimiter) in line
-                    for delimiter in [":", "/"]
-                ):
-                    log.error(
-                        f"Could not find separator in {line} at line -> {line_num}! Can not create path to object file!"
-                    )
-                    continue
-                
-                path_info = xsb_data[3]
-                
-                # Check if data contains possible objects with no lights. If so skip it.
-                unwanted_objects = ["prop", "fan"]
-                if any (unwanted_object in path_info for unwanted_object in unwanted_objects):
-                    # log.error("Object is likely not an object with lights. Skipping this one!")
-                    continue
-
-                return path_info.split(_separator, 1)[1]
-    return None
 
 def get_path_to_aircraft_object(line: str) -> str:
     """Extracts the path to the aircraft object from the line
@@ -154,12 +113,12 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
     Returns:
         list[dict[str, str]]: List of dictionaries with path and object dat of aircrafts.
     """
-
+    #TODO: Review this bunch of code :-) Maybe it can be improved.
     xsb_files: list[Path]
 
-    if Path(searchpath).is_dir() is False:
-        log.error(f"Path {searchpath} is not a reachable directory!")
-        raise FileNotFoundError(f"Path {searchpath} is not a reachable directory")
+    if not Path(searchpath).is_dir():
+        log.error(f"Path {searchpath} is not a reachable directory! Please review your specified path!")
+        sys.exit()
 
     try:
         xsb_files: list[Path] = get_list_of_files(searchpath, "xsb_aircraft.txt")
@@ -224,7 +183,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
         [unique_aircraft_objects.append(val) for val in aircraft_object_files if val not in unique_aircraft_objects]
     return unique_aircraft_objects
 
-def is_lights_upgrade_already_done(item: str) -> bool:
+def is_front_gear_fix_done(item: str) -> bool:
     """Check if the conversion already is done
 
     Args:
@@ -249,9 +208,6 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
     Returns:
         str : Fixed textblock
     """
-    if is_lights_upgrade_already_done(item) is True:
-        log.debug("Front gear taxilights already fixed.")
-        return item
     log.debug("Fixing frontgear taxilights hide animation.")
     new_item = item.replace("landing_lites_on", "taxi_lites_on")
     original_taxi_anim_hide: list[str] = re.findall(
@@ -271,7 +227,7 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
     return new_item
 
 
-def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
+def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
     """Fixes the case where the frontgear landinglights were still visibel after the landing gear is retracted
 
     Args:
@@ -281,19 +237,16 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str | None:
     Returns:
         str | None: Fixed textblock, None if nothing has changed
     """
-    if is_lights_upgrade_already_done(item) is True:
-        log.debug("Front gear landinglights already fixed.")
-        return item
     log.debug("Fixing frontgear landinglights hide animation.")
     get_original_landinglight_anim_hide: list[str] = re.findall(
         "ANIM_hide.+landing_lites_on", item
     )
     if get_original_landinglight_anim_hide == []:
-        return None
+        return item
     landing_lights_anim_hide = get_original_landinglight_anim_hide[0]
     light_parameter: list[str] = re.findall("LIGHT_PARAM airplane_landing.+", item)
     if light_parameter == []:
-        return None
+        return item
     x_position = float(light_parameter[0].split()[2])
     new_item = item
     if x_position < 0.5 and x_position > -0.5:
@@ -324,20 +277,23 @@ def fix_lights_anomalies(object_content: str) -> str:
     Returns:
         object_content (str): Fixed aircraft object content.
     """
-    result: list[str] = re.findall(
+    animations: list[str] = re.findall(
         "(?s)(?=ANIM_hide|ANIM_show)(.+?)(?=ANIM_end)", object_content
     )
-    for item in result:
+    for animation in animations:
+        if is_front_gear_fix_done(animation):
+            log.debug("Front gear taxilights already fixed.")
+            continue
         extra_anim_hide: str = (
             "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
         )
-        if "airplane_taxi_pm" in item:
-            new_item = fix_taxilights(item, extra_anim_hide)
-            object_content = object_content.replace(item, new_item)
-        if "landing_lites" in item:
-            new_item = fix_frontgear_landinglights(item, extra_anim_hide)
-            if new_item == None or new_item == item:
+        if "airplane_taxi_pm" in animation:
+            new_animation = fix_taxilights(animation, extra_anim_hide)
+            object_content = object_content.replace(animation, new_animation)
+        if "landing_lites" in animation:
+            new_animation = fix_frontgear_landinglights(animation, extra_anim_hide)
+            if new_animation == animation:
                 continue
-            object_content = object_content.replace(item, new_item)
+            object_content = object_content.replace(animation, new_animation)
 
     return object_content
