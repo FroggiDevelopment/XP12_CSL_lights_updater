@@ -17,10 +17,10 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 """
 
 import sys
+import json
 import argparse
 import logging
 import logging.config
-import json
 from pathlib import Path
 from configparser import ConfigParser
 
@@ -32,6 +32,7 @@ from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 from helpers import fix_lights_anomalies
 from helpers import check_if_files_are_in_correct_json_format
+from helpers import get_description
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
@@ -326,23 +327,12 @@ def parse_args() -> argparse.Namespace:
     Returns:
         tuple[str, bool]: Returns a path-string and a bool for STOP_ON_ERROR
     """
+    DESCRIPTION, EPILOG = get_description()
     # Check if cli params are present
     parser = argparse.ArgumentParser(
         prog="Lights updater for CSL objects",
-        description="""This program can convert XP11 lightparams of CSL aircraft objects to the new XP12 specifications.
-Developed for getting landing lights for LifeTraffic.
-Works with Bluebell and X-CSL packages, works only with some custom CSL aircraft.
-
-For normal start you don't need any arguments.
-But then you \x1b[1;4;31mMUST\x1b[0m specify the csl_path in the config.ini file!""",
-        epilog="""
-\x1b[1;31mAttention!!
-If you specify a path with -p / --path when processing the objects and you want to undo your changes,
-or remove the backup files with -r / --remove-backups, you need the specify the path again!
-If you don't and there is a path specified in the config.ini, results may not be what you expected!\x1b[0m
-
-Now you know!\n
-""",
+        description=DESCRIPTION,
+        epilog = EPILOG,
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -392,8 +382,8 @@ def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
                                                  including path information
     """
     files_to_remove: list[Path] = []
-    log.info("\x1b[1;31mBackups will be removed now! This is permanent!\x1b[0m")
-    yes_no = input("Are you sure? \x1b[1;31myes\x1b[0m/\x1b[1;32mNo\x1b[0m]" or "No")
+    log.info("Backups will be removed now! This is PERMANENT!!")
+    yes_no = input("Are you sure? yes/No" or "No")
     if yes_no.lower() == "yes" or yes_no.lower() == "y":
         log.info("Okay! Let's do it....!!")
         for aircraft_object in aircraft_objects:
