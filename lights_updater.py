@@ -16,6 +16,7 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
+import re
 import sys
 import json
 import argparse
@@ -102,6 +103,8 @@ def filter_unwanted_light_params(line: str) -> str:
     Returns:
         str: Corrected line with light parameters
     """
+    # Make a more readable line for output
+    output_line = re.sub(r'\s+',' ', line)
     
     # If light is on the ignore list, ignore it and retrun empty line
     if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
@@ -109,12 +112,12 @@ def filter_unwanted_light_params(line: str) -> str:
     
     # Check if old LIGHT_NAMED param exists and replace it with the new one
     if "LIGHT_NAMED" in line:
-        log.debug(f"Replacing LIGHT_NAMED in line {line} to LIGHT_PARAM")
+        log.debug(f"Replacing LIGHT_NAMED in line {output_line} to LIGHT_PARAM")
         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
     
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
-        log.debug(f"Removing leading # from line {line}")
+        log.debug(f"Removing leading # from line {output_line}")
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")      
 
     # Remove positional name from line
