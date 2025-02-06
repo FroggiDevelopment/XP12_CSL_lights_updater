@@ -342,10 +342,10 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=None,
         action="store",
-        metavar="csl_path",
+        metavar="path",
         dest="csl_path",
-        help="Set path to location of CSL aircrafts.\n"
-        "Be aware that if there are whitespaces in the path, you MUST use quotation marks around the CSL_PATH!\nTo be save, always use them.",
+        help="Set path to location of CSL aircrafts.\n\n"
+        "If there are whitespaces in the path,\nyou MUST use quotation marks around the path!\nTo be save: Always use them.",
     )
 
     parser.add_argument(
