@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.10
+#!/usr/bin/env python3
 """
 Copyright (C) 2024  Richard J.M. Muller / Froggi
 
