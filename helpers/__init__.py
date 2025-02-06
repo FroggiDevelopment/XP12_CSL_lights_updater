@@ -4,6 +4,7 @@ from .helpers import delete_files as delete_files
 from .helpers import remove_xpmp2_files as remove_xpmp2_files
 from .helpers import get_list_of_files as get_list_of_files
 from .helpers import filepath_is_valid as filepath_is_valid
+from .get_description import get_description as get_description
 
 from .aircraft_light_params import get_light_params_for_aircraft_type as get_light_params_for_aircraft_type
 from .aircraft_light_params import check_if_files_are_in_correct_json_format as check_if_files_are_in_correct_json_format
