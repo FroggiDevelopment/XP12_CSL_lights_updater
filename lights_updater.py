@@ -57,27 +57,6 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_beacon_rotate",
     "airplane_beacon_strobe",
 ]
-LIGHTS_TO_IGNORE = [
-    "headlight",
-    "_size",
-    "_sp",
-    "taillight",
-    "_core",
-    "_size",
-    "_omni",
-    "_dir",
-    "airplane_strobe_omni",
-    "airplane_beacon_",
-    "full_custom_halo_night",
-    "_glow",
-    "_flare",
-    "logo",
-    "PLN_",
-    "_core",
-    "_flare",
-    "_glow",
-    "LIGHT_SPILL_CUSTOM",
-]
 
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
 
