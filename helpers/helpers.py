@@ -190,3 +190,28 @@ def filepath_is_valid(filepath: Path) -> bool:
         result = False
 
     return result
+
+def copy_new_to_old(aircraft_objects: list[dict[str,str]])-> None:
+    """Copy the new created file over the original file
+    Delete the new file
+    """
+    log.info("Start copying processed files to original file!")
+    for aircraft_object in aircraft_objects:
+        destination_file = Path(aircraft_object["full_object_path"]).with_suffix(".obj")
+        temp_object_file = Path(aircraft_object["full_object_path"]).with_suffix(".TEMP")
+
+        try:
+            destination_file.write_bytes(temp_object_file.read_bytes())
+        except PermissionError as err:
+            log.error("Stopping on error!", err)
+            sys.exit()
+            continue
+        except FileNotFoundError as err:
+            log.error(f"File could not be copied! See: {err}")
+            continue
+        try:
+            temp_object_file.unlink()
+        except PermissionError as err:
+            log.error(f"{temp_object_file.name} can not be deleted!", err)
+            continue
+        log.info(f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")

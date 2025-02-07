@@ -27,6 +27,7 @@ from helpers import make_backup
 from helpers import remove_backups
 from helpers import recover_from_backup
 from helpers import remove_xpmp2_files
+from helpers import copy_new_to_old
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 from helpers import fix_lights_anomalies
@@ -166,36 +167,6 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
                 new_obj_file.write(new_file_content)
         except IOError as err:
             log.error("Something went wrong!", err)
-
-
-def copy_new_to_old(aircraft_objects: list[dict[str,str]])-> None:
-    """Copy the new created file over the original file
-    Delete the new file
-    """
-    log.info("Start copying processed files to original file!")
-    for aircraft_object in aircraft_objects:
-        destination_file = Path(aircraft_object["full_object_path"]).with_suffix(".obj")
-        temp_object_file = Path(aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
-
-        try:
-            destination_file.write_bytes(temp_object_file.read_bytes())
-        except PermissionError as err:
-            if STOP_ON_ERROR is True:
-                log.error("Stopping on error!", err)
-                sys.exit()
-            else:
-                continue
-        except FileNotFoundError as err:
-            log.error(f"File could not be copied! See: {err}")
-            continue
-        try:
-            temp_object_file.unlink()
-        except PermissionError as err:
-            log.error(f"{temp_object_file.name} can not be deleted!", err)
-            if STOP_ON_ERROR is True:
-                sys.exit()
-        log.info(f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
-
 
 def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
     """Set a minimal configurationq.
