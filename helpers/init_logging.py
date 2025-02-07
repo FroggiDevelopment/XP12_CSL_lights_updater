@@ -14,9 +14,23 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
-class NoFilesFoundError(Exception):
-    """Exception raised when no files are found"""
+import logging
+import logging.config
+import json
+import sys
 
-    def __init__(self, message: str = "No files found!") -> None:
-        self.message = message
-        super().__init__(self.message)        
+# Setup logging
+def init_logging():
+    with open('configs/logging.conf', 'r') as configfile:
+        try:
+            logger_config = json.load(configfile)
+        except FileNotFoundError:
+            ("Missing logging.conf file. Stopping now!")
+            sys.exit(1)
+        except json.decoder.JSONDecodeError:
+            print(
+                "Logging config might be corrupted. Please check the configfile for consistency!"
+            )
+            sys.exit(1)
+        
+    logging.config.dictConfig(logger_config)

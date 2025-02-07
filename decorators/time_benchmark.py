@@ -1,5 +1,5 @@
 """
-Copyright (C) 2024  Richard J.M. Muller / Froggi
+Copyright (C) 2025  Richard J.M. Muller / Froggi
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,28 +17,15 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 
 import logging
 import logging.config
-import json
-import sys
 
 from typing import Callable, Any
 from functools import wraps
 from time import perf_counter
 
-# Setup logging
-with open('configs/logging.conf', 'r') as configfile:
-    try:
-        logger_config = json.load(configfile)
-    except FileNotFoundError:
-        ("Missing logging.conf file. Stopping now!")
-        sys.exit(1)
-    except json.decoder.JSONDecodeError:
-        print(
-            "Logging config might be corrupted. Please check the configfile for consistency!"
-        )
-        sys.exit(1)
-    
-logging.config.dictConfig(logger_config)
+from helpers.init_logging import init_logging
 
+# Setup logging
+init_logging()
 log = logging.getLogger(__name__)
 
 
@@ -49,6 +36,7 @@ def time_benchmark(func: Callable[..., Any]) -> Any:
         log.debug(f"Starting {func.__name__}")
         result = func(*args, **kwargs)
         end_time = perf_counter()
+        log.debug(f"Finished {func.__name__}")
 
         duration = end_time - start_time
 
@@ -63,9 +51,9 @@ def named_time_benchmark(argument: str = ""):
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any):
             start_time = perf_counter()
-            log.info(f"Starting {func.__name__}")
+            log.debug(f"Starting {func.__name__}")
             result = func(*args, **kwargs)
-            log.info(f"Finished {func.__name__}")
+            log.debug(f"Finished {func.__name__}")
             end_time = perf_counter()
 
             duration = end_time - start_time

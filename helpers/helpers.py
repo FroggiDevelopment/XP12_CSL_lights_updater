@@ -1,5 +1,5 @@
 """
-Copyright (C) 2024  Richard J.M. Muller / Froggi
+Copyright (C) 2025  Richard J.M. Muller / Froggi
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,29 +17,17 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
 
 import logging
 import logging.config
-import json
 import sys
 from pathlib import Path
+
+from .init_logging import init_logging
 
 from .custom_exceptions import NoFilesFoundError
 
 from decorators.time_benchmark import time_benchmark
 
 # Setup logging
-with open('configs/logging.conf', 'r') as configfile:
-    try:
-        logger_config = json.load(configfile)
-    except FileNotFoundError:
-        ("Missing logging.conf file. Stopping now!")
-        sys.exit(1)
-    except json.decoder.JSONDecodeError:
-        print(
-            "Logging config might be corrupted. Please check the configfile for consistency!"
-        )
-        sys.exit(1)
-    
-logging.config.dictConfig(logger_config)
-
+init_logging()
 log = logging.getLogger(__name__)
 
 

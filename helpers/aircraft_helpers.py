@@ -1,5 +1,5 @@
 """
-Copyright (C) 2024  Richard J.M. Muller / Froggi
+Copyright (C) 2025  Richard J.M. Muller / Froggi
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,32 +19,17 @@ import sys
 import re
 import logging
 import logging.config
-import json
 from pathlib import Path
-# from typing import TypedDict
 
 from decorators.time_benchmark import time_benchmark
 
 from .helpers import get_list_of_files
-# from .helpers import filepath_is_valid
+from .init_logging import init_logging
 
 from .custom_exceptions import NoFilesFoundError
 
 # Setup logging
-with open('configs/logging.conf', 'r') as configfile:
-    try:
-        logger_config = json.load(configfile)
-    except FileNotFoundError:
-        ("Missing logging.conf file. Stopping now!")
-        sys.exit(1)
-    except json.decoder.JSONDecodeError:
-        print(
-            "Logging config might be corrupted. Please check the configfile for consistency!"
-        )
-        sys.exit(1)
-    
-logging.config.dictConfig(logger_config)
-
+init_logging()
 log = logging.getLogger(__name__)
 
 IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor", "car", "BLUR"]
@@ -53,11 +38,6 @@ ICAO_IDENTIFIERS: list[str] = [
     "ICAO",
     "AIRLINE",
     "LIVERY"]
-
-# class Aircraftobject(TypedDict):
-#     icao_type: str
-#     full_object_path: Path
-
 
 def get_aircraft_icao_type(aircraft_description: str) -> str:
     """Gets the type of aircraft in ICAO format
@@ -182,118 +162,3 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
     
         [unique_aircraft_objects.append(val) for val in aircraft_object_files if val not in unique_aircraft_objects]
     return unique_aircraft_objects
-
-def is_front_gear_fix_done(item: str) -> bool:
-    """Check if the conversion already is done
-
-    Args:
-        item (str): Textblock with the lights part
-
-    Returns:
-        bool: True if already done, False otherwise
-    """
-    already_updated: list[str] = re.findall("libxplanemp/controls/gear_ratio", item)
-    if already_updated == []:
-        return False
-    return True
-
-
-def fix_taxilights(item: str, extra_hide_anim: str) -> str:
-    """Fixes the wrong dataref for taxilights where applicable
-
-    Args:
-        item (str): Textblock with the lights
-        extra_hide_anim (str): String with the hide 'animation' to kill the lights when retracted.
-
-    Returns:
-        str : Fixed textblock
-    """
-    log.debug("Fixing frontgear taxilights hide animation.")
-    new_item = item.replace("landing_lites_on", "taxi_lites_on")
-    original_taxi_anim_hide: list[str] = re.findall(
-        "ANIM_hide.+taxi_lites_on", new_item
-    )
-    if original_taxi_anim_hide != []:
-        new_item = new_item.replace(
-            original_taxi_anim_hide[0],
-            f"{original_taxi_anim_hide[0]}\n{extra_hide_anim}",
-        )
-    original_taxi_anim_show = re.findall("ANIM_show.+taxi_lites_on", new_item)
-    if original_taxi_anim_show != []:
-        new_item = new_item.replace(
-            f"{original_taxi_anim_show[0]}\n",
-            "",
-        )
-    return new_item
-
-
-def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
-    """Fixes the case where the frontgear landinglights were still visibel after the landing gear is retracted
-
-    Args:
-        item (str): Textblock with the lights
-        extra_hide_anim (str): String with the hide 'animation' to kill the lights when retracted.
-
-    Returns:
-        str | None: Fixed textblock, None if nothing has changed
-    """
-    log.debug("Fixing frontgear landinglights hide animation.")
-    get_original_landinglight_anim_hide: list[str] = re.findall(
-        "ANIM_hide.+landing_lites_on", item
-    )
-    if get_original_landinglight_anim_hide == []:
-        return item
-    landing_lights_anim_hide = get_original_landinglight_anim_hide[0]
-    light_parameter: list[str] = re.findall("LIGHT_PARAM airplane_landing.+", item)
-    if light_parameter == []:
-        return item
-    x_position = float(light_parameter[0].split()[2])
-    new_item = item
-    if x_position < 0.5 and x_position > -0.5:
-        new_item = item.replace(
-            landing_lights_anim_hide,
-            f"{landing_lights_anim_hide}\n{extra_hide_anim}",
-        )
-        get_original_landinglights_anim_show: list[str] = re.findall(
-            "ANIM_show.+landing_lites_on", new_item
-        )
-        if get_original_landinglights_anim_show != []:
-            new_item = new_item.replace(
-                f"{get_original_landinglights_anim_show[0]}\n", ""
-            )
-    return new_item
-
-
-def fix_lights_anomalies(object_content: str) -> str:
-    """Fixes two things.
-       Missing taxilight on some airplanes.
-       The original dataref for the taxilights is set to landing_lites_on instead of taxi_lites_on.
-       Landing lights on front gear were visible even if that gear is retracted.
-       ANIM_hide animation is added to the front gear landing lights.
-
-    Args:
-        object_content (str): Original aricraft object content.
-
-    Returns:
-        object_content (str): Fixed aircraft object content.
-    """
-    animations: list[str] = re.findall(
-        "(?s)(?=ANIM_hide|ANIM_show)(.+?)(?=ANIM_end)", object_content
-    )
-    for animation in animations:
-        if is_front_gear_fix_done(animation):
-            log.debug("Front gear taxilights already fixed.")
-            continue
-        extra_anim_hide: str = (
-            "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
-        )
-        if "airplane_taxi_pm" in animation:
-            new_animation = fix_taxilights(animation, extra_anim_hide)
-            object_content = object_content.replace(animation, new_animation)
-        if "landing_lites" in animation:
-            new_animation = fix_frontgear_landinglights(animation, extra_anim_hide)
-            if new_animation == animation:
-                continue
-            object_content = object_content.replace(animation, new_animation)
-
-    return object_content

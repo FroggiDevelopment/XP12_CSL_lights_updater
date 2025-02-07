@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright (C) 2024  Richard J.M. Muller / Froggi
+Copyright (C) 2025  Richard J.M. Muller / Froggi
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,9 +16,7 @@ Copyright (C) 2024  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-import re
 import sys
-import json
 import argparse
 import logging
 import logging.config
@@ -32,26 +30,16 @@ from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 from helpers import fix_lights_anomalies
+from helpers import filter_unwanted_light_params
+from helpers import add_lateral_position_to_lights
 from helpers import check_if_files_are_in_correct_json_format
 from helpers import get_description
+from helpers import init_logging
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
 # Setup logging
-with open('configs/logging.conf', 'r') as configfile:
-    try:
-        logger_config = json.load(configfile)
-    except FileNotFoundError:
-        ("Missing logging.conf file. Stopping now!")
-        sys.exit(1)
-    except json.decoder.JSONDecodeError:
-        print(
-            "Logging config might be corrupted. Please check the configfile for consistency!"
-        )
-        sys.exit(1)
-    
-logging.config.dictConfig(logger_config)
-
+init_logging()
 log = logging.getLogger("lights_updater")
 
 # Some constants
@@ -92,67 +80,6 @@ LIGHTS_TO_IGNORE = [
 ]
 
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
-
-def filter_unwanted_light_params(line: str) -> str:
-    """Filter out light params that are old or otherwise wrong.
-       Can be expanded for future cases.
-
-    Args:
-        line (str): Line with light parameters
-
-    Returns:
-        str: Corrected line with light parameters
-    """
-    # Make a more readable line for output
-    output_line = re.sub(r'\s+',' ', line)
-    
-    # If light is on the ignore list, ignore it and retrun empty line
-    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
-        return ""
-    
-    # Check if old LIGHT_NAMED param exists and replace it with the new one
-    if "LIGHT_NAMED" in line:
-        log.debug(f"Replacing LIGHT_NAMED in line {output_line} to LIGHT_PARAM")
-        line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
-    
-    # Some lines are commented out... Must be undone
-    if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
-        log.debug(f"Removing leading # from line {output_line}")
-        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")      
-
-    # Remove positional name from line
-    if any(position in line for position in POSITION_IDENTIFIERS):
-        for item in POSITION_IDENTIFIERS:
-            line = line.replace(item, "")
-
-    return line
-
-def add_lateral_position_to_lights(line: str) -> str:
-    """To determine directional parameters add left, right or tail to the light param
-       based on x-y-position of the light.
-       Will be removed again later on in the process.
-
-    Args:
-        line (str): Line with light-parameters.
-
-    Returns:
-        str: Line with 'positional' light-name-parameters. I.e. airplane_nav_rigt
-    """
-    # If the line already includes position, return it unprocessed.
-    if any(position in line for position in POSITION_IDENTIFIERS):
-        return line
-
-    _x_position = float(line.split()[2:3][0])
-    actual_lighttype = line.split()[1]
-
-    if (_x_position) > -0.50 and _x_position < 0.50:
-        lighttype = f"{actual_lighttype}_tail"
-    elif (_x_position) < -0.50:
-        lighttype = f"{actual_lighttype}_left"
-    else:
-        lighttype = f"{actual_lighttype}_right"
-
-    return line.replace(actual_lighttype, lighttype)
 
 def remove_positional_name_from_line(line: str) -> str:
     """Removes added or existing positional identifiers from line
