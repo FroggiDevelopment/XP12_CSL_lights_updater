@@ -118,6 +118,7 @@ def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
         log.info("Backup files removed successfully!")
     sys.exit()
 
+@time_benchmark
 def remove_xpmp2_files(filepath: str) -> None:
     """Remove the copied object files by LifeTraffic as tehy can and will cache them.
        This is to avoid that changes are not visible with LiveTraffic.
@@ -191,14 +192,14 @@ def filepath_is_valid(filepath: Path) -> bool:
 
     return result
 
-def copy_new_to_old(aircraft_objects: list[dict[str,str]])-> None:
-    """Copy the new created file over the original file
-    Delete the new file
+def copy_new_to_old(aircraft_objects: list[dict[str,str]], TEMP_FILE_SUFFIX: str)-> None:
+    """Copy the new created files over the original files
+       Delete the new files.
     """
     log.info("Start copying processed files to original file!")
     for aircraft_object in aircraft_objects:
         destination_file = Path(aircraft_object["full_object_path"]).with_suffix(".obj")
-        temp_object_file = Path(aircraft_object["full_object_path"]).with_suffix(".TEMP")
+        temp_object_file = Path(aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
 
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())

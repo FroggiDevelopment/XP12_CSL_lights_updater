@@ -290,7 +290,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     )
     process_object_files(aircraft_objects)
 
-    copy_new_to_old(aircraft_objects)
+    copy_new_to_old(aircraft_objects, TEMP_FILE_SUFFIX)
 
     log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
 
