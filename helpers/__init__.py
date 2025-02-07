@@ -1,5 +1,6 @@
 from .helpers import make_backup as make_backup
 from .helpers import recover_from_backup as recover_from_backup
+from .helpers import remove_backups as remove_backups
 from .helpers import delete_files as delete_files
 from .helpers import remove_xpmp2_files as remove_xpmp2_files
 from .helpers import get_list_of_files as get_list_of_files

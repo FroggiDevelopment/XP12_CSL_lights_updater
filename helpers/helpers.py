@@ -99,6 +99,24 @@ def recover_from_backup(aircraft_objects: list[dict[str,str]], stop_on_error: bo
         log.debug(f"Recovery of {recover_file} succesful!")
     log.info(f"Recovery ready! Recoverd {len(aircraft_objects)} files!")
 
+@time_benchmark
+def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
+    """Removes previous backups. This is not reversible!
+
+    Args:
+        aircraft_objects (list[dict[str, str]]): A list with all aircraft objects
+                                                 including path information
+    """
+    files_to_remove: list[Path] = []
+    log.info("Backups will be removed now! This is PERMANENT!!")
+    yes_no = input("Are you sure? yes/No: " or "No")
+    if yes_no.lower() == "yes" or yes_no.lower() == "y":
+        log.info("Okay! Let's do it....!!")
+        for aircraft_object in aircraft_objects:
+            files_to_remove.append(Path(aircraft_object["full_object_path"]))      
+        delete_files(files_to_remove, ".BCK")
+        log.info("Backup files removed successfully!")
+    sys.exit()
 
 def remove_xpmp2_files(filepath: str) -> None:
     """Remove the copied object files by LifeTraffic as tehy can and will cache them.
@@ -134,7 +152,7 @@ def delete_files(files: list[Path], suffix: str = ""):
             log.warning(f"Permission denied for deleting {file.name}!")
             continue
         except FileNotFoundError:
-            log.warning(f"{file.name} can not be deleted! It doesn't exist")
+            log.warning(f"{file.name} can not be deleted! It doesn't exist.")
             continue
 
 
