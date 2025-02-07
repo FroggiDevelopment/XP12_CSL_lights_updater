@@ -24,7 +24,7 @@ from pathlib import Path
 from configparser import ConfigParser
 
 from helpers import make_backup
-from helpers import delete_files
+from helpers import remove_backups
 from helpers import recover_from_backup
 from helpers import remove_xpmp2_files
 from helpers import get_light_params_for_aircraft_type
@@ -281,25 +281,6 @@ def parse_args() -> argparse.Namespace:
     parser._optionals.title = "Optional arguments"
 
     return parser.parse_args()
-
-@time_benchmark
-def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
-    """Removes previous backups. This is not reversible!
-
-    Args:
-        aircraft_objects (list[dict[str, str]]): A list with all aircraft objects
-                                                 including path information
-    """
-    files_to_remove: list[Path] = []
-    log.info("Backups will be removed now! This is PERMANENT!!")
-    yes_no = input("Are you sure? yes/No" or "No")
-    if yes_no.lower() == "yes" or yes_no.lower() == "y":
-        log.info("Okay! Let's do it....!!")
-        for aircraft_object in aircraft_objects:
-            files_to_remove.append(Path(aircraft_object["full_object_path"]))      
-        delete_files(files_to_remove, ".BCK")
-        log.info("Backup files removed successfully!")
-    sys.exit()
 
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
