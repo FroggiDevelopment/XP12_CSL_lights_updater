@@ -126,6 +126,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
 
             for aircraft_description in aircraft_descriptions:
                 aircraft_object: dict[str, str] = {}
+                legit_object_paths: list[str] = []
                 
                 for line in aircraft_description.split("\n"):
                     # Get ICAO identifier for this aircraft
@@ -156,9 +157,14 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
                             log.error(f"File {full_path} does not exist either! Giving up on this one.")
                             continue
                         log.debug(f"Path {full_path} seems ok.")
-                    aircraft_object["full_object_path"] = full_path
-                if aircraft_object != {}:    
-                    aircraft_object_files.append(aircraft_object)
-    
+                    #TODO: There is a chance aog more than one object with light info. X-CSL B789 is one case. How to deal with that?
+                    ## Partially done with code below???
+                    legit_object_paths.append(full_path)
+                if aircraft_object != {} and len(legit_object_paths) > 0:
+                    for legit_object_path in legit_object_paths:
+                        temp_object = aircraft_object.copy()
+                        temp_object["full_object_path"] = legit_object_path
+                        aircraft_object_files.append(temp_object)
+
         [unique_aircraft_objects.append(val) for val in aircraft_object_files if val not in unique_aircraft_objects]
     return unique_aircraft_objects
