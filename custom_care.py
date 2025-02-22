@@ -21,17 +21,17 @@ from helpers.aircraft_light_params import get_light_params_for_aircraft_type
 from helpers import add_lateral_position_to_lights
 
 WANTED_LIGHTS: list[str] = [
-    "airplane_landing",
-    "airplane_taxi",
-    "airplane_nav",
-    "airplane_nav_left",
-    "airplane_nav_right",
-    "airplane_nav_tail",
-    "airplane_strobe",
-    "airplane_strobe_tail",
-    "airplane_beacon",
-    "airplane_beacon_rotate",
-    "airplane_beacon_strobe",
+    " airplane_landing",
+    " airplane_taxi",
+    " airplane_nav",
+    " airplane_nav_left",
+    " airplane_nav_right",
+    " airplane_nav_tail",
+    " airplane_strobe",
+    " airplane_strobe_tail",
+    " airplane_beacon",
+    " airplane_beacon_rotate",
+    " airplane_beacon_strobe",
         # Add more light types here as needed
     ]
 
@@ -52,12 +52,9 @@ def main():
     aircraft_objects = get_aircraft_objects_from_xsb_file(path)
     unique_aircraft_lights: list[dict[str, str]] = []
     
-    good_aircraft_objects = get_aircraft_objects_with_lights(aircraft_objects)            
-    print(f"Found {len(good_aircraft_objects)} objects with light(s) included")
-    
     list_of_aircraft_with_lights: list[dict[str, str]] = []
     
-    for good_aircraft_object in good_aircraft_objects:
+    for good_aircraft_object in get_aircraft_objects_with_lights(aircraft_objects):
         light_params: dict[str, str] = get_light_params_for_aircraft_type(
             str(good_aircraft_object["icao_type"])
         )
@@ -74,6 +71,7 @@ def main():
                 if "airplane_nav" in line or "airplane_strobe" in line:
                     line = add_lateral_position_to_lights(line)
                 if "LIGHT_PARAM" in line or "LIGHT_NAMED" in line:
+                    print(line)
                     for light in WANTED_LIGHTS:
                         if light in line:
                             coordinates = " ".join(line.split()[2:5])
