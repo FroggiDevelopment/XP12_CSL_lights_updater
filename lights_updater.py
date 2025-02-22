@@ -65,7 +65,7 @@ def remove_positional_name_from_line(line: str) -> str:
     """Removes added or existing positional identifiers from line
 
     Args:
-        line (str): line with positional identiefers
+        line (str): line with positional identifiers
 
     Returns:
         str: line without positional identifiers
@@ -93,7 +93,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     if "_bb" in line:
         return ""
 
-    # Remove pm suffix
+    # Remove pm (groundspill) suffix
     line = line.replace("_pm", "")
 
     if "airplane_nav" in line or "airplane_strobe" in line:
