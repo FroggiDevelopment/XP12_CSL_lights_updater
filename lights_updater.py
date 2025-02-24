@@ -263,6 +263,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def paused_exit():
+    input("Press any key to continue...")
+    sys.exit()
+
+
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     """Here all the magic happens.
@@ -282,7 +287,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
         recover_from_backup(aircraft_objects, STOP_ON_ERROR)
-        sys.exit()
+        paused_exit()
 
     if args.remove_backups:  # Remove the backupfiles.
         remove_backups(aircraft_objects)
@@ -306,6 +311,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     log.info(
         f"Processing done, {len(aircraft_objects)} files have been processed!")
+    paused_exit()
 
 
 if __name__ == "__main__":
