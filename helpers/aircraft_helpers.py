@@ -139,8 +139,8 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
                     # Get ICAO identifier for this aircraft
                     if line.startswith("#"):
                         continue
-                    if (any(iaco_identifier in line for iaco_identifier in ICAO_IDENTIFIERS)
-                            and not line.startswith("#")):
+                    if (any(iaco_identifier in line for iaco_identifier in ICAO_IDENTIFIERS) and
+                            not line.startswith("#")):
                         icao = line.split()[1]
                         if icao in aircraft_object:
                             log.debug(f"ICAO {icao} is already set!")
