@@ -61,6 +61,7 @@ LIGHT_NEEDLES: list[str] = [
 
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
 
+
 def remove_positional_name_from_line(line: str) -> str:
     """Removes added or existing positional identifiers from line
 
@@ -75,6 +76,7 @@ def remove_positional_name_from_line(line: str) -> str:
     line = line.replace("_tail", "")
     return line
 
+
 def process_lights(line: str, light_params: dict[str, str]) -> str:
     """Changes the light parameters to XP12 specs
 
@@ -85,8 +87,9 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     Returns:
         str: A line with updated light parameters
     """
-    
-    # Remove possible unwanted params, keep specifier, lighttype, x, y, z params
+
+    # Remove possible unwanted params
+    # Keep specifier, lighttype, x, y, z params
     line = " ".join(line.split()[:5])
 
     # Remove billboard lines, will be (re)build later on.
@@ -104,13 +107,13 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
 
-    #TODO: Treat _pm (groundspill) diffent then the _bb (billboard)
+    # TODO: Treat _pm (groundspill) diffent then the _bb (billboard)
     line = line.replace(f"{lighttype}", f"{lighttype}_pm")
     line += line.replace("_pm", "_bb")
-    
+
     if any(position in line for position in POSITION_IDENTIFIERS):
         line = remove_positional_name_from_line(line)
-        
+
     return line
 
 
@@ -118,8 +121,8 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
     Args:
-        aircraft_objects: A list with dictionaries containing icao_type of aircraft and
-                          path to the object file.
+        aircraft_objects: A list with dictionaries containing icao_type of
+                          aircraft and path to the object file.
     """
     for aircraft_object in aircraft_objects:
         light_params: dict[str, str] = get_light_params_for_aircraft_type(
@@ -131,11 +134,12 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
         try:
             with open(aircraft_object_path, "r", errors="replace") as file:
                 aircraft_object_content = file.readlines()
-        except FileNotFoundError as err:
+        except FileNotFoundError:
             log.error(f"{aircraft_object['full_object_path']} not found!")
             continue
         except UnicodeDecodeError as err:
-            log.error(f"Object file seems damaged! See: {err}\n Trying to repair it.")
+            log.error(
+                f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
 
         temp_object_file: Path = Path(aircraft_object_path).with_suffix(
@@ -149,7 +153,7 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
         for line in aircraft_object_content:
             # First filter the lights
             line = filter_unwanted_light_params(line)
-            
+
             # Remove some unnecessary lines. Can be done better...!!!
             if line.startswith("# "):
                 continue
@@ -168,6 +172,7 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
                 new_obj_file.write(new_file_content)
         except IOError as err:
             log.error("Something went wrong!", err)
+
 
 def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
     """Set a minimal configurationq.
@@ -188,7 +193,9 @@ def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
         log.error("No config file found!")
         sys.exit()
 
-    if config["csl"]["csl_path"] == "" and args_path_to_csl == None:
+    if '"' in config["csl"]["csl_path"]:
+        config["csl"]["csl_path"] = config["csl"]["csl_path"].strip('"')
+    if config["csl"]["csl_path"] == "" and args_path_to_csl is None:
         log.error(
             "No CSL path specified! Please update configs/config.ini or specify it by using -p or --path!"
         )
@@ -196,7 +203,7 @@ def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
 
     STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
 
-    if args_path_to_csl != None:
+    if args_path_to_csl is not None:
         return args_path_to_csl, STOP_ON_ERROR
     else:
         return config["csl"]["csl_path"], STOP_ON_ERROR
@@ -213,7 +220,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="Lights updater for CSL objects",
         description=DESCRIPTION,
-        epilog = EPILOG,
+        epilog=EPILOG,
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -254,6 +261,7 @@ def parse_args() -> argparse.Namespace:
 
     return parser.parse_args()
 
+
 @named_time_benchmark("lights_updater")
 def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     """Here all the magic happens.
@@ -267,7 +275,8 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     check_if_files_are_in_correct_json_format()
 
     # Get the list of aircraft objects and its file locations
-    aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(searchpath=CSL_PATH)
+    aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(
+        searchpath=CSL_PATH)
 
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
@@ -293,7 +302,9 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     copy_new_to_old(aircraft_objects, TEMP_FILE_SUFFIX)
 
-    log.info(f"Processing done, {len(aircraft_objects)} files have been processed!")
+    log.info(
+        f"Processing done, {len(aircraft_objects)} files have been processed!")
+
 
 if __name__ == "__main__":
     args = parse_args()

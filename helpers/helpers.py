@@ -66,8 +66,9 @@ def make_backup(
         continue
     log.info("Backups done!")
 
+
 @time_benchmark
-def recover_from_backup(aircraft_objects: list[dict[str,str]], stop_on_error: bool = False) -> None:
+def recover_from_backup(aircraft_objects: list[dict[str, str]], stop_on_error: bool = False) -> None:
     """Recover the original files from the backup files
 
     Args:
@@ -76,10 +77,11 @@ def recover_from_backup(aircraft_objects: list[dict[str,str]], stop_on_error: bo
     """
 
     for aircraft_object in aircraft_objects:
-        backup_file = Path(aircraft_object["full_object_path"]).with_suffix(".BCK")
+        backup_file = Path(
+            aircraft_object["full_object_path"]).with_suffix(".BCK")
         recover_file = backup_file.with_suffix(".obj")
         log.debug(f"Recovery of {backup_file} is started")
-        if backup_file.is_file() == False:
+        if backup_file.is_file() is False:
             log.warning(
                 f"{backup_file.name} not found! Should it be there? Skipping this one!"
             )
@@ -99,6 +101,7 @@ def recover_from_backup(aircraft_objects: list[dict[str,str]], stop_on_error: bo
         log.debug(f"Recovery of {recover_file} succesful!")
     log.info(f"Recovery ready! Recoverd {len(aircraft_objects)} files!")
 
+
 @time_benchmark
 def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
     """Removes previous backups. This is not reversible!
@@ -113,10 +116,11 @@ def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
     if yes_no.lower() == "yes" or yes_no.lower() == "y":
         log.info("Okay! Let's do it....!!")
         for aircraft_object in aircraft_objects:
-            files_to_remove.append(Path(aircraft_object["full_object_path"]))      
+            files_to_remove.append(Path(aircraft_object["full_object_path"]))
         delete_files(files_to_remove, ".BCK")
         log.info("Backup files removed successfully!")
     sys.exit()
+
 
 @time_benchmark
 def remove_xpmp2_files(filepath: str) -> None:
@@ -172,10 +176,12 @@ def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
 
     files = list(Path(searchpath).rglob(filename))
     if files == []:
-        raise NoFilesFoundError(message=f"No {filename} found in {searchpath}!")
+        raise NoFilesFoundError(
+            message=f"No {filename} found in {searchpath}!")
     # log.debug(f"Found these files while globing: {files}")
     log.debug(f"Found {len(files)} xsb_aircraft.txt files!")
     return files
+
 
 def filepath_is_valid(filepath: Path) -> bool:
     """Check if the filepath given is valid.
@@ -192,14 +198,17 @@ def filepath_is_valid(filepath: Path) -> bool:
 
     return result
 
-def copy_new_to_old(aircraft_objects: list[dict[str,str]], TEMP_FILE_SUFFIX: str)-> None:
+
+def copy_new_to_old(aircraft_objects: list[dict[str, str]], TEMP_FILE_SUFFIX: str) -> None:
     """Copy the new created files over the original files
        Delete the new files.
     """
     log.info("Start copying processed files to original file!")
     for aircraft_object in aircraft_objects:
-        destination_file = Path(aircraft_object["full_object_path"]).with_suffix(".obj")
-        temp_object_file = Path(aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
+        destination_file = Path(
+            aircraft_object["full_object_path"]).with_suffix(".obj")
+        temp_object_file = Path(
+            aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
 
         try:
             destination_file.write_bytes(temp_object_file.read_bytes())
@@ -215,4 +224,5 @@ def copy_new_to_old(aircraft_objects: list[dict[str,str]], TEMP_FILE_SUFFIX: str
         except PermissionError as err:
             log.error(f"{temp_object_file.name} can not be deleted!", err)
             continue
-        log.info(f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
+        log.info(
+            f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
