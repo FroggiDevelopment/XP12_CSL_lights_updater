@@ -232,8 +232,9 @@ def parse_args() -> argparse.Namespace:
         action="store",
         metavar="path",
         dest="csl_path",
-        help="Set path to location of CSL aircrafts.\n\n"
-        "If there are whitespaces in the path,\nyou MUST use quotation marks around the path!\nTo be save: Always use them.",
+        help="Set path to location of CSL aircrafts.\n"
+        "If there are whitespaces in the path,\nyou MUST use quotation marks around the path!\n"
+        "To be save: Always use them.",
     )
 
     parser.add_argument(
@@ -291,7 +292,8 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     make_backup(aircraft_objects=aircraft_objects, stop_on_error=STOP_ON_ERROR)
 
     log.info(
-        "Removing possible xpmp2 files as they can 'cache' the objects. They should be recreated on the fly while you use X-Plane."
+        "Removing possible xpmp2 files as they can 'cache' the objects. \
+        They should be recreated on the fly while you use X-Plane."
     )
     remove_xpmp2_files(filepath=CSL_PATH)
 
