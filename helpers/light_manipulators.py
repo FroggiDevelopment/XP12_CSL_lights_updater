@@ -47,6 +47,7 @@ LIGHTS_TO_IGNORE = [
 init_logging()
 log = logging.getLogger(__name__)
 
+
 def filter_unwanted_light_params(line: str) -> str:
     """Filter out light params that are old or otherwise wrong.
        Can be expanded for future cases.
@@ -58,21 +59,22 @@ def filter_unwanted_light_params(line: str) -> str:
         str: Corrected line with light parameters
     """
     # Make a more readable line for output
-    output_line = re.sub(r'\s+',' ', line)
-    
+    output_line = re.sub(r'\s+', ' ', line)
+
     # If light is on the ignore list, ignore it and retrun empty line
     if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
         return ""
-    
+
     # Check if old LIGHT_NAMED param exists and replace it with the new one
     if "LIGHT_NAMED" in line:
-        log.debug(f"Replacing LIGHT_NAMED in line {output_line} to LIGHT_PARAM")
+        log.debug(
+            f"Replacing LIGHT_NAMED in line {output_line} to LIGHT_PARAM")
         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
-    
+
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
         log.debug(f"Removing leading # from line {output_line}")
-        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")      
+        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
     # Remove positional name from line
     if any(position in line for position in POSITION_IDENTIFIERS):
@@ -80,6 +82,7 @@ def filter_unwanted_light_params(line: str) -> str:
             line = line.replace(item, "")
 
     return line
+
 
 def is_front_gear_fix_done(item: str) -> bool:
     """Check if the conversion already is done
@@ -90,7 +93,8 @@ def is_front_gear_fix_done(item: str) -> bool:
     Returns:
         bool: True if already done, False otherwise
     """
-    already_updated: list[str] = re.findall("libxplanemp/controls/gear_ratio", item)
+    already_updated: list[str] = re.findall(
+        "libxplanemp/controls/gear_ratio", item)
     if already_updated == []:
         return False
     return True
@@ -142,7 +146,8 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
     if get_original_landinglight_anim_hide == []:
         return item
     landing_lights_anim_hide = get_original_landinglight_anim_hide[0]
-    light_parameter: list[str] = re.findall("LIGHT_PARAM airplane_landing.+", item)
+    light_parameter: list[str] = re.findall(
+        "LIGHT_PARAM airplane_landing.+", item)
     if light_parameter == []:
         return item
     x_position = float(light_parameter[0].split()[2])
@@ -160,6 +165,7 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
                 f"{get_original_landinglights_anim_show[0]}\n", ""
             )
     return new_item
+
 
 def fix_lights_anomalies(object_content: str) -> str:
     """Fixes two things.
@@ -188,12 +194,14 @@ def fix_lights_anomalies(object_content: str) -> str:
             new_animation = fix_taxilights(animation, extra_anim_hide)
             object_content = object_content.replace(animation, new_animation)
         if "landing_lites" in animation:
-            new_animation = fix_frontgear_landinglights(animation, extra_anim_hide)
+            new_animation = fix_frontgear_landinglights(
+                animation, extra_anim_hide)
             if new_animation == animation:
                 continue
             object_content = object_content.replace(animation, new_animation)
 
     return object_content
+
 
 def add_lateral_position_to_lights(line: str) -> str:
     """To determine directional parameters add left, right or tail to the light param

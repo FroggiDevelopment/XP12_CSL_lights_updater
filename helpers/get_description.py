@@ -52,12 +52,14 @@ If you don't and there is a path specified in the config.ini, results may not be
 Now you know!\n
 """
 
+
 def get_description():
     if platform.system() == "Windows":
         return DESCRIPTION_WINDOWS, EPILOG_WINDOWS
     elif platform.system() == "Linux" or platform.system() == "Darwin":
         return DESCRIPTION, EPILOG
     return "Plain text here"
+
 
 if __name__ == "__main__":
     description, epilog = get_description()

@@ -20,6 +20,8 @@ import json
 import sys
 
 # Setup logging
+
+
 def init_logging():
     with open('configs/logging.conf', 'r') as configfile:
         try:
@@ -32,5 +34,5 @@ def init_logging():
                 "Logging config might be corrupted. Please check the configfile for consistency!"
             )
             sys.exit(1)
-        
+
     logging.config.dictConfig(logger_config)

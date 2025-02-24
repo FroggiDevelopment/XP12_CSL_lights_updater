@@ -10,18 +10,20 @@ from helpers import get_list_of_files
 
 with open('configs/logging.conf', 'r') as configfile:
     logger_config = json.load(configfile)
-    
+
 logging.config.dictConfig(logger_config)
 
 log = logging.getLogger("Testfile")
 
 PATH = "CSL/BB_Props"
-IGNORE_OBJECTS: list[str] = ["glass", "prop", "Contrail", "fan", "rotor", "BLUR", "car"]
+IGNORE_OBJECTS: list[str] = ["glass", "prop",
+                             "Contrail", "fan", "rotor", "BLUR", "car"]
 ICAO_IDENTIFIERS: list[str] = [
     "MATCHES",
     "ICAO",
     "AIRLINE",
     "LIVERY"]
+
 
 def get_xsb_files(searchpath: str):
     """Gets a list of xsb_aircraft.txt files
@@ -34,6 +36,7 @@ def get_xsb_files(searchpath: str):
     """
     return get_list_of_files(searchpath, "xsb_aircraft.txt")
 
+
 def get_path_to_aircraft_object(line: str) -> str:
     """Extracts the path to the aircraft object from the line
 
@@ -44,13 +47,15 @@ def get_path_to_aircraft_object(line: str) -> str:
         str: string representation of the path
     """
     if not any((_separator := delimiter) in line for delimiter in [":", "/"]):
-        log.error(f"Could not find separator in {line} Can not create path to object file!")
+        log.error(
+            f"Could not find separator in {line} Can not create path to object file!")
         return "no sep error"
     else:
         pathinfo: str = line.split()[3]
         # get rid of packagename, as this is ALWAYS the first part of the pathinfo!
         path_only: str = pathinfo.split(_separator, 1)[1]
-        return(path_only)
+        return (path_only)
+
 
 def parse_xsb_files(xsb_files: list[Path]):
     """This function parses the xsb_aircraft.txt files and
@@ -75,34 +80,35 @@ def parse_xsb_files(xsb_files: list[Path]):
 
             for aircraft_description in aircraft_descriptions:
                 aircraft_object: dict[str, str] = {}
-                
+
                 for line in aircraft_description.split("\n"):
                     # Get ICAO identifier for this aircraft
-                    if any (icao_identifier in line for icao_identifier in ICAO_IDENTIFIERS):
+                    if any(icao_identifier in line for icao_identifier in ICAO_IDENTIFIERS):
                         icao = line.split()[1]
                         if icao in aircraft_object:
                             log.info(f"ICAO {icao} is already set!")
                             continue
                         else:
                             aircraft_object["icao_type"] = icao
-                            
+
                     # Ignore lines with no usefull information
                     if not line.startswith("OBJ8 "):
                         continue
-                    if any (ignore_object in line for ignore_object in IGNORE_OBJECTS):
+                    if any(ignore_object in line for ignore_object in IGNORE_OBJECTS):
                         continue
-                    
-                    #Get the path to this aircraft object
+
+                    # Get the path to this aircraft object
                     path = get_path_to_aircraft_object(line)
                     full_path = parentdir + "/" + path
                     aircraft_object["full_object_path"] = full_path
-                    
+
                 aircraft_object_files.append(aircraft_object)
-    
-        [unique_aircraft_objects.append(val) for val in aircraft_object_files if val not in unique_aircraft_objects]
+
+        [unique_aircraft_objects.append(
+            val) for val in aircraft_object_files if val not in unique_aircraft_objects]
     return unique_aircraft_objects
 
-                    
+
 def get_aircraft_objects(searchpath: str):
     log.info("get_aircraft_objects")
     log.debug("This is debug")
@@ -110,7 +116,8 @@ def get_aircraft_objects(searchpath: str):
     xsb_files = get_xsb_files(searchpath)
     list_of_aircraft_objects = parse_xsb_files(xsb_files)
     print(list_of_aircraft_objects)
-                
+
+
 if __name__ == "__main__":
     print("This is a library. Not usabel on its own!")
     get_aircraft_objects("CSL/BB_Props")

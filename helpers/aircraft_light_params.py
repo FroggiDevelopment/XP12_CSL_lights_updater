@@ -28,6 +28,7 @@ log = logging.getLogger(__name__)
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params.json"
 
+
 def check_if_files_are_in_correct_json_format() -> None:
     """ Checks weather the contents of the necesssary datafiles are in correct json format
     """
@@ -42,7 +43,7 @@ def check_if_files_are_in_correct_json_format() -> None:
             "aircrafts.json may be corrupted. Please check the file for consistency!"
         )
         sys.exit(1)
-        
+
     try:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
             json.load(lights_definitions)
@@ -55,6 +56,7 @@ def check_if_files_are_in_correct_json_format() -> None:
         )
         sys.exit(1)
 
+
 def get_aircraft_categories() -> dict[str, str]:
     """returns data from the aircrafts.json file
 
@@ -63,7 +65,8 @@ def get_aircraft_categories() -> dict[str, str]:
     """
     try:
         with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
-            aircraft_categories: dict[str, str] = json.load(aircrafts_definitions)
+            aircraft_categories: dict[str, str] = json.load(
+                aircrafts_definitions)
     except FileNotFoundError:
         log.error("Missing aircrafts.json file. Stopping now!")
         sys.exit(1)
@@ -83,7 +86,8 @@ def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
     """
     try:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
-            light_params_per_category: dict[str, dict[str, str]] = json.load(lights_definitions)
+            light_params_per_category: dict[str, dict[str, str]] = json.load(
+                lights_definitions)
     except FileNotFoundError:
         log.error("Missing light_params.json file. Stopping now!")
         sys.exit(1)
@@ -105,7 +109,8 @@ def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str
         dict[str, str]: A dictionary with the corresponding light parameters for the given aircraft type
     """
     aircrafts: dict[str, str] = get_aircraft_categories()
-    light_params: dict[str, dict[str, str]] = get_light_params_per_aircraft_category()
+    light_params: dict[str, dict[str, str]
+                       ] = get_light_params_per_aircraft_category()
 
     for key, value in aircrafts.items():
         if aircraft_icao_type in value:
