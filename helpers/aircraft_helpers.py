@@ -166,8 +166,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
                                 f"File {full_path} does not exist either! Giving up on this one.")
                             continue
                         log.debug(f"Path {full_path} seems ok.")
-                    # TODO: There is a chance aog more than one object with light info. X-CSL B789 is one case. How to deal with that?
-                    # Partially done with code below???
+
                     legit_object_paths.append(full_path)
                 if aircraft_object != {} and len(legit_object_paths) > 0:
                     for legit_object_path in legit_object_paths:
