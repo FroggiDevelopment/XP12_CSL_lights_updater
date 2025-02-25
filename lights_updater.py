@@ -102,6 +102,11 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     if "airplane_nav" in line or "airplane_strobe" in line:
         line = add_lateral_position_to_lights(line)
 
+    if "airplane_beacon_rotate" in line:
+        line = line.replace("airplane_beacon_rotate", "airplane_beacon")
+    if "airplane_beacon_strobe" in line:
+        line = line.replace("airplane_beacon_strobe", "airplane_beacon")
+
     lighttype = line.split()[1]
 
     line = line.replace("\n", "")
