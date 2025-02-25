@@ -31,7 +31,7 @@ LIGHTS_TO_IGNORE = [
     "_omni",
     "_dir",
     "airplane_strobe_omni",
-    "airplane_beacon_",
+    "airplane_beacon_rotate_",
     "full_custom_halo_night",
     "_glow",
     "_flare",
