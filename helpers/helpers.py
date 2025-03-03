@@ -119,7 +119,6 @@ def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
             files_to_remove.append(Path(aircraft_object["full_object_path"]))
         delete_files(files_to_remove, ".BCK")
         log.info("Backup files removed successfully!")
-    sys.exit()
 
 
 @time_benchmark
