@@ -77,6 +77,31 @@ def remove_positional_name_from_line(line: str) -> str:
     return line
 
 
+def reduce_spill_intensity(line: str) -> str:
+    """Reduces the groundspill intensity of a light
+
+    Args:
+        line (str): A string with light specific parameters
+
+    Returns:
+        str: A line with reduced intensity
+    """
+    reduce_factors = {
+        "airplane_nav": 0.50,
+        "airplane_beacon": 0.50,
+        "airplane_strobe": 0.75
+    }
+
+    split_line = line.split()
+    intensity = int(split_line[9].replace("cd", ""))
+
+    reduced_intensity = int(intensity * reduce_factors[split_line[1]])
+    split_line[9] = f"{str(reduced_intensity)}cd"
+    line_to_return = " ".join(split_line)
+
+    return line_to_return
+
+
 def process_lights(line: str, light_params: dict[str, str]) -> str:
     """Changes the light parameters to XP12 specs
 
@@ -96,7 +121,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     if "_bb" in line:
         return ""
 
-    # Remove pm (groundspill) suffix
+    # Remove pm suffix
     line = line.replace("_pm", "")
 
     if "airplane_nav" in line or "airplane_strobe" in line:
@@ -112,12 +137,22 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
 
-    # TODO: Treat _pm (groundspill) diffent then the _bb (billboard)
-    line = line.replace(f"{lighttype}", f"{lighttype}_pm")
-    line += line.replace("_pm", "_bb")
-
     if any(position in line for position in POSITION_IDENTIFIERS):
         line = remove_positional_name_from_line(line)
+
+    lighttype = line.split()[1]
+
+    # TODO: Treat _pm (groundspill) different then the _bb (billboard)
+    if any([light in line for light in ["airplane_nav", "airplane_beacon", "airplane_strobe"]]):
+        reduced_intensity_line = reduce_spill_intensity(line)
+        reduced_intensity_line = reduced_intensity_line.replace(
+            f"{lighttype}", f"{lighttype}_pm")
+        line = line.replace(
+            f"{lighttype}", f"{lighttype}_bb") + reduced_intensity_line
+        line = f"{line}\n"
+    else:
+        line = line.replace(f"{lighttype}", f"{lighttype}_pm")
+        line += line.replace("_pm", "_bb")
 
     return line
 
@@ -292,10 +327,11 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
         recover_from_backup(aircraft_objects, STOP_ON_ERROR)
-        paused_exit()
+        return
 
     if args.remove_backups:  # Remove the backupfiles.
         remove_backups(aircraft_objects)
+        return
 
     # Start of main processing
     log.info("Creating backups!")
@@ -316,10 +352,10 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     log.info(
         f"Processing done, {len(aircraft_objects)} files have been processed!")
-    paused_exit()
 
 
 if __name__ == "__main__":
     args = parse_args()
     csl_path, stop_on_error = set_config(args.csl_path)
     main(args, csl_path, stop_on_error)
+    paused_exit()
