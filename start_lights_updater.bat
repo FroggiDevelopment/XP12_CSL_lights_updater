@@ -23,8 +23,6 @@ EXIT)
 IF %do_this% == 1 (
 ECHO Running conversion...
 CALL python lights_updater.py
-ECHO Press any key to continue....
-PAUSE
 CLS
 GOTO MENU
 )
@@ -33,8 +31,6 @@ IF %do_this% == 2 (
 SET "run_param=-u"
 ECHO Running undo..........
 CALL python lights_updater.py %%run_param%%
-ECHO Press any key to continue....
-PAUSE
 CLS
 GOTO MENU
 )
@@ -43,8 +39,6 @@ IF %do_this% == 3 (
 SET "run_param=-r"
 ECHO Removing backups.....
 CALL python lights_updater.py %%run_param%%
-ECHO Press any key to continue....
-PAUSE
 CLS
 GOTO MENU
 )
