@@ -194,13 +194,76 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
             continue
         new_file_content = ""
         log.info(f"Processing {aircraft_object_path}")
+
+        known_light_coordinates: list[str] = []
+
         for line in aircraft_object_content:
             # First filter the lights
             line = filter_unwanted_light_params(line)
 
-            # Remove some unnecessary lines. Can be done better...!!!
+            # Ignore comment lines.
             if line.startswith("# "):
                 continue
+
+            # Handle rotating beacons and avoid duplicates
+            coordinates = f"{':'.join(line.split()[2:5])}"
+
+            if "airplane_beacon" in line:
+                light_type = line.split()[1]
+                if coordinates in known_light_coordinates:
+                    log.debug("This beacon line is already processed!")
+                    line = ""
+                    continue
+                else:
+                    known_light_coordinates.append(coordinates)
+                    line = line.replace(
+                        light_type, "airplane_beacon")
+                    # line = line.replace(
+                    #     "airplane_beacon_strobe", "airplane_beacon")
+
+            if "airplane_nav" in line:
+                light_type = line.split()[1]
+                if coordinates in known_light_coordinates:
+                    log.debug("This nav line is already processed!")
+                    line = ""
+                    continue
+                else:
+                    known_light_coordinates.append(coordinates)
+                    line = line.replace(
+                        light_type, "airplane_nav")
+
+            if "airplane_strobe" in line:
+                light_type = line.split()[1]
+                if coordinates in known_light_coordinates:
+                    log.debug("This strobe line is already processed!")
+                    line = ""
+                    continue
+                else:
+                    known_light_coordinates.append(coordinates)
+                    line = line.replace(
+                        light_type, "airplane_strobe")
+
+            if "airplane_landing" in line:
+                light_type = line.split()[1]
+                if coordinates in known_light_coordinates:
+                    log.debug("This landing line is already processed!")
+                    line = ""
+                    continue
+                else:
+                    known_light_coordinates.append(coordinates)
+                    line = line.replace(
+                        light_type, "airplane_landing")
+
+            if "airplane_taxi" in line:
+                light_type = line.split()[1]
+                if coordinates in known_light_coordinates:
+                    log.debug("This taxi line is already processed!")
+                    line = ""
+                    continue
+                else:
+                    known_light_coordinates.append(coordinates)
+                    line = line.replace(
+                        light_type, "airplane_taxi")
 
             if any(lighttype in line for lighttype in LIGHT_NEEDLES):
                 line = process_lights(line, light_params)
