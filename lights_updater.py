@@ -59,7 +59,11 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_beacon_strobe",
 ]
 
-POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
+POSITION_IDENTIFIERS = {
+    "_left": "",
+    "_right": "",
+    "_tail": ""
+}
 
 
 def remove_positional_name_from_line(line: str) -> str:
@@ -71,9 +75,9 @@ def remove_positional_name_from_line(line: str) -> str:
     Returns:
         str: line without positional identifiers
     """
-    line = line.replace("_right", "")
-    line = line.replace("_left", "")
-    line = line.replace("_tail", "")
+    for replace_position in POSITION_IDENTIFIERS.keys():
+        line = line.replace(
+            replace_position, POSITION_IDENTIFIERS[replace_position])
     return line
 
 
@@ -137,7 +141,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
 
-    if any(position in line for position in POSITION_IDENTIFIERS):
+    if any(position in line for position in POSITION_IDENTIFIERS.keys()):
         line = remove_positional_name_from_line(line)
 
     lighttype = line.split()[1]
