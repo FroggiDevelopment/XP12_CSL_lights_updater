@@ -21,25 +21,39 @@ from .init_logging import init_logging
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
+# LIGHTS_TO_IGNORE = [
+#     "headlight",
+#     "_size",
+#     "_sp",
+#     "taillight",
+#     "_core",
+#     "_size",
+#     "_omni",
+#     "_dir",
+#     "airplane_strobe_omni",
+#     "airplane_beacon_rotate_",
+#     "full_custom_halo_night",
+#     "_glow",
+#     "_flare",
+#     "logo",
+#     "PLN_",
+#     "_core",
+#     "_flare",
+#     "_glow",
+#     "LIGHT_SPILL_CUSTOM",
+# ]
+
 LIGHTS_TO_IGNORE = [
     "headlight",
-    "_size",
-    "_sp",
     "taillight",
-    "_core",
+    "airplane_strobe_sp_tail",
+    "_flare",
     "_size",
-    "_omni",
-    "_dir",
     "airplane_strobe_omni",
     "airplane_beacon_rotate_",
     "full_custom_halo_night",
-    "_glow",
-    "_flare",
     "logo",
     "PLN_",
-    "_core",
-    "_flare",
-    "_glow",
     "LIGHT_SPILL_CUSTOM",
 ]
 
@@ -77,9 +91,9 @@ def filter_unwanted_light_params(line: str) -> str:
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
     # Remove positional name from line
-    if any(position in line for position in POSITION_IDENTIFIERS):
-        for item in POSITION_IDENTIFIERS:
-            line = line.replace(item, "")
+    # if any(position in line for position in POSITION_IDENTIFIERS):
+    #     for item in POSITION_IDENTIFIERS:
+    #         line = line.replace(item, "")
 
     return line
 
