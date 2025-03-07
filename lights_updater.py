@@ -15,7 +15,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
-
 import sys
 import argparse
 import logging
@@ -59,7 +58,43 @@ LIGHT_NEEDLES: list[str] = [
     "airplane_beacon_strobe",
 ]
 
-POSITION_IDENTIFIERS = {
+OLD_AIRCRAFT_LIGHTS: dict[str, str] = {
+    "airplane_landing": "airplane_landing",
+    "airplane_landing_core": "airplane_landing",
+    "airplane_landing_glow": "airplane_landing",
+    "airplane_landing_flare": "airplane_landing",
+    "airplane_landing_sp": "airplane_landing",
+    "airplane_taxi": "airplane_taxi",
+    "airplane_taxi_core": "airplane_taxi",
+    "airplane_taxi_flare": "airplane_taxi",
+    "airplane_taxi_glow": "airplane_taxi",
+    "airplane_taxi_sp": "airplane_taxi",
+    "airplane_nav": "airplane_nav",
+    "airplane_nav_sp": "airplane_nav",
+    "airplane_nav_left": "airplane_nav",
+    "airplane_nav_sp_left": "airplane_nav",
+    "airplane_nav_right": "airplane_nav",
+    "airplane_nav_sp_right": "airplane_nav",
+    "airplane_nav_tail": "airplane_nav",
+    "airplane_nav_tail_size": "airplane_nav",
+    "airplane_nav_left_size": "airplane_nav",
+    "airplane_nav_right_size": "airplane_nav",
+    "airplane_strobe": "airplane_strobe",
+    "airplane_strobe_sp": "airplane_strobe",
+    "airplane_strobe_left": "airplane_strobe",
+    "airplane_strobe_right": "airplane_strobe",
+    "airplane_strobe_tail": "airplane_strobe",
+    "airplane_strobe_omni": "airplane_strobe",
+    "airplane_strobe_dir": "airplane_strobe",
+    "airplane_beacon": "airplane_beacon",
+    "airplane_beacon_sp": "airplane_beacon",
+    "airplane_beacon_rotate": "airplane_beacon",
+    "airplane_beacon_rotate_sp ": "airplane_beacon",
+    "airplane_beacon_strobe": "airplane_beacon",
+    "airplane_beacon_strobe_sp": "airplane_beacon",
+}
+
+POSITION_IDENTIFIERS: dict[str, str] = {
     "_left": "",
     "_right": "",
     "_tail": ""
@@ -75,9 +110,10 @@ def remove_positional_name_from_line(line: str) -> str:
     Returns:
         str: line without positional identifiers
     """
-    for replace_position in POSITION_IDENTIFIERS.keys():
-        line = line.replace(
-            replace_position, POSITION_IDENTIFIERS[replace_position])
+    if any((unwanted_position_information := position) in line for position in POSITION_IDENTIFIERS):
+        log.debug(f"Found {unwanted_position_information} in line {line}!")
+        line = line.replace(unwanted_position_information,
+                            POSITION_IDENTIFIERS[unwanted_position_information])
     return line
 
 
@@ -116,7 +152,6 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     Returns:
         str: A line with updated light parameters
     """
-
     # Remove possible unwanted params
     # Keep specifier, lighttype, x, y, z params
     line = " ".join(line.split()[:5])
@@ -130,11 +165,6 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 
     if "airplane_nav" in line or "airplane_strobe" in line:
         line = add_lateral_position_to_lights(line)
-
-    if "airplane_beacon_rotate" in line:
-        line = line.replace("airplane_beacon_rotate", "airplane_beacon")
-    if "airplane_beacon_strobe" in line:
-        line = line.replace("airplane_beacon_strobe", "airplane_beacon")
 
     lighttype = line.split()[1]
 
@@ -169,6 +199,7 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
                           aircraft and path to the object file.
     """
     for aircraft_object in aircraft_objects:
+
         light_params: dict[str, str] = get_light_params_for_aircraft_type(
             str(aircraft_object["icao_type"])
         )
@@ -202,68 +233,24 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
             line = filter_unwanted_light_params(line)
 
             # Ignore comment lines.
-            if line.startswith("# "):
+            if line.strip().startswith("#"):
                 continue
 
             # Handle rotating beacons and avoid duplicates
             coordinates = f"{':'.join(line.split()[2:5])}"
 
-            if "airplane_beacon" in line:
-                light_type = line.split()[1]
+            # Replace all 'odd' light params with the XP12 supported ones according to available information.
+            # Things like _sp, _size, _core, _glow, etc.
+            if any((old_light_param := lighttype) in line.split() for lighttype in OLD_AIRCRAFT_LIGHTS):
                 if coordinates in known_light_coordinates:
-                    log.debug("This beacon line is already processed!")
+                    log.debug(
+                        f"{old_light_param} at {coordinates} already processed for ICAO {aircraft_object['icao_type']}")
                     line = ""
                     continue
                 else:
                     known_light_coordinates.append(coordinates)
                     line = line.replace(
-                        light_type, "airplane_beacon")
-                    # line = line.replace(
-                    #     "airplane_beacon_strobe", "airplane_beacon")
-
-            if "airplane_nav" in line:
-                light_type = line.split()[1]
-                if coordinates in known_light_coordinates:
-                    log.debug("This nav line is already processed!")
-                    line = ""
-                    continue
-                else:
-                    known_light_coordinates.append(coordinates)
-                    line = line.replace(
-                        light_type, "airplane_nav")
-
-            if "airplane_strobe" in line:
-                light_type = line.split()[1]
-                if coordinates in known_light_coordinates:
-                    log.debug("This strobe line is already processed!")
-                    line = ""
-                    continue
-                else:
-                    known_light_coordinates.append(coordinates)
-                    line = line.replace(
-                        light_type, "airplane_strobe")
-
-            if "airplane_landing" in line:
-                light_type = line.split()[1]
-                if coordinates in known_light_coordinates:
-                    log.debug("This landing line is already processed!")
-                    line = ""
-                    continue
-                else:
-                    known_light_coordinates.append(coordinates)
-                    line = line.replace(
-                        light_type, "airplane_landing")
-
-            if "airplane_taxi" in line:
-                light_type = line.split()[1]
-                if coordinates in known_light_coordinates:
-                    log.debug("This taxi line is already processed!")
-                    line = ""
-                    continue
-                else:
-                    known_light_coordinates.append(coordinates)
-                    line = line.replace(
-                        light_type, "airplane_taxi")
+                        old_light_param, OLD_AIRCRAFT_LIGHTS[old_light_param])
 
             if any(lighttype in line for lighttype in LIGHT_NEEDLES):
                 line = process_lights(line, light_params)
