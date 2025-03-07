@@ -22,3 +22,11 @@ class NoFilesFoundError(Exception):
     def __init__(self, message: str = "No files found!") -> None:
         self.message = message
         super().__init__(self.message)
+
+
+class NoAnimationFoundError(Exception):
+    """Exception raised when no files are found"""
+
+    def __init__(self, message: str = "This file contains no animation section!") -> None:
+        self.message = message
+        super().__init__(self.message)
