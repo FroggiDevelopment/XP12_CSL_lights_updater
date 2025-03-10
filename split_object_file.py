@@ -26,14 +26,27 @@ ANIM_end
 """
 
 with open(objectfile, "r") as file:
-    content = file.readlines()
-
-pattern = r"(?s)I.*?(?=ANIM_begin|$)"
+    content = file.read()
+object_file_content = ""
 split_pattern = r"(?=ANIM_begin)"
 
 matches = re.split(split_pattern, content, maxsplit=1)
-
+print(type(matches))
+exit()
 if matches:
-    print(len(matches))
-    print(matches[0])
-    print(matches[1])
+    new_animations: str = ""
+    for line_no, line in enumerate(matches[1].split("\n")):
+        # print(f"{line_no}. {line}")
+        if "LIGHT_NAMED" in line:
+            line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
+            print(line)
+        if "airplane_beacon_rotate" in line:
+            print(line)
+        new_animations += line+"\n"
+
+    object_file_content = matches[0] + new_animations
+
+if object_file_content != "":
+    print(object_file_content)
+    with open("aircraft.obj", "w") as file:
+        file.write(object_file_content)
