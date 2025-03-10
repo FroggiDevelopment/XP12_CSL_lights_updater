@@ -41,33 +41,6 @@ ICAO_IDENTIFIERS: list[str] = [
     "LIVERY"]
 
 
-def get_aircraft_icao_type(aircraft_description: str) -> str:
-    """Gets the type of aircraft in ICAO format
-
-    Args:
-        data_aircraft_description (str): aircraft description from xsb_aircraft.txt
-
-    Returns:
-        str: ICAO designator of the aircraft
-    """
-
-    aircraft_icao_type: str = ""
-    _type_designator_definitions: set[str] = {
-        "MATCHES",
-        "ICAO",
-        "AIRLINE",
-        "LIVERY",
-    }
-    for line in aircraft_description.split("\n"):
-        if any(
-            type_designator in line for type_designator in _type_designator_definitions
-        ):
-            aircraft_icao_type = line.split()[1]
-        else:
-            continue
-    return aircraft_icao_type
-
-
 def get_path_to_aircraft_object(line: str) -> str:
     """Extracts the path to the aircraft object from the line
 
