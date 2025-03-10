@@ -15,6 +15,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
+import re
 import sys
 import argparse
 import logging
@@ -35,6 +36,8 @@ from helpers import add_lateral_position_to_lights
 from helpers import check_if_files_are_in_correct_json_format
 from helpers import get_description
 from helpers import init_logging
+
+from helpers.custom_exceptions import NoAnimationFoundError
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
@@ -191,6 +194,26 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     return line
 
 
+def split_object_file(object_file: str) -> tuple[str, str]:
+    """Splits the object file in object part and animation part
+
+    Args:
+        object_file (str): object containing all ariplane data
+
+    Returns:
+        tuple[str, str]: split airplane object with [1] containing the object definitions
+                         and [1] the animations, i.e. lights etc.
+    """
+    split_pattern = r"(?=ANIM_begin)"
+    object_parts = re.split(split_pattern, object_file, maxsplit=1)
+    if len(object_parts) == 2:
+        object_definitions = object_parts[0]
+        animations = object_parts[1]
+
+        return object_definitions, animations
+    raise NoAnimationFoundError
+
+
 @time_benchmark
 def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
@@ -205,10 +228,10 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
         )
         aircraft_object_path: Path = Path(aircraft_object["full_object_path"])
 
-        aircraft_object_content: list[str] = []
+        aircraft_object_content: str = ""
         try:
             with open(aircraft_object_path, "r", errors="replace") as file:
-                aircraft_object_content = file.readlines()
+                aircraft_object_content = file.read()
         except FileNotFoundError:
             log.error(f"{aircraft_object['full_object_path']} not found!")
             continue
@@ -221,19 +244,27 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
             suffix=TEMP_FILE_SUFFIX
         )
 
-        if aircraft_object_content == []:
+        if aircraft_object_content == "":
             continue
+        try:
+            object_definitions, animations = split_object_file(
+                aircraft_object_content)
+        except NoAnimationFoundError:
+            log.debug(f"No animations found in {aircraft_object_path}!")
+            continue
+
         new_file_content = ""
         log.info(f"Processing {aircraft_object_path}")
 
         known_light_coordinates: list[str] = []
 
-        for line in aircraft_object_content:
+        # for line in aircraft_object_content:
+        for line in animations.split("\n"):
             # First filter the lights
             line = filter_unwanted_light_params(line)
 
             # Ignore comment lines.
-            if line.strip().startswith("#"):
+            if line.strip().startswith("#") and "blender" not in line.lower():
                 continue
 
             # Handle rotating beacons and avoid duplicates
@@ -254,12 +285,14 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
 
             if any(lighttype in line for lighttype in LIGHT_NEEDLES):
                 line = process_lights(line, light_params)
-
-            new_file_content += line
+            if len(line) > 0:
+                new_file_content += f"{line}\n"
 
         # Fix possible error in the taxilight dataref
         new_file_content = fix_lights_anomalies(new_file_content)
 
+        # glue the two file part together
+        new_file_content = object_definitions + new_file_content
         # Write converted data to temp-file
         try:
             with open(temp_object_file, "w+") as new_obj_file:
