@@ -214,18 +214,62 @@ def split_object_file(object_file: str) -> tuple[str, str]:
     raise NoAnimationFoundError
 
 
+def process_animations_section(animations: str, aircraft_object_path: Path, aircraft_icao_type: str) -> str:
+    light_params: dict[str, str] = get_light_params_for_aircraft_type(
+        str(aircraft_icao_type)
+    )
+    new_file_content = ""
+    log.info(f"Processing {aircraft_object_path}")
+
+    known_light_coordinates: list[str] = []
+
+    # for line in aircraft_object_content:
+    for line in animations.split("\n"):
+        # First filter the lights
+        line = filter_unwanted_light_params(line)
+
+        # Ignore comment lines.
+        if line.strip().startswith("#") and "blender" not in line.lower():
+            continue
+
+        # Handle rotating beacons and avoid duplicates
+        coordinates = f"{':'.join(line.split()[2:5])}"
+
+        # Replace all 'odd' light params with the XP12 supported ones according to available information.
+        # Things like _sp, _size, _core, _glow, etc.
+        if any((old_light_param := lighttype) in line.split() for lighttype in OLD_AIRCRAFT_LIGHTS):
+            if coordinates in known_light_coordinates:
+                log.debug(
+                    f"{old_light_param} at {coordinates} already processed for ICAO {aircraft_icao_type}")
+                line = ""
+                continue
+            else:
+                known_light_coordinates.append(coordinates)
+                line = line.replace(
+                    old_light_param, OLD_AIRCRAFT_LIGHTS[old_light_param])
+
+        if any(lighttype in line for lighttype in LIGHT_NEEDLES):
+            line = process_lights(line, light_params)
+        if len(line) > 0:
+            new_file_content += f"{line}\n"
+
+    # Fix possible error in the taxilight dataref
+    new_file_content = fix_lights_anomalies(new_file_content)
+
+    return new_file_content
+
+
 @time_benchmark
-def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
+def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
     """Create new aircraft obj file with X-Plane 12 light params
     Args:
         aircraft_objects: A list with dictionaries containing icao_type of
                           aircraft and path to the object file.
     """
     for aircraft_object in aircraft_objects:
-
-        light_params: dict[str, str] = get_light_params_for_aircraft_type(
-            str(aircraft_object["icao_type"])
-        )
+        # light_params: dict[str, str] = get_light_params_for_aircraft_type(
+        #     str(aircraft_object["icao_type"])
+        # )
         aircraft_object_path: Path = Path(aircraft_object["full_object_path"])
 
         aircraft_object_content: str = ""
@@ -253,46 +297,10 @@ def process_object_files(aircraft_objects: list[dict[str, Path]]) -> None:
             log.debug(f"No animations found in {aircraft_object_path}!")
             continue
 
-        new_file_content = ""
-        log.info(f"Processing {aircraft_object_path}")
-
-        known_light_coordinates: list[str] = []
-
-        # for line in aircraft_object_content:
-        for line in animations.split("\n"):
-            # First filter the lights
-            line = filter_unwanted_light_params(line)
-
-            # Ignore comment lines.
-            if line.strip().startswith("#") and "blender" not in line.lower():
-                continue
-
-            # Handle rotating beacons and avoid duplicates
-            coordinates = f"{':'.join(line.split()[2:5])}"
-
-            # Replace all 'odd' light params with the XP12 supported ones according to available information.
-            # Things like _sp, _size, _core, _glow, etc.
-            if any((old_light_param := lighttype) in line.split() for lighttype in OLD_AIRCRAFT_LIGHTS):
-                if coordinates in known_light_coordinates:
-                    log.debug(
-                        f"{old_light_param} at {coordinates} already processed for ICAO {aircraft_object['icao_type']}")
-                    line = ""
-                    continue
-                else:
-                    known_light_coordinates.append(coordinates)
-                    line = line.replace(
-                        old_light_param, OLD_AIRCRAFT_LIGHTS[old_light_param])
-
-            if any(lighttype in line for lighttype in LIGHT_NEEDLES):
-                line = process_lights(line, light_params)
-            if len(line) > 0:
-                new_file_content += f"{line}\n"
-
-        # Fix possible error in the taxilight dataref
-        new_file_content = fix_lights_anomalies(new_file_content)
-
+        new_animations_section = process_animations_section(
+            animations, aircraft_object_path, aircraft_object["icao_type"])
         # glue the two file part together
-        new_file_content = object_definitions + new_file_content
+        new_file_content = object_definitions + new_animations_section
         # Write converted data to temp-file
         try:
             with open(temp_object_file, "w+") as new_obj_file:
