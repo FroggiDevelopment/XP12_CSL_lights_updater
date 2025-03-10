@@ -267,9 +267,6 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
                           aircraft and path to the object file.
     """
     for aircraft_object in aircraft_objects:
-        # light_params: dict[str, str] = get_light_params_for_aircraft_type(
-        #     str(aircraft_object["icao_type"])
-        # )
         aircraft_object_path: Path = Path(aircraft_object["full_object_path"])
 
         aircraft_object_content: str = ""
@@ -284,10 +281,6 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
                 f"Object file seems damaged! See: {err}\n Trying to repair it.")
             continue
 
-        temp_object_file: Path = Path(aircraft_object_path).with_suffix(
-            suffix=TEMP_FILE_SUFFIX
-        )
-
         if aircraft_object_content == "":
             continue
         try:
@@ -299,9 +292,14 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
 
         new_animations_section = process_animations_section(
             animations, aircraft_object_path, aircraft_object["icao_type"])
-        # glue the two file part together
+
+        # Glue the two file parts together
         new_file_content = object_definitions + new_animations_section
+
         # Write converted data to temp-file
+        temp_object_file: Path = Path(aircraft_object_path).with_suffix(
+            suffix=TEMP_FILE_SUFFIX
+        )
         try:
             with open(temp_object_file, "w+") as new_obj_file:
                 new_obj_file.write(new_file_content)
