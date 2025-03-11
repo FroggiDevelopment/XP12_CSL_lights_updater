@@ -21,27 +21,6 @@ from .init_logging import init_logging
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
-# LIGHTS_TO_IGNORE = [
-#     "headlight",
-#     "_size",
-#     "_sp",
-#     "taillight",
-#     "_core",
-#     "_size",
-#     "_omni",
-#     "_dir",
-#     "airplane_strobe_omni",
-#     "airplane_beacon_rotate_",
-#     "full_custom_halo_night",
-#     "_glow",
-#     "_flare",
-#     "logo",
-#     "PLN_",
-#     "_core",
-#     "_flare",
-#     "_glow",
-#     "LIGHT_SPILL_CUSTOM",
-# ]
 
 LIGHTS_TO_IGNORE = [
     "headlight",
@@ -89,11 +68,6 @@ def filter_unwanted_light_params(line: str) -> str:
     if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
         # log.debug(f"Removing leading # from line {output_line}")
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
-
-    # Remove positional name from line
-    # if any(position in line for position in POSITION_IDENTIFIERS):
-    #     for item in POSITION_IDENTIFIERS:
-    #         line = line.replace(item, "")
 
     return line
 
@@ -154,12 +128,12 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
         str | None: Fixed textblock, None if nothing has changed
     """
     log.debug("Fixing frontgear landinglights hide animation.")
-    get_original_landinglight_anim_hide: list[str] = re.findall(
+    original_landinglight_anim_hide: list[str] = re.findall(
         "ANIM_hide.+landing_lites_on", item
     )
-    if get_original_landinglight_anim_hide == []:
+    if original_landinglight_anim_hide == []:
         return item
-    landing_lights_anim_hide = get_original_landinglight_anim_hide[0]
+    landing_lights_anim_hide = original_landinglight_anim_hide[0]
     light_parameter: list[str] = re.findall(
         "LIGHT_PARAM airplane_landing.+", item)
     if light_parameter == []:
@@ -171,12 +145,12 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
             landing_lights_anim_hide,
             f"{landing_lights_anim_hide}\n{extra_hide_anim}",
         )
-        get_original_landinglights_anim_show: list[str] = re.findall(
+        original_landinglights_anim_show: list[str] = re.findall(
             "ANIM_show.+landing_lites_on", new_item
         )
-        if get_original_landinglights_anim_show != []:
+        if original_landinglights_anim_show != []:
             new_item = new_item.replace(
-                f"{get_original_landinglights_anim_show[0]}\n", ""
+                f"{original_landinglights_anim_show[0]}\n", ""
             )
     return new_item
 
