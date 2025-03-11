@@ -114,7 +114,6 @@ def remove_positional_name_from_line(line: str) -> str:
         str: line without positional identifiers
     """
     if any((unwanted_position_information := position) in line for position in POSITION_IDENTIFIERS):
-        log.debug(f"Found {unwanted_position_information} in line {line}!")
         line = line.replace(unwanted_position_information,
                             POSITION_IDENTIFIERS[unwanted_position_information])
     return line

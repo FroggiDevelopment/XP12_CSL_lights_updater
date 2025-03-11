@@ -80,7 +80,7 @@ def recover_from_backup(aircraft_objects: list[dict[str, str]], stop_on_error: b
         backup_file = Path(
             aircraft_object["full_object_path"]).with_suffix(".BCK")
         recover_file = backup_file.with_suffix(".obj")
-        log.debug(f"Recovery of {backup_file} is started")
+        # log.debug(f"Recovery of {backup_file} is started")
         if backup_file.is_file() is False:
             log.warning(
                 f"{backup_file.name} not found! Should it be there? Skipping this one!"
