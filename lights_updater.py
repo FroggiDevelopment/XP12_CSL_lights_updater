@@ -129,7 +129,7 @@ def reduce_spill_intensity(line: str) -> str:
         str: A line with reduced intensity
     """
     reduce_factors = {
-        "airplane_nav": 0.50,
+        "airplane_nav": 0.75,
         "airplane_beacon": 0.50,
         "airplane_strobe": 0.75
     }
@@ -163,7 +163,8 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
         return ""
 
     # Remove pm suffix
-    line = line.replace("_pm", "")
+    if "_pm" in line:
+        line = line.replace("_pm", "")
 
     if "airplane_nav" in line or "airplane_strobe" in line:
         line = add_lateral_position_to_lights(line)
@@ -178,7 +179,6 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
 
     lighttype = line.split()[1]
 
-    # TODO: Treat _pm (groundspill) different then the _bb (billboard)
     if any([light in line for light in ["airplane_nav", "airplane_beacon", "airplane_strobe"]]):
         reduced_intensity_line = reduce_spill_intensity(line)
         reduced_intensity_line = reduced_intensity_line.replace(
@@ -213,12 +213,20 @@ def split_object_file(object_file: str) -> tuple[str, str]:
     raise NoAnimationFoundError
 
 
-def process_animations_section(animations: str, aircraft_object_path: Path, aircraft_icao_type: str) -> str:
+def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
+    """ Process the anima scetion where light parameters are defined
+
+    Args:
+        animations (str): Text content with animations and light parameters
+        aircraft_icao_type (str): ICAO type of aircraft for getting the light parameters
+
+    Returns:
+        str: Processed text content with light parameters converted to XP 12 standard
+    """
     light_params: dict[str, str] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
     new_file_content = ""
-    log.info(f"Processing {aircraft_object_path}")
 
     known_light_coordinates: list[str] = []
 
@@ -239,7 +247,7 @@ def process_animations_section(animations: str, aircraft_object_path: Path, airc
         if any((old_light_param := lighttype) in line.split() for lighttype in OLD_AIRCRAFT_LIGHTS):
             if coordinates in known_light_coordinates:
                 log.debug(
-                    f"{old_light_param} at {coordinates} already processed for ICAO {aircraft_icao_type}")
+                    f"{old_light_param} at {coordinates} already processed! for ICAO {aircraft_icao_type}")
                 line = ""
                 continue
             else:
@@ -247,7 +255,7 @@ def process_animations_section(animations: str, aircraft_object_path: Path, airc
                 line = line.replace(
                     old_light_param, OLD_AIRCRAFT_LIGHTS[old_light_param])
 
-        if any(lighttype in line for lighttype in LIGHT_NEEDLES):
+        if any(lighttype in line for lighttype in OLD_AIRCRAFT_LIGHTS.keys()):
             line = process_lights(line, light_params)
         if len(line) > 0:
             new_file_content += f"{line}\n"
@@ -289,8 +297,9 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             log.debug(f"No animations found in {aircraft_object_path}!")
             continue
 
+        log.info(f"Processing {aircraft_object_path}")
         new_animations_section = process_animations_section(
-            animations, aircraft_object_path, aircraft_object["icao_type"])
+            animations, aircraft_object["icao_type"])
 
         # Glue the two file parts together
         new_file_content = object_definitions + new_animations_section
@@ -325,6 +334,15 @@ def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
         log.error("No config file found!")
         sys.exit()
 
+    csl_path = Path(config.get("csl", "csl_path"))
+    print(csl_path)
+    sys.exit()
+    # if Path(config.get('csl', 'csl_path')).is_dir():
+    #     print(f"csl-path is: {config.get('csl', 'csl_path')}")
+    # else:
+    #     log.error(f"Invalid CSL path: {config.get('csl', 'csl_path')}")
+    #     sys.exit()
+    # sys.exit()
     if '"' in config["csl"]["csl_path"]:
         config["csl"]["csl_path"] = config["csl"]["csl_path"].strip('"')
     if config["csl"]["csl_path"] == "" and args_path_to_csl is None:
