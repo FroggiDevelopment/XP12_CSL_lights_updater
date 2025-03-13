@@ -47,7 +47,7 @@ log = logging.getLogger("lights_updater")
 
 # Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
-STOP_ON_ERROR: bool = True
+
 LIGHT_NEEDLES: list[str] = [
     "airplane_landing",
     "airplane_taxi",
@@ -315,15 +315,16 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             log.error("Something went wrong!", err)
 
 
-def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
+def set_config(args_path_to_csl: str = "") -> Path:
     """Set a minimal configurationq.
 
     Args:
         args_path_to_csl (str | None): If available the path is set by commandline param.
 
     Returns:
-        tuple[str, bool]: Returns a path-string and a bool for STOP_ON_ERROR
+        tuple[str, bool]: Returns a path-string
     """
+    commandline_csl_path = Path(args_path_to_csl)
     # Get config from file
 
     config = ConfigParser()
@@ -335,35 +336,38 @@ def set_config(args_path_to_csl: str | None) -> tuple[str, bool]:
         sys.exit()
 
     csl_path = Path(config.get("csl", "csl_path"))
-    print(csl_path)
-    sys.exit()
+
     # if Path(config.get('csl', 'csl_path')).is_dir():
     #     print(f"csl-path is: {config.get('csl', 'csl_path')}")
     # else:
     #     log.error(f"Invalid CSL path: {config.get('csl', 'csl_path')}")
     #     sys.exit()
     # sys.exit()
-    if '"' in config["csl"]["csl_path"]:
-        config["csl"]["csl_path"] = config["csl"]["csl_path"].strip('"')
-    if config["csl"]["csl_path"] == "" and args_path_to_csl is None:
-        log.error(
-            "No CSL path specified! Please update configs/config.ini or specify it by using -p or --path!"
-        )
+    # if '"' in config["csl"]["csl_path"]:
+    #     config["csl"]["csl_path"] = config["csl"]["csl_path"].strip('"')
+    # if config["csl"]["csl_path"] == "" and args_path_to_csl is None:
+    #     log.error(
+    #         "No CSL path specified! Please update configs/config.ini or specify it by using -p or --path!"
+    #     )
+    #     sys.exit()
+
+    if csl_path.is_dir() is False and commandline_csl_path.is_dir() is False:
+        log.info(
+            "CSL path seems not to be a valid directory! Please check your input!")
         sys.exit()
 
-    STOP_ON_ERROR = config.getboolean("generic", "STOP_ON_ERROR")
-
-    if args_path_to_csl is not None:
-        return args_path_to_csl, STOP_ON_ERROR
+    if args_path_to_csl != "":
+        return Path(args_path_to_csl)
     else:
-        return config["csl"]["csl_path"], STOP_ON_ERROR
+        # return config["csl"]["csl_path"]
+        return csl_path
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse commandline arguments.
+    """Parses commadnlien arguments
 
     Returns:
-        tuple[str, bool]: Returns a path-string and a bool for STOP_ON_ERROR
+        argparse.Namespace: argparser arguments
     """
     DESCRIPTION, EPILOG = get_description()
     # Check if cli params are present
@@ -419,14 +423,14 @@ def paused_exit():
 
 
 @named_time_benchmark("lights_updater")
-def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
+def main(args: argparse.Namespace, CSL_PATH: Path) -> None:
     """Here all the magic happens.
 
     Args:
         args (argparse.Namespace): commandline arguments See -h for help
         CSL_PATH (str): The startpath for searching the xsb_aircraft.txt files
-        STOP_ON_ERROR (bool): A boolean to determine the behavior on errors.
     """
+    print("in main")
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     check_if_files_are_in_correct_json_format()
 
@@ -436,7 +440,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     # Special actions first!
     if args.undo:  # Undo changes, recover object from backup.
-        recover_from_backup(aircraft_objects, STOP_ON_ERROR)
+        recover_from_backup(aircraft_objects)
         return
 
     if args.remove_backups:  # Remove the backupfiles.
@@ -445,7 +449,7 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
     # Start of main processing
     log.info("Creating backups!")
-    make_backup(aircraft_objects=aircraft_objects, stop_on_error=STOP_ON_ERROR)
+    make_backup(aircraft_objects=aircraft_objects)
 
     log.info(
         "Removing possible xpmp2 files as they can 'cache' the objects. \
@@ -466,6 +470,6 @@ def main(args: argparse.Namespace, CSL_PATH: str, STOP_ON_ERROR: bool) -> None:
 
 if __name__ == "__main__":
     args = parse_args()
-    csl_path, stop_on_error = set_config(args.csl_path)
-    main(args, csl_path, stop_on_error)
+    csl_path = set_config(args.csl_path)
+    main(args, csl_path)
     paused_exit()
