@@ -325,7 +325,7 @@ def set_config(args_path_to_csl: str | None) -> Path:
         Path: Returns path to CSL files
     """
     if args_path_to_csl is not None:
-        commandline_csl_path = Path(args_path_to_csl.strip('"'))
+        commandline_csl_path = Path(args_path_to_csl)
         if commandline_csl_path.is_dir() is False:
             log.info(
                 "CSL path seems not to be a valid directory! Please check your input!")
