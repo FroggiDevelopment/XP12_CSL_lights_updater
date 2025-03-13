@@ -325,7 +325,7 @@ def set_config(args_path_to_csl: str | None) -> Path:
         Path: Returns path to CSL files
     """
     if args_path_to_csl is not None:
-        commandline_csl_path = Path(args_path_to_csl)
+        commandline_csl_path = Path(args_path_to_csl.strip('"'))
         if commandline_csl_path.is_dir() is False:
             log.info(
                 "CSL path seems not to be a valid directory! Please check your input!")
@@ -342,7 +342,7 @@ def set_config(args_path_to_csl: str | None) -> Path:
         log.error("No config file found!")
         paused_exit()
 
-    csl_path = Path(config.get("csl", "csl_path"))
+    csl_path = Path(config.get("csl", "csl_path").strip('"'))
 
     if csl_path.is_dir() is False:
         log.info(
