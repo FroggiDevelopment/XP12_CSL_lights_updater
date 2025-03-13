@@ -31,6 +31,13 @@ init_logging()
 log = logging.getLogger(__name__)
 
 
+def paused_exit() -> None:
+    """ Before exiting ask the user to press key. Will help seeing possible messages before the window closes.
+    """
+    input("Press any key to continue...")
+    sys.exit()
+
+
 def make_backup(
     aircraft_objects: list[dict[str, str]]
 ) -> None:
@@ -201,7 +208,7 @@ def copy_new_to_old(aircraft_objects: list[dict[str, str]], TEMP_FILE_SUFFIX: st
             destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
             log.error("Stopping on error!", err)
-            sys.exit()
+            paused_exit()
             continue
         except FileNotFoundError as err:
             log.error(f"File could not be copied! See: {err}")
