@@ -16,7 +16,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 import re
-import sys
 import argparse
 import logging
 import logging.config
@@ -36,6 +35,7 @@ from helpers import add_lateral_position_to_lights
 from helpers import check_if_files_are_in_correct_json_format
 from helpers import get_description
 from helpers import init_logging
+from helpers import paused_exit
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
@@ -329,27 +329,27 @@ def set_config(args_path_to_csl: str | None) -> Path:
         if commandline_csl_path.is_dir() is False:
             log.info(
                 "CSL path seems not to be a valid directory! Please check your input!")
-            sys.exit()
+            paused_exit()
         else:
             return commandline_csl_path
+
+    # Get config from file
+    config = ConfigParser()
+
+    if config.read("configs/config.ini") != []:
+        pass
     else:
-        # Get config from file
-        config = ConfigParser()
+        log.error("No config file found!")
+        paused_exit()
 
-        if config.read("configs/config.ini") != []:
-            pass
-        else:
-            log.error("No config file found!")
-            sys.exit()
+    csl_path = Path(config.get("csl", "csl_path"))
 
-        csl_path = Path(config.get("csl", "csl_path"))
+    if csl_path.is_dir() is False:
+        log.info(
+            "CSL path seems not to be a valid directory! Please check your input!")
+        paused_exit()
 
-        if csl_path.is_dir() is False:
-            log.info(
-                "CSL path seems not to be a valid directory! Please check your input!")
-            sys.exit()
-
-        return csl_path
+    return csl_path
 
 
 def parse_args() -> argparse.Namespace:
@@ -404,11 +404,6 @@ def parse_args() -> argparse.Namespace:
     parser._optionals.title = "Optional arguments"
 
     return parser.parse_args()
-
-
-def paused_exit():
-    input("Press any key to continue...")
-    sys.exit()
 
 
 @named_time_benchmark("lights_updater")
