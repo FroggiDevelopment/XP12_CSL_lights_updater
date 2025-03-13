@@ -353,7 +353,7 @@ def set_config(args_path_to_csl: str | None) -> Path:
 
 
 def parse_args() -> argparse.Namespace:
-    """Parses commadnlien arguments
+    """Parses commandline arguments
 
     Returns:
         argparse.Namespace: argparser arguments
