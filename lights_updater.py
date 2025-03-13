@@ -315,51 +315,41 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             log.error("Something went wrong!", err)
 
 
-def set_config(args_path_to_csl: str = "") -> Path:
+def set_config(args_path_to_csl: str | None) -> Path:
     """Set a minimal configurationq.
 
     Args:
         args_path_to_csl (str | None): If available the path is set by commandline param.
 
     Returns:
-        tuple[str, bool]: Returns a path-string
+        Path: Returns path to CSL files
     """
-    commandline_csl_path = Path(args_path_to_csl)
-    # Get config from file
+    if args_path_to_csl is not None:
+        commandline_csl_path = Path(args_path_to_csl)
+        if commandline_csl_path.is_dir() is False:
+            log.info(
+                "CSL path seems not to be a valid directory! Please check your input!")
+            sys.exit()
+        else:
+            return commandline_csl_path
 
-    config = ConfigParser()
-
-    if config.read("configs/config.ini") != []:
-        pass
     else:
-        log.error("No config file found!")
-        sys.exit()
+        # Get config from file
+        config = ConfigParser()
 
-    csl_path = Path(config.get("csl", "csl_path"))
+        if config.read("configs/config.ini") != []:
+            pass
+        else:
+            log.error("No config file found!")
+            sys.exit()
 
-    # if Path(config.get('csl', 'csl_path')).is_dir():
-    #     print(f"csl-path is: {config.get('csl', 'csl_path')}")
-    # else:
-    #     log.error(f"Invalid CSL path: {config.get('csl', 'csl_path')}")
-    #     sys.exit()
-    # sys.exit()
-    # if '"' in config["csl"]["csl_path"]:
-    #     config["csl"]["csl_path"] = config["csl"]["csl_path"].strip('"')
-    # if config["csl"]["csl_path"] == "" and args_path_to_csl is None:
-    #     log.error(
-    #         "No CSL path specified! Please update configs/config.ini or specify it by using -p or --path!"
-    #     )
-    #     sys.exit()
+        csl_path = Path(config.get("csl", "csl_path"))
 
-    if csl_path.is_dir() is False and commandline_csl_path.is_dir() is False:
-        log.info(
-            "CSL path seems not to be a valid directory! Please check your input!")
-        sys.exit()
+        if csl_path.is_dir() is False:
+            log.info(
+                "CSL path seems not to be a valid directory! Please check your input!")
+            sys.exit()
 
-    if args_path_to_csl != "":
-        return Path(args_path_to_csl)
-    else:
-        # return config["csl"]["csl_path"]
         return csl_path
 
 
