@@ -62,7 +62,7 @@ def get_path_to_aircraft_object(line: str) -> str:
 
 
 @time_benchmark
-def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
+def get_aircraft_objects_from_xsb_file(searchpath: Path) -> list[dict[str, str]]:
     """Get the aircraft objects from the xsb file and return the paths as a list.
 
     Args:
@@ -74,9 +74,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
     # TODO: Review this bunch of code :-) Maybe it can be improved.
     xsb_files: list[Path]
 
-    if not Path(searchpath).is_dir():
+    if not searchpath.is_dir():
         log.error(
-            f"Path {searchpath} is not a reachable directory! Please review your specified path!")
+            f"Path {str(searchpath)} is not a reachable directory! Please review your specified path!")
         sys.exit()
 
     try:
