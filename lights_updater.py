@@ -332,7 +332,6 @@ def set_config(args_path_to_csl: str | None) -> Path:
             sys.exit()
         else:
             return commandline_csl_path
-
     else:
         # Get config from file
         config = ConfigParser()
