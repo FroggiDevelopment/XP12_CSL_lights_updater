@@ -117,8 +117,26 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
     return new_item
 
 
+def fix_landing_lites_in_taxi_light_animation(item: str):
+    taxilight_animations = re.findall(
+        r"(?s)(?=ANIM_show\s+1\s+1\s+libxplanemp/controls/taxi_lites_on)(.+?)(?=ANIM_end)", item)
+
+    if len(taxilight_animations) > 0:
+        for taxilight_animation in taxilight_animations:
+            new_taxilight_animation = ""
+            if "airplane_landing" in taxilight_animation:
+                new_taxilight_animation = taxilight_animation.replace(
+                    "airplane_landing", "airplane_taxi")
+                print(
+                    f"Repaired wrong lighttype from landing to taxi: {new_taxilight_animation}")
+            if new_taxilight_animation != "":
+                item = item.replace(
+                    taxilight_animation, new_taxilight_animation)
+    return item
+
+
 def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
-    """Fixes the case where the frontgear landinglights were still visibel after the landing gear is retracted
+    """Fixes the case where the frontgear landinglights were still visible after the landing gear is retracted
 
     Args:
         item (str): Textblock with the lights
@@ -187,7 +205,7 @@ def fix_lights_anomalies(object_content: str) -> str:
             if new_animation == animation:
                 continue
             object_content = object_content.replace(animation, new_animation)
-
+    object_content = fix_landing_lites_in_taxi_light_animation(object_content)
     return object_content
 
 
