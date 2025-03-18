@@ -159,7 +159,10 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     lighttype = line.split()[1]
 
     if any([light in line for light in ["airplane_nav", "airplane_beacon", "airplane_strobe"]]):
-        reduced_intensity_line = reduce_spill_intensity(line)
+        strength = 1.0
+        if flashing_beacons is True:
+            strength = 0.5
+        reduced_intensity_line = reduce_spill_intensity(line, strength)
         reduced_intensity_line = reduced_intensity_line.replace(
             f"{lighttype}", f"{lighttype}_pm")
         line = line.replace(
