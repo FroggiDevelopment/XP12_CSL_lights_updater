@@ -36,6 +36,8 @@ from helpers import check_if_files_are_in_correct_json_format
 from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
+from helpers import reduce_spill_intensity
+from helpers import convert_beacons_to_strobes
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
@@ -103,6 +105,8 @@ POSITION_IDENTIFIERS: dict[str, str] = {
     "_tail": ""
 }
 
+flashing_beacons: bool = False
+
 
 def remove_positional_name_from_line(line: str) -> str:
     """Removes added or existing positional identifiers from line
@@ -117,31 +121,6 @@ def remove_positional_name_from_line(line: str) -> str:
         line = line.replace(unwanted_position_information,
                             POSITION_IDENTIFIERS[unwanted_position_information])
     return line
-
-
-def reduce_spill_intensity(line: str) -> str:
-    """Reduces the groundspill intensity of a light
-
-    Args:
-        line (str): A string with light specific parameters
-
-    Returns:
-        str: A line with reduced intensity
-    """
-    reduce_factors = {
-        "airplane_nav": 0.75,
-        "airplane_beacon": 0.50,
-        "airplane_strobe": 0.75
-    }
-
-    split_line = line.split()
-    intensity = int(split_line[9].replace("cd", ""))
-
-    reduced_intensity = int(intensity * reduce_factors[split_line[1]])
-    split_line[9] = f"{str(reduced_intensity)}cd"
-    line_to_return = " ".join(split_line)
-
-    return line_to_return
 
 
 def process_lights(line: str, light_params: dict[str, str]) -> str:
@@ -257,6 +236,11 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
         if any(lighttype in line for lighttype in OLD_AIRCRAFT_LIGHTS.keys()):
             line = process_lights(line, light_params)
+
+        # Change beacons to strobes for bigger airplanes if flashing_beacons is true
+        if "airplane_beacon" in line and flashing_beacons is True:
+            line = convert_beacons_to_strobes(line, aircraft_icao_type)
+
         if len(line) > 0:
             new_file_content += f"{line}\n"
 
@@ -381,6 +365,14 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "-f",
+        "--flashing-beacon",
+        required=False,
+        action="store_true",
+        help="Sets the beacons to be flashing beacons on bigger airplanes!",
+    )
+
+    parser.add_argument(
         "-u",
         "--undo",
         required=False,
@@ -423,6 +415,7 @@ def main(args: argparse.Namespace, CSL_PATH: Path) -> None:
         searchpath=CSL_PATH)
 
     # Special actions first!
+
     if args.undo:  # Undo changes, recover object from backup.
         recover_from_backup(aircraft_objects)
         return
@@ -454,6 +447,10 @@ def main(args: argparse.Namespace, CSL_PATH: Path) -> None:
 
 if __name__ == "__main__":
     args = parse_args()
+    # To set this var as global, I do it here. Rest is set in the main() function
+    if args.flashing_beacon:
+        flashing_beacons = True
+        log.debug(f"Using flashing beacons: {flashing_beacons}")
     csl_path = set_config(args.csl_path)
     main(args, csl_path)
     paused_exit()

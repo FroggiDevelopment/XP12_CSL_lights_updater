@@ -18,6 +18,7 @@ import re
 import logging
 import logging.config
 from .init_logging import init_logging
+from .aircraft_light_params import get_aircraft_categories
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
@@ -39,6 +40,25 @@ LIGHTS_TO_IGNORE = [
 # Setup logging
 init_logging()
 log = logging.getLogger(__name__)
+
+
+def convert_beacons_to_strobes(line: str, aircraft_icao_type: str):
+    """Convert beacons to strobes
+
+    Args:
+        line (str): Line with beacons
+
+    Returns:
+        str: Line with strobes
+    """
+    aircraft_categories = get_aircraft_categories()
+
+    for category in aircraft_categories.items():
+        if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
+            # log.debug(f"Replacing beacon with strobe in line {output_line}")
+            line = line.replace("airplane_beacon", "airplane_strobe")
+
+    return line
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -127,8 +147,8 @@ def fix_landing_lites_in_taxi_light_animation(item: str):
             if "airplane_landing" in taxilight_animation:
                 new_taxilight_animation = taxilight_animation.replace(
                     "airplane_landing", "airplane_taxi")
-                print(
-                    f"Repaired wrong lighttype from landing to taxi: {new_taxilight_animation}")
+                log.debug(
+                    "Repaired wrong lighttype from landing to taxi!")
             if new_taxilight_animation != "":
                 item = item.replace(
                     taxilight_animation, new_taxilight_animation)
@@ -235,3 +255,28 @@ def add_lateral_position_to_lights(line: str) -> str:
         lighttype = f"{actual_lighttype}_right"
 
     return line.replace(actual_lighttype, lighttype)
+
+
+def reduce_spill_intensity(line: str) -> str:
+    """Reduces the groundspill intensity of a light
+
+    Args:
+        line (str): A string with light specific parameters
+
+    Returns:
+        str: A line with reduced intensity
+    """
+    reduce_factors = {
+        "airplane_nav": 0.75,
+        "airplane_beacon": 0.25,
+        "airplane_strobe": 0.50
+    }
+
+    split_line = line.split()
+    intensity = int(split_line[9].replace("cd", ""))
+
+    reduced_intensity = int(intensity * reduce_factors[split_line[1]])
+    split_line[9] = f"{str(reduced_intensity)}cd"
+    line_to_return = " ".join(split_line)
+
+    return line_to_return
