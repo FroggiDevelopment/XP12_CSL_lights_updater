@@ -257,7 +257,7 @@ def add_lateral_position_to_lights(line: str) -> str:
     return line.replace(actual_lighttype, lighttype)
 
 
-def reduce_spill_intensity(line: str) -> str:
+def reduce_spill_intensity(line: str, strength: float) -> str:
     """Reduces the groundspill intensity of a light
 
     Args:
@@ -275,7 +275,8 @@ def reduce_spill_intensity(line: str) -> str:
     split_line = line.split()
     intensity = int(split_line[9].replace("cd", ""))
 
-    reduced_intensity = int(intensity * reduce_factors[split_line[1]])
+    reduced_intensity = int(
+        intensity * (reduce_factors[split_line[1]] / strength))
     split_line[9] = f"{str(reduced_intensity)}cd"
     line_to_return = " ".join(split_line)
 
