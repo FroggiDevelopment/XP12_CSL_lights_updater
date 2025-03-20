@@ -83,7 +83,6 @@ def recover_from_backup(aircraft_objects: list[dict[str, str]]) -> None:
             log.warning(
                 f"{backup_file.name} not found! Should it be there? Skipping this one!"
             )
-            aircraft_objects.remove(aircraft_object)
             continue
         try:
             recover_file.write_bytes(backup_file.read_bytes())
