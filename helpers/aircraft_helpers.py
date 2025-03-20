@@ -33,7 +33,7 @@ init_logging()
 log = logging.getLogger(__name__)
 
 IGNORE_OBJECTS: list[str] = ["glass", "prop",
-                             "Contrail", "fan", "rotor", "car", "BLUR"]
+                             "Contrail", "fan", "rotor", "car", "BLUR", "EngineProp"]
 ICAO_IDENTIFIERS: list[str] = [
     "MATCHES",
     "ICAO",
