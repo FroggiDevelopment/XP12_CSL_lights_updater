@@ -75,9 +75,9 @@ def recover_from_backup(aircraft_objects: list[dict[str, str]]) -> None:
     """
 
     for aircraft_object in aircraft_objects:
-        backup_file = Path(
-            aircraft_object["full_object_path"]).with_suffix(".BCK")
-        recover_file = backup_file.with_suffix(".obj")
+        original_file = Path(aircraft_object["full_object_path"])
+        backup_file = original_file.with_suffix(".BCK")
+
         # log.debug(f"Recovery of {backup_file} is started")
         if backup_file.is_file() is False:
             log.warning(
@@ -85,14 +85,14 @@ def recover_from_backup(aircraft_objects: list[dict[str, str]]) -> None:
             )
             continue
         try:
-            recover_file.write_bytes(backup_file.read_bytes())
+            original_file.write_bytes(backup_file.read_bytes())
         except PermissionError as err:
             log.error(f"Recovery of {backup_file} failed!", err)
             continue
 
         backup_file.unlink()
-        log.info(f"Recovery of {recover_file} is done!")
-        log.debug(f"Recovery of {recover_file} succesful!")
+        log.info(f"Recovery of {original_file} is done!")
+        log.debug(f"Recovery of {original_file} succesful!")
     log.info(f"Recovery ready! Recoverd {len(aircraft_objects)} files!")
 
 
