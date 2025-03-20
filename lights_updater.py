@@ -50,19 +50,6 @@ log = logging.getLogger("lights_updater")
 # Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
 
-LIGHT_NEEDLES: list[str] = [
-    "airplane_landing",
-    "airplane_taxi",
-    "airplane_nav",
-    "airplane_nav_left",
-    "airplane_nav_right",
-    "airplane_nav_tail",
-    "airplane_strobe",
-    "airplane_beacon",
-    "airplane_beacon_rotate",
-    "airplane_beacon_strobe",
-]
-
 OLD_AIRCRAFT_LIGHTS: dict[str, str] = {
     "airplane_landing": "airplane_landing",
     "airplane_landing_core": "airplane_landing",
@@ -409,7 +396,6 @@ def main(args: argparse.Namespace, CSL_PATH: Path) -> None:
         args (argparse.Namespace): commandline arguments See -h for help
         CSL_PATH (str): The startpath for searching the xsb_aircraft.txt files
     """
-    print("in main")
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     check_if_files_are_in_correct_json_format()
 
