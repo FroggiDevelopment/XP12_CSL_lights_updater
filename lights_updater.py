@@ -29,7 +29,7 @@ from helpers import remove_xpmp2_files
 from helpers import copy_new_to_old
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
-from helpers import fix_lights_anomalies
+from helpers import special_lights_treatment
 from helpers import filter_unwanted_light_params
 from helpers import add_lateral_position_to_lights
 from helpers import check_if_files_are_in_correct_json_format
@@ -37,7 +37,6 @@ from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
 from helpers import reduce_spill_intensity
-from helpers import convert_beacons_to_strobes
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
@@ -92,7 +91,7 @@ POSITION_IDENTIFIERS: dict[str, str] = {
     "_tail": ""
 }
 
-flashing_beacons: bool = False
+convert_to_flashing_beacons: bool = False
 
 
 def remove_positional_name_from_line(line: str) -> str:
@@ -146,10 +145,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     lighttype = line.split()[1]
 
     if any([light in line for light in ["airplane_nav", "airplane_beacon", "airplane_strobe"]]):
-        strength = 1.0
-        if flashing_beacons is True:
-            strength = 0.5
-        reduced_intensity_line = reduce_spill_intensity(line, strength)
+        reduced_intensity_line = reduce_spill_intensity(line)
         reduced_intensity_line = reduced_intensity_line.replace(
             f"{lighttype}", f"{lighttype}_pm")
         line = line.replace(
@@ -227,15 +223,16 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         if any(lighttype in line for lighttype in OLD_AIRCRAFT_LIGHTS.keys()):
             line = process_lights(line, light_params)
 
-        # Change beacons to strobes for bigger airplanes if flashing_beacons is true
-        if "airplane_beacon" in line and flashing_beacons is True:
-            line = convert_beacons_to_strobes(line, aircraft_icao_type)
+        # Change beacons to strobes for bigger airplanes if convert_to_flashing_beacons is true
+        # if "airplane_beacon" in line and convert_to_flashing_beacons is True:
+        #     line = convert_beacons_to_strobes(line, aircraft_icao_type)
 
         if len(line) > 0:
             new_file_content += f"{line}\n"
 
-    # Fix possible error in the taxilight dataref
-    new_file_content = fix_lights_anomalies(new_file_content)
+    # Take care of some special light cases
+    new_file_content = special_lights_treatment(
+        new_file_content, convert_to_flashing_beacons, aircraft_icao_type)
 
     return new_file_content
 
@@ -438,8 +435,8 @@ if __name__ == "__main__":
     args = parse_args()
     # To set this var as global, I do it here. Rest is set in the main() function
     if args.flashing_beacon:
-        flashing_beacons = True
-        log.debug(f"Using flashing beacons: {flashing_beacons}")
+        convert_to_flashing_beacons = True
+        log.debug(f"Using flashing beacons: {convert_to_flashing_beacons}")
     csl_path = set_config(args.csl_path)
     main(args, csl_path)
     paused_exit()
