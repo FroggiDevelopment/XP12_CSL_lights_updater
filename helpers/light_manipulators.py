@@ -42,23 +42,67 @@ init_logging()
 log = logging.getLogger(__name__)
 
 
-def convert_beacons_to_strobes(line: str, aircraft_icao_type: str):
-    """Convert beacons to strobes
+def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str) -> str:
+    """ Converts existing beacon lights to flashing lights simulating a flashing beacon
 
     Args:
-        line (str): Line with beacons
+        animation (str): The original animations sequence from the aircraft object file
+        aircraft_icao_type (str): ICAO identifier for this specific airrcaft to determine if conversion is neccessary.
 
     Returns:
-        str: Line with strobes
+        str: Converted animation with flashing 'beacon' lights and a slightly increased intensity
+    """
+
+    def increase_beacon_light_intensity(animation: str) -> str:
+        """ Increase the candelar for the beacon
+
+        Args:
+            animation (str): The animations sequence with the beacons
+
+        Returns:
+                str: The updated animations sequence with increased candelar intensity for beacon lights
+            """
+        increase_beacon_intensity_factor: float = 5
+        light_intensity_list: list[str] = re.findall(
+            r"\d+cd", animation.lower())
+        unique_light_intensity_list: list[str] = []
+        [unique_light_intensity_list.append(
+            val) for val in light_intensity_list if val not in unique_light_intensity_list]
+        # print(unique_light_intensity_list)
+
+        # Increase light intensity for flashing
+        for light_intensity in unique_light_intensity_list:
+            pure_candelar = float(light_intensity.replace("cd", ""))
+            # print(pure_candelar)
+            increase_candelar = pure_candelar * increase_beacon_intensity_factor
+            new_candelar_string = f"{increase_candelar}cd"
+            animation = animation.replace(
+                light_intensity, new_candelar_string)
+            # print(animation)
+        # exit()
+        return animation
+
+    new_anim_hide = """
+    ANIM_hide	-1.0 1.0	libxplanemp/controls/beacon_lites_on
+    ANIM_show    0 0.1    sim/time/total_running_time_sec
+    ANIM_keyframe_loop 1.5
     """
     aircraft_categories = get_aircraft_categories()
 
     for category in aircraft_categories.items():
         if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
-            # log.debug(f"Replacing beacon with strobe in line {output_line}")
-            line = line.replace("airplane_beacon", "airplane_strobe")
+            original_beacon_anim_hide = re.findall(
+                "ANIM_hide.+libxplanemp/controls/beacon_lites_on", animation)
 
-    return line
+            animation = animation.replace(
+                original_beacon_anim_hide[0], new_anim_hide)
+
+            animation = animation.replace(
+                "airplane_beacon", "airplane_generic")
+            log.debug(
+                f"Converted beacon lights for {aircraft_icao_type} to flashing beacons.")
+            animation = increase_beacon_light_intensity(animation)
+    return animation
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -193,12 +237,17 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
     return new_item
 
 
-def fix_lights_anomalies(object_content: str) -> str:
-    """Fixes two things.
-       Missing taxilight on some airplanes.
+def special_lights_treatment(object_content: str, convert_to_flashing_beacons: bool, aircraft_icao_type: str) -> str:
+    """
+    Treat some special light effects.
+
+    1. Add missing taxilights on some airplanes.
        The original dataref for the taxilights is set to landing_lites_on instead of taxi_lites_on.
-       Landing lights on front gear were visible even if that gear is retracted.
+
+    2. Landing lights on front gear were visible even if that gear is retracted.
        ANIM_hide animation is added to the front gear landing lights.
+
+    3. Based on switch -f / --flashing_beacons change beacons to be flashing
 
     Args:
         object_content (str): Original aricraft object content.
@@ -225,6 +274,12 @@ def fix_lights_anomalies(object_content: str) -> str:
             if new_animation == animation:
                 continue
             object_content = object_content.replace(animation, new_animation)
+        if "airplane_beacon" in animation and convert_to_flashing_beacons is True:
+            new_animation = convert_beacons_to_flashing_beacons(
+                animation, aircraft_icao_type)
+            object_content = object_content.replace(animation, new_animation)
+            continue
+    # Additional fixes for taxilights after the animations have been processed
     object_content = fix_landing_lites_in_taxi_light_animation(object_content)
     return object_content
 
@@ -257,11 +312,12 @@ def add_lateral_position_to_lights(line: str) -> str:
     return line.replace(actual_lighttype, lighttype)
 
 
-def reduce_spill_intensity(line: str, strength: float) -> str:
+def reduce_spill_intensity(line: str) -> str:
     """Reduces the groundspill intensity of a light
 
     Args:
         line (str): A string with light specific parameters
+        strength (float): A factor to reduce the intensity by.
 
     Returns:
         str: A line with reduced intensity
@@ -276,7 +332,7 @@ def reduce_spill_intensity(line: str, strength: float) -> str:
     intensity = int(split_line[9].replace("cd", ""))
 
     reduced_intensity = int(
-        intensity * (reduce_factors[split_line[1]] / strength))
+        intensity * (reduce_factors[split_line[1]]))
     split_line[9] = f"{str(reduced_intensity)}cd"
     line_to_return = " ".join(split_line)
 
