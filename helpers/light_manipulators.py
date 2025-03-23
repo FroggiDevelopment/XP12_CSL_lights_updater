@@ -62,7 +62,7 @@ def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str)
         Returns:
                 str: The updated animations sequence with increased candelar intensity for beacon lights
             """
-        increase_beacon_intensity_factor: float = 5
+        increase_beacon_intensity_factor: float = 2
         light_intensity_list: list[str] = re.findall(
             r"\d+cd", animation.lower())
         unique_light_intensity_list: list[str] = []
