@@ -312,7 +312,7 @@ def add_lateral_position_to_lights(line: str) -> str:
     return line.replace(actual_lighttype, lighttype)
 
 
-def reduce_spill_intensity(line: str) -> str:
+def reduce_spill_intensity(line: str, reduce_light_type: str) -> str:
     """Reduces the groundspill intensity of a light
 
     Args:
@@ -324,7 +324,7 @@ def reduce_spill_intensity(line: str) -> str:
     """
     reduce_factors = {
         "airplane_nav": 0.75,
-        "airplane_beacon": 0.25,
+        "airplane_beacon": 0.75,
         "airplane_strobe": 0.50
     }
 
@@ -332,7 +332,7 @@ def reduce_spill_intensity(line: str) -> str:
     intensity = int(split_line[9].replace("cd", ""))
 
     reduced_intensity = int(
-        intensity * (reduce_factors[split_line[1]]))
+        intensity * (reduce_factors[reduce_light_type]))
     split_line[9] = f"{str(reduced_intensity)}cd"
     line_to_return = " ".join(split_line)
 
