@@ -131,6 +131,7 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     if "_pm" in line:
         line = line.replace("_pm", "")
 
+    # Add position info to get correct light parameters from lights configuration file
     if "airplane_nav" in line or "airplane_strobe" in line:
         line = add_lateral_position_to_lights(line)
 
@@ -139,13 +140,15 @@ def process_lights(line: str, light_params: dict[str, str]) -> str:
     line = line.replace("\n", "")
     line += f" {light_params[lighttype]}\n"
 
+    # Remove psotion identifiers from line as they are "illegal" in light parameters
     if any(position in line for position in POSITION_IDENTIFIERS.keys()):
         line = remove_positional_name_from_line(line)
 
     lighttype = line.split()[1]
 
-    if any([light in line for light in ["airplane_nav", "airplane_beacon", "airplane_strobe"]]):
-        reduced_intensity_line = reduce_spill_intensity(line)
+    if lighttype in ["airplane_nav", "airplane_beacon", "airplane_strobe"]:
+        reduced_intensity_line = reduce_spill_intensity(
+            line, lighttype)
         reduced_intensity_line = reduced_intensity_line.replace(
             f"{lighttype}", f"{lighttype}_pm")
         line = line.replace(
