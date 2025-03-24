@@ -55,9 +55,9 @@
         "airplane_strobe_left": "1 1 1 0 5000cd -0.83651626 -0.25881907 -0.48296297 0.08217486",
         "airplane_strobe_right": "1 1 1 0 5000cd 0.83651608 -0.25881904 -0.48296326 0.08217486",
         "airplane_strobe_tail": "1 1 1 0 5000cd -0.00000004 -0 1 0.08217486",
-        "airplane_beacon": "1 0 0 0 5000cd 0 0 0 1",
-        "airplane_beacon_strobe": "1 0 0 0 5000cd 0 0 0 1",
-        "airplane_beacon_rotate": "1 0 0 0 5000cd 0 0 0 1"
+        "airplane_beacon": "1 0 0 0 2000cd 0 0 0 1",
+        "airplane_beacon_strobe": "1 0 0 0 2000cd 0 0 0 1",
+        "airplane_beacon_rotate": "1 0 0 0 2000cd 0 0 0 1"
     },
     "default": {
         "airplane_landing": " 0.76052475 0.65837479 0.57758057 3 80000cd 0.034766696 0.052357007 -0.99802303 0.96629601",
@@ -70,8 +70,8 @@
         "airplane_strobe_left": "1 1 1 0 5000cd -0.83651626 -0.25881907 -0.48296297 0.04217486",
         "airplane_strobe_right": "1 1 1 0 5000cd 0.83651608 -0.25881904 -0.48296326 0.04217486",
         "airplane_strobe_tail": "1 1 1 0 5000cd -0.00000004 -0 1 0.4217486",
-        "airplane_beacon": "1 0 0 0 5000cd 0 0 0 1",
-        "airplane_beacon_strobe": "1 0 0 0 5000cd 0 0 0 1",
-        "airplane_beacon_rotate": "1 0 0 0 5000cd 0 0 0 1"
+        "airplane_beacon": "1 0 0 0 2000cd 0 0 0 1",
+        "airplane_beacon_strobe": "1 0 0 0 2000cd 0 0 0 1",
+        "airplane_beacon_rotate": "1 0 0 0 2000cd 0 0 0 1"
     }
 }
