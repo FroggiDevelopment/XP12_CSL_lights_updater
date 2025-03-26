@@ -17,6 +17,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 import re
 import logging
 import logging.config
+import random
 from .init_logging import init_logging
 from .aircraft_light_params import get_aircraft_categories
 
@@ -81,10 +82,20 @@ def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str)
             # print(animation)
         # exit()
         return animation
-
-    new_anim_hide = """
+    flash_sequences = [
+        "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
+        "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
+        "ANIM_show    0.2 0.3    sim/time/total_running_time_sec",
+        "ANIM_show    0.2 0.3    sim/time/total_running_time_sec",
+        "ANIM_show    0.4 0.5    sim/time/total_running_time_sec",
+        "ANIM_show    0.4 0.5    sim/time/total_running_time_sec",
+        "ANIM_show    0.5 0.6    sim/time/total_running_time_sec",
+        "ANIM_show    0.5 0.6    sim/time/total_running_time_sec"
+    ]
+    flash_sequence = random.choice(flash_sequences)
+    new_anim_hide = f"""
     ANIM_hide	-1.0 1.0	libxplanemp/controls/beacon_lites_on
-    ANIM_show    0 0.1    sim/time/total_running_time_sec
+    {flash_sequence}
     ANIM_keyframe_loop 1.5
     """
     aircraft_categories = get_aircraft_categories()
@@ -323,8 +334,8 @@ def reduce_spill_intensity(line: str, reduce_light_type: str) -> str:
         str: A line with reduced intensity
     """
     reduce_factors = {
-        "airplane_nav": 0.75,
-        "airplane_beacon": 0.75,
+        "airplane_nav": 0.50,
+        "airplane_beacon": 0.10,
         "airplane_strobe": 0.50
     }
 
