@@ -60,11 +60,11 @@ def increase_flashing_beacon_light_intensity(animation: str) -> str:
 
     # Increase light intensity for flashing
     for light_intensity in unique_light_intensity_list:
-        pure_candelar = float(light_intensity.replace("cd", ""))
-        increase_candelar = pure_candelar * increase_beacon_intensity_factor
-        new_candelar_string = f"{increase_candelar}cd"
+        original_candelar = float(light_intensity.replace("cd", ""))
+        increased_candelar = original_candelar * increase_beacon_intensity_factor
+        new_light_intensity = f"{increased_candelar}cd"
         animation = animation.replace(
-            light_intensity, new_candelar_string)
+            light_intensity, new_light_intensity)
     return animation
 
 
@@ -76,7 +76,7 @@ def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str)
         aircraft_icao_type (str): ICAO identifier for this specific airrcaft to determine if conversion is neccessary.
 
     Returns:
-        str: Converted animation with flashing 'beacon' lights and a slightly increased intensity
+        str: Converted animation with flashing 'beacon' lights and an increased intensity
     """
 
     flash_sequences = [
@@ -90,6 +90,7 @@ def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str)
     {flash_sequence}
     ANIM_keyframe_loop 1.5
     """
+    # TODO: Is it better to use list of icao-identifiers??? How to determine who's in?
     aircraft_categories = get_aircraft_categories()
 
     for category in aircraft_categories.items():
