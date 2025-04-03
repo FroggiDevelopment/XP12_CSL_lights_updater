@@ -16,7 +16,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 """
 import re
 import logging
-import logging.config
 import random
 from .init_logging import init_logging
 from .aircraft_light_params import get_aircraft_categories
@@ -43,6 +42,32 @@ init_logging()
 log = logging.getLogger(__name__)
 
 
+def increase_flashing_beacon_light_intensity(animation: str) -> str:
+    """ Increase the candelar for the beacon if they are flashing
+
+    Args:
+        animation (str): The animations sequence with the beacons
+
+    Returns:
+            str: The updated animations sequence with increased candelar intensity for beacon lights
+        """
+    increase_beacon_intensity_factor: float = 2.0
+    light_intensity_list: list[str] = re.findall(
+        r"\d+cd", animation.lower())
+    unique_light_intensity_list: list[str] = []
+    [unique_light_intensity_list.append(
+        val) for val in light_intensity_list if val not in unique_light_intensity_list]
+
+    # Increase light intensity for flashing
+    for light_intensity in unique_light_intensity_list:
+        pure_candelar = float(light_intensity.replace("cd", ""))
+        increase_candelar = pure_candelar * increase_beacon_intensity_factor
+        new_candelar_string = f"{increase_candelar}cd"
+        animation = animation.replace(
+            light_intensity, new_candelar_string)
+    return animation
+
+
 def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str) -> str:
     """ Converts existing beacon lights to flashing lights simulating a flashing beacon
 
@@ -54,43 +79,10 @@ def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str)
         str: Converted animation with flashing 'beacon' lights and a slightly increased intensity
     """
 
-    def increase_beacon_light_intensity(animation: str) -> str:
-        """ Increase the candelar for the beacon
-
-        Args:
-            animation (str): The animations sequence with the beacons
-
-        Returns:
-                str: The updated animations sequence with increased candelar intensity for beacon lights
-            """
-        increase_beacon_intensity_factor: float = 2
-        light_intensity_list: list[str] = re.findall(
-            r"\d+cd", animation.lower())
-        unique_light_intensity_list: list[str] = []
-        [unique_light_intensity_list.append(
-            val) for val in light_intensity_list if val not in unique_light_intensity_list]
-        # print(unique_light_intensity_list)
-
-        # Increase light intensity for flashing
-        for light_intensity in unique_light_intensity_list:
-            pure_candelar = float(light_intensity.replace("cd", ""))
-            # print(pure_candelar)
-            increase_candelar = pure_candelar * increase_beacon_intensity_factor
-            new_candelar_string = f"{increase_candelar}cd"
-            animation = animation.replace(
-                light_intensity, new_candelar_string)
-            # print(animation)
-        # exit()
-        return animation
     flash_sequences = [
         "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
-        "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
-        "ANIM_show    0.2 0.3    sim/time/total_running_time_sec",
-        "ANIM_show    0.2 0.3    sim/time/total_running_time_sec",
-        "ANIM_show    0.4 0.5    sim/time/total_running_time_sec",
-        "ANIM_show    0.4 0.5    sim/time/total_running_time_sec",
-        "ANIM_show    0.5 0.6    sim/time/total_running_time_sec",
-        "ANIM_show    0.5 0.6    sim/time/total_running_time_sec"
+        "ANIM_show    0.3 0.4    sim/time/total_running_time_sec",
+        "ANIM_show    0.6 0.7    sim/time/total_running_time_sec"
     ]
     flash_sequence = random.choice(flash_sequences)
     new_anim_hide = f"""
@@ -112,7 +104,7 @@ def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str)
                 "airplane_beacon", "airplane_generic")
             log.debug(
                 f"Converted beacon lights for {aircraft_icao_type} to flashing beacons.")
-            animation = increase_beacon_light_intensity(animation)
+            animation = increase_flashing_beacon_light_intensity(animation)
     return animation
 
 
