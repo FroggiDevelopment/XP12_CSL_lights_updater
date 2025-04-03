@@ -19,7 +19,8 @@ import platform
 DESCRIPTION = """
 This program can convert XP11 lightparams of CSL aircraft objects to the new XP12 specifications.
 Developed for getting landing lights for LifeTraffic.
-Works with Bluebell and X-CSL packages, works only with some custom CSL aircraft.
+Works with Bluebell and X-CSL packages.
+Works with some custom CSL aircraft, but with limitations. The quality of light params in those model vary a lot.
 
 For normal start you don't need any arguments.
 But then you \x1b[1;4;31mMUST\x1b[0m specify the csl_path in the config.ini file!
@@ -37,7 +38,8 @@ Now you know!\n
 DESCRIPTION_WINDOWS = """
 This program can convert XP11 lightparams of CSL aircraft objects to the new XP12 specifications.
 Developed for getting landing lights for LifeTraffic.
-Works with Bluebell and X-CSL packages, works only with some custom CSL aircraft.
+Works with Bluebell and X-CSL packages.
+Works with some custom CSL aircraft, but with limitations. The quality of light params in those model vary a lot.
 
 For normal start you don't need any arguments.
 But then you !!MUST!! specify the csl_path in the config.ini file!

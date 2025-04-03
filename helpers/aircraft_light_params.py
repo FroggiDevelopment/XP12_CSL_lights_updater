@@ -15,10 +15,12 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-import sys
 import json
 import logging
 import logging.config
+
+from .helpers import paused_exit
+
 from .init_logging import init_logging
 
 # Setup logging
@@ -37,24 +39,24 @@ def check_if_files_are_in_correct_json_format() -> None:
             json.load(aircrafts_definitions)
     except FileNotFoundError:
         log.error("Missing aircrafts.json file. Stopping now!")
-        sys.exit(1)
+        paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
             "aircrafts.json may be corrupted. Please check the file for consistency!"
         )
-        sys.exit(1)
+        paused_exit()
 
     try:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
             json.load(lights_definitions)
     except FileNotFoundError:
         log.error("Missing light_params.json file. Stopping now!")
-        sys.exit(1)
+        paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
             "light_params.json might be corrupted. Please check the file for consistency!"
         )
-        sys.exit(1)
+        paused_exit()
 
 
 def get_aircraft_categories() -> dict[str, str]:
@@ -63,18 +65,19 @@ def get_aircraft_categories() -> dict[str, str]:
     Returns:
         dict[str, str]: A dictionary with aircraft type and icao codes
     """
+    aircraft_categories: dict[str, str] = {}
     try:
         with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
-            aircraft_categories: dict[str, str] = json.load(
+            aircraft_categories = json.load(
                 aircrafts_definitions)
     except FileNotFoundError:
         log.error("Missing aircrafts.json file. Stopping now!")
-        sys.exit(1)
+        paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
             "aircrafts.json may be corrupted. Please check the file for consistency!"
         )
-        sys.exit(1)
+        paused_exit()
     return aircraft_categories
 
 
@@ -84,18 +87,19 @@ def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
     Returns:
         dict[str, dict[str,str]]: A dictionary with the light parameters listed per category
     """
+    light_params_per_category: dict[str, dict[str, str]] = {}
     try:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
-            light_params_per_category: dict[str, dict[str, str]] = json.load(
+            light_params_per_category = json.load(
                 lights_definitions)
     except FileNotFoundError:
         log.error("Missing light_params.json file. Stopping now!")
-        sys.exit(1)
+        paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
             "light_params.json might be corrupted. Please check the file for consistency!"
         )
-        sys.exit(1)
+        paused_exit()
     return light_params_per_category
 
 
@@ -114,7 +118,7 @@ def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str
 
     for key, value in aircrafts.items():
         if aircraft_icao_type in value:
-            log.debug(f"{aircraft_icao_type} found in aircraft type {key}")
+            # log.debug(f"{aircraft_icao_type} found in aircraft type {key}")
             return light_params[key]
     else:
         log.warning(f"{aircraft_icao_type} not found.. Using defaults!")

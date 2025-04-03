@@ -25,7 +25,7 @@ class NoFilesFoundError(Exception):
 
 
 class NoAnimationFoundError(Exception):
-    """Exception raised when no files are found"""
+    """Exception raised when no animations are found"""
 
     def __init__(self, message: str = "This file contains no animation section!") -> None:
         self.message = message

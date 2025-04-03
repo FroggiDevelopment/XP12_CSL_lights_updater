@@ -31,15 +31,20 @@ init_logging()
 log = logging.getLogger(__name__)
 
 
+def paused_exit() -> None:
+    """ Before exiting ask the user to press key. Will help seeing possible messages before the window closes.
+    """
+    input("Press any key to continue...")
+    sys.exit()
+
+
 def make_backup(
-    aircraft_objects: list[dict[str, str]],
-    stop_on_error: bool = True,
+    aircraft_objects: list[dict[str, str]]
 ) -> None:
     """ Creates backups of the existing object files
 
     Args:
         files (list[Path]): List of paths to the objetcfiles
-        stop_on_error (bool, optional): To stop on errors or continue. Defaults to True.
     """
     for aircraft_object in aircraft_objects:
         file = Path(aircraft_object["full_object_path"])
@@ -51,15 +56,9 @@ def make_backup(
         try:
             backup_file.write_bytes(file.read_bytes())
         except PermissionError as err:
-            if stop_on_error is True:
-                log.error("Stopping on error!", err)
-                sys.exit()
             log.error(f"Backup of {file} failed!", err)
             continue
         except FileNotFoundError as notfound:
-            if stop_on_error is True:
-                log.error(f"Stopping because file {file} not found!", notfound)
-                sys.exit()
             log.error(f"Backup of {file} failed!", notfound)
             continue
         log.info(f"Backup for {file} successfully created.")
@@ -68,37 +67,32 @@ def make_backup(
 
 
 @time_benchmark
-def recover_from_backup(aircraft_objects: list[dict[str, str]], stop_on_error: bool = False) -> None:
+def recover_from_backup(aircraft_objects: list[dict[str, str]]) -> None:
     """Recover the original files from the backup files
 
     Args:
         files (list): the 'original' fileslist
-        stop_on_error (bool, optional): Stop on any errors or continue. Defaults to False.
     """
 
     for aircraft_object in aircraft_objects:
-        backup_file = Path(
-            aircraft_object["full_object_path"]).with_suffix(".BCK")
-        recover_file = backup_file.with_suffix(".obj")
-        log.debug(f"Recovery of {backup_file} is started")
+        original_file = Path(aircraft_object["full_object_path"])
+        backup_file = original_file.with_suffix(".BCK")
+
+        # log.debug(f"Recovery of {backup_file} is started")
         if backup_file.is_file() is False:
             log.warning(
                 f"{backup_file.name} not found! Should it be there? Skipping this one!"
             )
-            aircraft_objects.remove(aircraft_object)
             continue
         try:
-            recover_file.write_bytes(backup_file.read_bytes())
+            original_file.write_bytes(backup_file.read_bytes())
         except PermissionError as err:
-            if stop_on_error is True:
-                log.error("Stopping on error!", err)
-                sys.exit()
             log.error(f"Recovery of {backup_file} failed!", err)
             continue
 
         backup_file.unlink()
-        log.info(f"Recovery of {recover_file} is done!")
-        log.debug(f"Recovery of {recover_file} succesful!")
+        log.info(f"Recovery of {original_file} is done!")
+        log.debug(f"Recovery of {original_file} succesful!")
     log.info(f"Recovery ready! Recoverd {len(aircraft_objects)} files!")
 
 
@@ -122,7 +116,7 @@ def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
 
 
 @time_benchmark
-def remove_xpmp2_files(filepath: str) -> None:
+def remove_xpmp2_files(filepath: Path) -> None:
     """Remove the copied object files by LifeTraffic as tehy can and will cache them.
        This is to avoid that changes are not visible with LiveTraffic.
 
@@ -132,7 +126,7 @@ def remove_xpmp2_files(filepath: str) -> None:
     Returns:
         NoReturn: As it says :-)
     """
-    xpmp2_files = list(Path(filepath).rglob("*xpmp2.obj"))
+    xpmp2_files = list(filepath.rglob("*xpmp2.obj"))
     if len(xpmp2_files) > 0:
         log.debug(xpmp2_files)
     else:
@@ -160,7 +154,7 @@ def delete_files(files: list[Path], suffix: str = ""):
             continue
 
 
-def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
+def get_list_of_files(searchpath: Path, filename: str) -> list[Path]:
     """Get the list of files with the given filename
     Args:
         searchpath (str): Directory from where to search
@@ -173,7 +167,7 @@ def get_list_of_files(searchpath: str, filename: str) -> list[Path]:
         list[Path]: ist of files with the searchresults for the specified filename
     """
 
-    files = list(Path(searchpath).rglob(filename))
+    files = list(searchpath.rglob(filename))
     if files == []:
         raise NoFilesFoundError(
             message=f"No {filename} found in {searchpath}!")
@@ -213,7 +207,7 @@ def copy_new_to_old(aircraft_objects: list[dict[str, str]], TEMP_FILE_SUFFIX: st
             destination_file.write_bytes(temp_object_file.read_bytes())
         except PermissionError as err:
             log.error("Stopping on error!", err)
-            sys.exit()
+            paused_exit()
             continue
         except FileNotFoundError as err:
             log.error(f"File could not be copied! See: {err}")

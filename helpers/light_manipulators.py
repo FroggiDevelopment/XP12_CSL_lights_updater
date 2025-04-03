@@ -16,32 +16,12 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 """
 import re
 import logging
-import logging.config
+import random
 from .init_logging import init_logging
+from .aircraft_light_params import get_aircraft_categories
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
-# LIGHTS_TO_IGNORE = [
-#     "headlight",
-#     "_size",
-#     "_sp",
-#     "taillight",
-#     "_core",
-#     "_size",
-#     "_omni",
-#     "_dir",
-#     "airplane_strobe_omni",
-#     "airplane_beacon_rotate_",
-#     "full_custom_halo_night",
-#     "_glow",
-#     "_flare",
-#     "logo",
-#     "PLN_",
-#     "_core",
-#     "_flare",
-#     "_glow",
-#     "LIGHT_SPILL_CUSTOM",
-# ]
 
 LIGHTS_TO_IGNORE = [
     "headlight",
@@ -62,6 +42,73 @@ init_logging()
 log = logging.getLogger(__name__)
 
 
+def increase_flashing_beacon_light_intensity(animation: str) -> str:
+    """ Increase the candelar for the beacon if they are flashing
+
+    Args:
+        animation (str): The animations sequence with the beacons
+
+    Returns:
+            str: The updated animations sequence with increased candelar intensity for beacon lights
+        """
+    increase_beacon_intensity_factor: float = 2.0
+    light_intensity_list: list[str] = re.findall(
+        r"\d+cd", animation.lower())
+    unique_light_intensity_list: list[str] = []
+    [unique_light_intensity_list.append(
+        val) for val in light_intensity_list if val not in unique_light_intensity_list]
+
+    # Increase light intensity for flashing
+    for light_intensity in unique_light_intensity_list:
+        original_candelar = float(light_intensity.replace("cd", ""))
+        increased_candelar = original_candelar * increase_beacon_intensity_factor
+        new_light_intensity = f"{increased_candelar}cd"
+        animation = animation.replace(
+            light_intensity, new_light_intensity)
+    return animation
+
+
+def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str) -> str:
+    """ Converts existing beacon lights to flashing lights simulating a flashing beacon
+
+    Args:
+        animation (str): The original animations sequence from the aircraft object file
+        aircraft_icao_type (str): ICAO identifier for this specific airrcaft to determine if conversion is neccessary.
+
+    Returns:
+        str: Converted animation with flashing 'beacon' lights and an increased intensity
+    """
+
+    flash_sequences = [
+        "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
+        "ANIM_show    0.3 0.4    sim/time/total_running_time_sec",
+        "ANIM_show    0.6 0.7    sim/time/total_running_time_sec"
+    ]
+    flash_sequence = random.choice(flash_sequences)
+    new_anim_hide = f"""
+    ANIM_hide	-1.0 1.0	libxplanemp/controls/beacon_lites_on
+    {flash_sequence}
+    ANIM_keyframe_loop 1.5
+    """
+    # TODO: Is it better to use list of icao-identifiers??? How to determine who's in?
+    aircraft_categories = get_aircraft_categories()
+
+    for category in aircraft_categories.items():
+        if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
+            original_beacon_anim_hide = re.findall(
+                "ANIM_hide.+libxplanemp/controls/beacon_lites_on", animation)
+
+            animation = animation.replace(
+                original_beacon_anim_hide[0], new_anim_hide)
+
+            animation = animation.replace(
+                "airplane_beacon", "airplane_generic")
+            log.debug(
+                f"Converted beacon lights for {aircraft_icao_type} to flashing beacons.")
+            animation = increase_flashing_beacon_light_intensity(animation)
+    return animation
+
+
 def filter_unwanted_light_params(line: str) -> str:
     """Filter out light params that are old or otherwise wrong.
        Can be expanded for future cases.
@@ -73,7 +120,7 @@ def filter_unwanted_light_params(line: str) -> str:
         str: Corrected line with light parameters
     """
     # Make a more readable line for output
-    output_line = re.sub(r'\s+', ' ', line)
+    # output_line = re.sub(r'\s+', ' ', line)
 
     # If light is on the ignore list, ignore it and retrun empty line
     if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
@@ -81,19 +128,14 @@ def filter_unwanted_light_params(line: str) -> str:
 
     # Check if old LIGHT_NAMED param exists and replace it with the new one
     if "LIGHT_NAMED" in line:
-        log.debug(
-            f"Replacing LIGHT_NAMED in line {output_line} to LIGHT_PARAM")
+        # log.debug(
+        #     f"Replacing LIGHT_NAMED in line {output_line} to LIGHT_PARAM")
         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
     # Some lines are commented out... Must be undone
     if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
-        log.debug(f"Removing leading # from line {output_line}")
+        # log.debug(f"Removing leading # from line {output_line}")
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
-
-    # Remove positional name from line
-    # if any(position in line for position in POSITION_IDENTIFIERS):
-    #     for item in POSITION_IDENTIFIERS:
-    #         line = line.replace(item, "")
 
     return line
 
@@ -143,8 +185,26 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
     return new_item
 
 
+def fix_landing_lites_in_taxi_light_animation(item: str):
+    taxilight_animations = re.findall(
+        r"(?s)(?=ANIM_show\s+1\s+1\s+libxplanemp/controls/taxi_lites_on)(.+?)(?=ANIM_end)", item)
+
+    if len(taxilight_animations) > 0:
+        for taxilight_animation in taxilight_animations:
+            new_taxilight_animation = ""
+            if "airplane_landing" in taxilight_animation:
+                new_taxilight_animation = taxilight_animation.replace(
+                    "airplane_landing", "airplane_taxi")
+                log.debug(
+                    "Repaired wrong lighttype from landing to taxi!")
+            if new_taxilight_animation != "":
+                item = item.replace(
+                    taxilight_animation, new_taxilight_animation)
+    return item
+
+
 def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
-    """Fixes the case where the frontgear landinglights were still visibel after the landing gear is retracted
+    """Fixes the case where the frontgear landinglights were still visible after the landing gear is retracted
 
     Args:
         item (str): Textblock with the lights
@@ -154,12 +214,12 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
         str | None: Fixed textblock, None if nothing has changed
     """
     log.debug("Fixing frontgear landinglights hide animation.")
-    get_original_landinglight_anim_hide: list[str] = re.findall(
+    original_landinglight_anim_hide: list[str] = re.findall(
         "ANIM_hide.+landing_lites_on", item
     )
-    if get_original_landinglight_anim_hide == []:
+    if original_landinglight_anim_hide == []:
         return item
-    landing_lights_anim_hide = get_original_landinglight_anim_hide[0]
+    landing_lights_anim_hide = original_landinglight_anim_hide[0]
     light_parameter: list[str] = re.findall(
         "LIGHT_PARAM airplane_landing.+", item)
     if light_parameter == []:
@@ -171,22 +231,27 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
             landing_lights_anim_hide,
             f"{landing_lights_anim_hide}\n{extra_hide_anim}",
         )
-        get_original_landinglights_anim_show: list[str] = re.findall(
+        original_landinglights_anim_show: list[str] = re.findall(
             "ANIM_show.+landing_lites_on", new_item
         )
-        if get_original_landinglights_anim_show != []:
+        if original_landinglights_anim_show != []:
             new_item = new_item.replace(
-                f"{get_original_landinglights_anim_show[0]}\n", ""
+                f"{original_landinglights_anim_show[0]}\n", ""
             )
     return new_item
 
 
-def fix_lights_anomalies(object_content: str) -> str:
-    """Fixes two things.
-       Missing taxilight on some airplanes.
+def special_lights_treatment(object_content: str, convert_to_flashing_beacons: bool, aircraft_icao_type: str) -> str:
+    """
+    Treat some special light effects.
+
+    1. Add missing taxilights on some airplanes.
        The original dataref for the taxilights is set to landing_lites_on instead of taxi_lites_on.
-       Landing lights on front gear were visible even if that gear is retracted.
+
+    2. Landing lights on front gear were visible even if that gear is retracted.
        ANIM_hide animation is added to the front gear landing lights.
+
+    3. Based on switch -f / --flashing_beacons change beacons to be flashing
 
     Args:
         object_content (str): Original aricraft object content.
@@ -213,7 +278,13 @@ def fix_lights_anomalies(object_content: str) -> str:
             if new_animation == animation:
                 continue
             object_content = object_content.replace(animation, new_animation)
-
+        if "airplane_beacon" in animation and convert_to_flashing_beacons is True:
+            new_animation = convert_beacons_to_flashing_beacons(
+                animation, aircraft_icao_type)
+            object_content = object_content.replace(animation, new_animation)
+            continue
+    # Additional fixes for taxilights after the animations have been processed
+    object_content = fix_landing_lites_in_taxi_light_animation(object_content)
     return object_content
 
 
@@ -243,3 +314,30 @@ def add_lateral_position_to_lights(line: str) -> str:
         lighttype = f"{actual_lighttype}_right"
 
     return line.replace(actual_lighttype, lighttype)
+
+
+def reduce_spill_intensity(line: str, reduce_light_type: str) -> str:
+    """Reduces the groundspill intensity of a light
+
+    Args:
+        line (str): A string with light specific parameters
+        strength (float): A factor to reduce the intensity by.
+
+    Returns:
+        str: A line with reduced intensity
+    """
+    reduce_factors = {
+        "airplane_nav": 0.50,
+        "airplane_beacon": 0.10,
+        "airplane_strobe": 0.50
+    }
+
+    split_line = line.split()
+    intensity = int(split_line[9].replace("cd", ""))
+
+    reduced_intensity = int(
+        intensity * (reduce_factors[reduce_light_type]))
+    split_line[9] = f"{str(reduced_intensity)}cd"
+    line_to_return = " ".join(split_line)
+
+    return line_to_return

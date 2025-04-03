@@ -15,7 +15,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-import sys
 import re
 import logging
 import logging.config
@@ -24,6 +23,7 @@ from pathlib import Path
 from decorators.time_benchmark import time_benchmark
 
 from .helpers import get_list_of_files
+from .helpers import paused_exit
 from .init_logging import init_logging
 
 from .custom_exceptions import NoFilesFoundError
@@ -33,39 +33,12 @@ init_logging()
 log = logging.getLogger(__name__)
 
 IGNORE_OBJECTS: list[str] = ["glass", "prop",
-                             "Contrail", "fan", "rotor", "car", "BLUR"]
+                             "Contrail", "fan", "rotor", "car", "BLUR", "EngineProp", "Glass"]
 ICAO_IDENTIFIERS: list[str] = [
     "MATCHES",
     "ICAO",
     "AIRLINE",
     "LIVERY"]
-
-
-def get_aircraft_icao_type(aircraft_description: str) -> str:
-    """Gets the type of aircraft in ICAO format
-
-    Args:
-        data_aircraft_description (str): aircraft description from xsb_aircraft.txt
-
-    Returns:
-        str: ICAO designator of the aircraft
-    """
-
-    aircraft_icao_type: str = ""
-    _type_designator_definitions: set[str] = {
-        "MATCHES",
-        "ICAO",
-        "AIRLINE",
-        "LIVERY",
-    }
-    for line in aircraft_description.split("\n"):
-        if any(
-            type_designator in line for type_designator in _type_designator_definitions
-        ):
-            aircraft_icao_type = line.split()[1]
-        else:
-            continue
-    return aircraft_icao_type
 
 
 def get_path_to_aircraft_object(line: str) -> str:
@@ -89,7 +62,7 @@ def get_path_to_aircraft_object(line: str) -> str:
 
 
 @time_benchmark
-def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
+def get_aircraft_objects_from_xsb_file(searchpath: Path) -> list[dict[str, str]]:
     """Get the aircraft objects from the xsb file and return the paths as a list.
 
     Args:
@@ -99,12 +72,12 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
         list[dict[str, str]]: List of dictionaries with path and object dat of aircrafts.
     """
     # TODO: Review this bunch of code :-) Maybe it can be improved.
-    xsb_files: list[Path]
+    xsb_files: list[Path] = []
 
-    if not Path(searchpath).is_dir():
+    if not searchpath.is_dir():
         log.error(
-            f"Path {searchpath} is not a reachable directory! Please review your specified path!")
-        sys.exit()
+            f"Path {str(searchpath)} is not a reachable directory! Please review your specified path!")
+        paused_exit()
 
     try:
         xsb_files: list[Path] = get_list_of_files(
@@ -112,7 +85,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
     except NoFilesFoundError as errormsg:
         log.error(errormsg)
         log.error("Please verify that your path is correct!")
-        sys.exit()
+        paused_exit()
 
     aircraft_object_files: list[dict[str, str]] = []
     unique_aircraft_objects: list[dict[str, str]] = []
@@ -122,6 +95,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: str) -> list[dict[str, str]]:
     log.info(
         "Starting to collect files. This can take a while depending on your system and diskspeed."
     )
+
     for xsb_file in xsb_files:
         parentdir: str = str(xsb_file.parent.absolute())
         with open(xsb_file, "r") as xsb_aircraft_file:

@@ -16,6 +16,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 """
 import logging
 import logging.config
+
 import json
 import sys
 
@@ -28,11 +29,13 @@ def init_logging():
             logger_config = json.load(configfile)
         except FileNotFoundError:
             ("Missing logging.conf file. Stopping now!")
-            sys.exit(1)
+            input("Press any key to continue...")
+            sys.exit()
         except json.decoder.JSONDecodeError:
             print(
                 "Logging config might be corrupted. Please check the configfile for consistency!"
             )
-            sys.exit(1)
+            input("Press any key to continue...")
+            sys.exit()
 
     logging.config.dictConfig(logger_config)

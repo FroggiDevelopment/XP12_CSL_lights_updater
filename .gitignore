@@ -51,6 +51,4 @@ Thumbs.db
 # CLS files created
 *CSL*
 
-test*
 .cov*
-fix_dataref*
