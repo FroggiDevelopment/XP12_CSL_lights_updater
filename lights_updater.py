@@ -18,7 +18,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 import re
 import argparse
 import logging
-import logging.config
 from pathlib import Path
 from configparser import ConfigParser
 
