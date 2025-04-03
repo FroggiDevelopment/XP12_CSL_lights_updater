@@ -49,11 +49,7 @@ Thumbs.db
 *.wmv
 
 # CLS files created
-CSL*/*
-X-CSL/*
-Custom/*
-RuScenery_CSL/*
-xsb_aircraft_parser.py
+*CSL*
 
 test*
 .cov*
