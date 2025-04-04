@@ -355,7 +355,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(
         "-f",
-        "--flashing-beacon",
+        "--flashing-beacons",
         required=False,
         action="store_true",
         help="Sets the beacons to be flashing beacons on bigger airplanes!",
