@@ -436,7 +436,7 @@ def main(args: argparse.Namespace, CSL_PATH: Path) -> None:
 if __name__ == "__main__":
     args = parse_args()
     # To set this var as global, I do it here. Rest is set in the main() function
-    if args.flashing_beacon:
+    if args.flashing_beacons:
         convert_to_flashing_beacons = True
         log.debug(f"Using flashing beacons: {convert_to_flashing_beacons}")
     csl_path = set_config(args.csl_path)
