@@ -327,8 +327,8 @@ def reduce_spill_intensity(line: str, reduce_light_type: str) -> str:
         str: A line with reduced intensity
     """
     reduce_factors = {
-        "airplane_nav": 0.50,
-        "airplane_beacon": 0.10,
+        "airplane_nav": 0.59,
+        "airplane_beacon": 0.25,
         "airplane_strobe": 0.50
     }
 
