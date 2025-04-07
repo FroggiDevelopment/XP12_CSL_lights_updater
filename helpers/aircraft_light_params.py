@@ -17,7 +17,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 
 import json
 import logging
-import logging.config
 
 from .helpers import paused_exit
 
