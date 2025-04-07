@@ -16,7 +16,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 """
 
 import logging
-import logging.config
 
 from typing import Callable, Any
 from functools import wraps
@@ -58,9 +57,11 @@ def named_time_benchmark(argument: str = ""):
 
             duration = end_time - start_time
             if argument != "":
-                log.info(f"It took {duration:.2f} seconds to complete {argument}")
+                log.info(
+                    f"It took {duration:.2f} seconds to complete {argument}")
             else:
-                log.info(f"It took {duration:.2f} seconds to complete {func.__name__}")
+                log.info(
+                    f"It took {duration:.2f} seconds to complete {func.__name__}")
             return result
 
         return wrapper

@@ -17,7 +17,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 
 import re
 import logging
-import logging.config
 from pathlib import Path
 
 from decorators.time_benchmark import time_benchmark
