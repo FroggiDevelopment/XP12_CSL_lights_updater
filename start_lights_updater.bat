@@ -8,6 +8,7 @@ ECHO ...................................................
 ECHO Default behavior on just pressing Enter is to exit!
 ECHO ...................................................
 ECHO 1. Run conversion
+ECHO 1f. Run conversion with flashing beacons activated
 ECHO 2. Undo conversion
 ECHO 3. Remove backups
 ECHO 4. Quits this
@@ -23,6 +24,13 @@ EXIT)
 IF %do_this% == 1 (
 ECHO Running conversion...
 CALL python lights_updater.py
+CLS
+GOTO MENU
+)
+
+IF %do_this% == 1f (
+ECHO Running conversion...
+CALL python lights_updater.py -f
 CLS
 GOTO MENU
 )
