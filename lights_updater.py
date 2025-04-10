@@ -19,7 +19,7 @@ import re
 import argparse
 import logging
 from pathlib import Path
-from configparser import ConfigParser
+from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from helpers import make_backup
 from helpers import remove_backups
@@ -181,7 +181,7 @@ def split_object_file(object_file: str) -> tuple[str, str]:
 
 
 def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
-    """ Process the anima scetion where light parameters are defined
+    """ Process the animations section where light parameters are defined
 
     Args:
         animations (str): Text content with animations and light parameters
@@ -224,10 +224,6 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
         if any(lighttype in line for lighttype in OLD_AIRCRAFT_LIGHTS.keys()):
             line = process_lights(line, light_params)
-
-        # Change beacons to strobes for bigger airplanes if convert_to_flashing_beacons is true
-        # if "airplane_beacon" in line and convert_to_flashing_beacons is True:
-        #     line = convert_beacons_to_strobes(line, aircraft_icao_type)
 
         if len(line) > 0:
             new_file_content += f"{line}\n"
@@ -288,8 +284,8 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             log.error("Something went wrong!", err)
 
 
-def set_config(args_path_to_csl: str | None) -> Path:
-    """Set a minimal configurationq.
+def set_csl_path() -> str:
+    """Set a minimal configuration.
 
     Args:
         args_path_to_csl (str | None): If available the path is set by commandline param.
@@ -297,32 +293,21 @@ def set_config(args_path_to_csl: str | None) -> Path:
     Returns:
         Path: Returns path to CSL files
     """
-    if args_path_to_csl is not None:
-        commandline_csl_path = Path(args_path_to_csl)
-        if commandline_csl_path.is_dir() is False:
-            log.info(
-                "CSL path seems not to be a valid directory! Please check your input!")
-            paused_exit()
-        else:
-            return commandline_csl_path
-
-    # Get config from file
     config = ConfigParser()
+    config.read("configs/config.ini")
 
     if config.read("configs/config.ini") != []:
-        pass
-    else:
-        log.error("No config file found!")
-        paused_exit()
-
-    csl_path = Path(config.get("csl", "csl_path").strip('"'))
-
-    if csl_path.is_dir() is False:
-        log.info(
-            "CSL path seems not to be a valid directory! Please check your input!")
-        paused_exit()
-
-    return csl_path
+        try:
+            return config.get("csl", "csl_path").strip('"')
+        except NoSectionError:
+            log.error(
+                "No csl section found in config.ini! Please check your config file!")
+            paused_exit()
+        except NoOptionError:
+            log.error(
+                "No csl_path option found in config.ini! Please check your config file!")
+            paused_exit()
+    return ""
 
 
 def parse_args() -> argparse.Namespace:
@@ -388,19 +373,20 @@ def parse_args() -> argparse.Namespace:
 
 
 @named_time_benchmark("lights_updater")
-def main(args: argparse.Namespace, CSL_PATH: Path) -> None:
+def main(args: argparse.Namespace, csl_path: Path) -> None:
     """Here all the magic happens.
 
     Args:
         args (argparse.Namespace): commandline arguments See -h for help
-        CSL_PATH (str): The startpath for searching the xsb_aircraft.txt files
+        csl_path (str): The startpath for searching the xsb_aircraft.txt files
     """
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
-    check_if_files_are_in_correct_json_format()
+    if not check_if_files_are_in_correct_json_format():
+        paused_exit()
 
     # Get the list of aircraft objects and its file locations
     aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(
-        searchpath=CSL_PATH)
+        searchpath=csl_path)
 
     # Special actions first!
 
@@ -417,10 +403,10 @@ def main(args: argparse.Namespace, CSL_PATH: Path) -> None:
     make_backup(aircraft_objects=aircraft_objects)
 
     log.info(
-        "Removing possible xpmp2 files as they can 'cache' the objects. \
-        They should be recreated on the fly while you use X-Plane."
-    )
-    remove_xpmp2_files(filepath=CSL_PATH)
+        "Removing possible xpmp2 files as they can 'cache' the objects.")
+    log.info("They should be recreated on the fly while you use X-Plane."
+             )
+    remove_xpmp2_files(filepath=csl_path)
 
     log.info(
         "Start processing! Duration depends on number of files and of course general hardware performance."
@@ -439,6 +425,16 @@ if __name__ == "__main__":
     if args.flashing_beacons:
         convert_to_flashing_beacons = True
         log.debug(f"Using flashing beacons: {convert_to_flashing_beacons}")
-    csl_path = set_config(args.csl_path)
+
+    if args.csl_path is not None:
+        csl_path = args.csl_path
+    else:
+        csl_path = set_csl_path()
+
+    csl_path = Path(csl_path)
+    if csl_path.is_dir() is False:
+        log.info(
+            "CSL path seems not to be a valid directory! Please check the path!")
+        paused_exit()
     main(args, csl_path)
     paused_exit()
