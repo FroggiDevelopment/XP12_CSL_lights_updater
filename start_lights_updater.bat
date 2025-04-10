@@ -7,11 +7,11 @@ ECHO.
 ECHO ...................................................
 ECHO Default behavior on just pressing Enter is to exit!
 ECHO ...................................................
-ECHO 1. Run conversion
-ECHO 1f. Run conversion with flashing beacons activated
-ECHO 2. Undo conversion
-ECHO 3. Remove backups
-ECHO 4. Quits this
+ECHO  1   Run conversion
+ECHO  1f  Run conversion with flashing beacons activated
+ECHO  2   Undo conversion
+ECHO  3   Remove backups
+ECHO  4   Quits this
 ECHO ...................................................
 ECHO ...................................................
 set /p do_this="Please enter what I should do: "
@@ -29,8 +29,9 @@ GOTO MENU
 )
 
 IF %do_this% == 1f (
+SET "run_param=-f"
 ECHO Running conversion...
-CALL python lights_updater.py -f
+CALL python lights_updater.py %%run_param%%
 CLS
 GOTO MENU
 )
