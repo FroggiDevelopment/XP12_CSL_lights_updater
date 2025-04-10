@@ -30,7 +30,7 @@ AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params.json"
 
 
-def check_if_files_are_in_correct_json_format() -> None:
+def check_if_files_are_in_correct_json_format() -> bool:
     """ Checks weather the contents of the necesssary datafiles are in correct json format
     """
     try:
@@ -43,7 +43,7 @@ def check_if_files_are_in_correct_json_format() -> None:
         log.error(
             "aircrafts.json may be corrupted. Please check the file for consistency!"
         )
-        paused_exit()
+        return False
 
     try:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
@@ -55,7 +55,8 @@ def check_if_files_are_in_correct_json_format() -> None:
         log.error(
             "light_params.json might be corrupted. Please check the file for consistency!"
         )
-        paused_exit()
+        return False
+    return True
 
 
 def get_aircraft_categories() -> dict[str, str]:
