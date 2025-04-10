@@ -185,7 +185,7 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
     return new_item
 
 
-def fix_landing_lites_in_taxi_light_animation(item: str):
+def correct_wrong_landing_lights_in_taxi_lights_animation(item: str):
     taxilight_animations = re.findall(
         r"(?s)(?=ANIM_show\s+1\s+1\s+libxplanemp/controls/taxi_lites_on)(.+?)(?=ANIM_end)", item)
 
@@ -260,11 +260,12 @@ def special_lights_treatment(object_content: str, convert_to_flashing_beacons: b
         object_content (str): Fixed aircraft object content.
     """
     animations: list[str] = re.findall(
-        "(?s)(?=ANIM_hide|ANIM_show)(.+?)(?=ANIM_end)", object_content
+        "(?s)(?=ANIM_begin)(.+?ANIM_end)", object_content
     )
+
     for animation in animations:
         if is_front_gear_fix_done(animation):
-            log.debug("Front gear taxilights already fixed.")
+            log.debug("Front gear lights already fixed.")
             continue
         extra_anim_hide: str = (
             "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
@@ -284,7 +285,8 @@ def special_lights_treatment(object_content: str, convert_to_flashing_beacons: b
             object_content = object_content.replace(animation, new_animation)
             continue
     # Additional fixes for taxilights after the animations have been processed
-    object_content = fix_landing_lites_in_taxi_light_animation(object_content)
+    object_content = correct_wrong_landing_lights_in_taxi_lights_animation(
+        object_content)
     return object_content
 
 
@@ -327,7 +329,7 @@ def reduce_spill_intensity(line: str, reduce_light_type: str) -> str:
         str: A line with reduced intensity
     """
     reduce_factors = {
-        "airplane_nav": 0.30,
+        "airplane_nav": 0.40,
         "airplane_beacon": 0.35,
         "airplane_strobe": 0.50
     }
