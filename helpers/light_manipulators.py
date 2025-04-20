@@ -240,6 +240,8 @@ def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
             )
     return new_item
 
+# TODO: Get rid of that bool here! Refactor this part and also in lights_updater main file.
+
 
 def special_lights_treatment(object_content: str, convert_to_flashing_beacons: bool, aircraft_icao_type: str) -> str:
     """
