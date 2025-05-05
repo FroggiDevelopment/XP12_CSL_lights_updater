@@ -28,6 +28,7 @@ from helpers import remove_xpmp2_files
 from helpers import copy_new_to_old
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
+from helpers import get_list_of_animations
 from helpers import special_lights_treatment
 from helpers import filter_unwanted_light_params
 from helpers import add_lateral_position_to_lights
@@ -193,7 +194,22 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     light_params: dict[str, str] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
-    new_file_content = ""
+    print(animations)
+
+    new_animations_section = ""
+
+    list_of_animations: list[str] = get_list_of_animations(animations)
+
+    for animation in list_of_animations:
+        if any((found_light := light) in animation for light in OLD_AIRCRAFT_LIGHTS.keys()):
+            print(f"Found {found_light} in {aircraft_icao_type}")
+            new_animation = animation.replace(
+                found_light, found_light + "_Changed")
+            animations = animations.replace(animation, new_animation)
+        else:
+            print("Ignoring this animation")
+    print(animations)
+    paused_exit()
 
     known_light_coordinates: list[str] = []
 
@@ -226,13 +242,13 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
             line = process_lights(line, light_params)
 
         if len(line) > 0:
-            new_file_content += f"{line}\n"
+            new_animations_section += f"{line}\n"
 
     # Take care of some special light cases
-    new_file_content = special_lights_treatment(
-        new_file_content, convert_to_flashing_beacons, aircraft_icao_type)
+    new_animations_section = special_lights_treatment(
+        new_animations_section, convert_to_flashing_beacons, aircraft_icao_type)
 
-    return new_file_content
+    return new_animations_section
 
 
 @time_benchmark

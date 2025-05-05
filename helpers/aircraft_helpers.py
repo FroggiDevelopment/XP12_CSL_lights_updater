@@ -151,3 +151,9 @@ def get_aircraft_objects_from_xsb_file(searchpath: Path) -> list[dict[str, str]]
         [unique_aircraft_objects.append(
             val) for val in aircraft_object_files if val not in unique_aircraft_objects]
     return unique_aircraft_objects
+
+
+def get_list_of_animations(animations_section: str) -> list[str]:
+    list_of_animations: list[str] = re.findall(
+        r"(?s)(?=ANIM_begin)(.+?ANIM_end)", animations_section)
+    return list_of_animations

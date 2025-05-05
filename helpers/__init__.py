@@ -17,6 +17,7 @@ from .aircraft_light_params import get_light_params_for_aircraft_type as get_lig
 from .aircraft_light_params import check_if_files_are_in_correct_json_format as check_if_files_are_in_correct_json_format
 
 from .aircraft_helpers import get_aircraft_objects_from_xsb_file as get_aircraft_objects_from_xsb_file
+from .aircraft_helpers import get_list_of_animations as get_list_of_animations
 
 from .light_manipulators import special_lights_treatment as special_lights_treatment
 from .light_manipulators import filter_unwanted_light_params as filter_unwanted_light_params
