@@ -19,6 +19,7 @@ import logging
 import random
 from .init_logging import init_logging
 from .aircraft_light_params import get_aircraft_categories
+from .aircraft_light_params import get_light_params_for_aircraft_type
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
@@ -40,6 +41,37 @@ LIGHTS_TO_IGNORE = [
 # Setup logging
 init_logging()
 log = logging.getLogger(__name__)
+
+aircraft_types = get_aircraft_categories()
+
+
+def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> str:
+    """ Convert airplane landing lights to beacons
+
+    Args:
+        animation (str): The animations sequence with the landing lights
+
+    Returns:
+            str: The updated animations sequence with beacon lights
+        """
+    animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
+    light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
+
+    for line in animation.splitlines():
+        leading_whitespaces = re.match(r"\s*", line)
+        if leading_whitespaces is None:
+            continue
+        leading_whitespaces = leading_whitespaces.group()
+        if "airplane_landing_" in line:
+            animation = animation.replace(line, "")
+        if "airplane_landing" in line:
+            # Remove possible unwanted params
+            # Keep specifier, lighttype, x, y, z params
+            new_lights = " ".join(line.split()[:5])
+            animation = animation.replace(
+                line, f"{leading_whitespaces}{new_lights} {light_params['airplane_landing']}")
+    print(animation)
+    exit()
 
 
 def increase_flashing_beacon_light_intensity(animation: str) -> str:

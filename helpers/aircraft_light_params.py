@@ -103,6 +103,28 @@ def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
     return light_params_per_category
 
 
+def get_aircraft_light_params() -> dict[str, dict[str, str]]:
+    """Returns data from the light_params.json file
+
+    Returns:
+        dict[str, dict[str,str]]: A dictionary with the light parameters listed per category
+    """
+    light_params_per_category: dict[str, dict[str, str]] = {}
+    try:
+        with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
+            light_params_per_category = json.load(
+                lights_definitions)
+    except FileNotFoundError:
+        log.error("Missing light_params.json file. Stopping now!")
+        paused_exit()
+    except json.decoder.JSONDecodeError:
+        log.error(
+            "light_params.json might be corrupted. Please check the file for consistency!"
+        )
+        paused_exit()
+    return light_params_per_category
+
+
 def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str]:
     """Returns the light parameters for the given aircraft type
 

@@ -23,5 +23,6 @@ from .light_manipulators import special_lights_treatment as special_lights_treat
 from .light_manipulators import filter_unwanted_light_params as filter_unwanted_light_params
 from .light_manipulators import add_lateral_position_to_lights as add_lateral_position_to_lights
 from .light_manipulators import reduce_spill_intensity as reduce_spill_intensity
+from .light_manipulators import convert_airplane_landing_lights as convert_airplane_landing_lights
 
 from .custom_exceptions import NoFilesFoundError as NoFilesFoundError

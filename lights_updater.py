@@ -37,6 +37,7 @@ from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
 from helpers import reduce_spill_intensity
+from helpers import convert_airplane_landing_lights
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
@@ -194,15 +195,14 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     light_params: dict[str, str] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
-    print(animations)
-
-    new_animations_section = ""
 
     list_of_animations: list[str] = get_list_of_animations(animations)
-
+    light_manupilators = {"airplane_landing": convert_airplane_landing_lights}
     for animation in list_of_animations:
-        if any((found_light := light) in animation for light in OLD_AIRCRAFT_LIGHTS.keys()):
+        if any((found_light := light) in animation for light in OLD_AIRCRAFT_LIGHTS.values()):
             print(f"Found {found_light} in {aircraft_icao_type}")
+            if found_light == "airplane_landing":
+                light_manupilators[found_light](animation, aircraft_icao_type)
             new_animation = animation.replace(
                 found_light, found_light + "_Changed")
             animations = animations.replace(animation, new_animation)
@@ -212,7 +212,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     paused_exit()
 
     known_light_coordinates: list[str] = []
-
+    new_animations_section = ""
     # for line in aircraft_object_content:
     for line in animations.split("\n"):
         # First filter the lights
