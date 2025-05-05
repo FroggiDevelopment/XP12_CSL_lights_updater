@@ -14,6 +14,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
+import os
 import re
 import logging
 import random
@@ -59,6 +60,7 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
 
     for line in animation.splitlines():
         leading_whitespaces = re.match(r"\s*", line)
+        # TODO: Is this safe? Do lines without leading whitespaces get processed?
         if leading_whitespaces is None:
             continue
         leading_whitespaces = leading_whitespaces.group()
@@ -70,6 +72,9 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
             new_lights = " ".join(line.split()[:5])
             animation = animation.replace(
                 line, f"{leading_whitespaces}{new_lights} {light_params['airplane_landing']}")
+    print(animation)
+    animation = os.linesep.join(
+        [line for line in animation.splitlines() if line])
     print(animation)
     exit()
 
