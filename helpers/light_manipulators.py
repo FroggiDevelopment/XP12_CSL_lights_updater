@@ -46,26 +46,37 @@ log = logging.getLogger(__name__)
 aircraft_types = get_aircraft_categories()
 
 
+def get_basic_light_params(line_with_light_information: str) -> str:
+    """ Get basic light params
+
+    Args:
+        line_with_light_information (str): The line with the light information
+
+    Returns:
+        str: line with onlyspecifier, lighttype, x, y, z params
+    """
+    return " ".join(line_with_light_information.split()[1:5])
+
+
 def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> str:
-    """ Convert airplane landing lights to beacons
+    """ Convert airplane landing lights
 
     Args:
         animation (str): The animations sequence with the landing lights
 
     Returns:
-            str: The updated animations sequence with beacon lights
+            str: The updated animations sequence with landing lights
         """
     log.info("Converting landing lights")
-    new_line = ""
+
     animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
     light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
 
     for line in animation.splitlines():
         leading_whitespaces = re.match(r"\s*", line)
-        # TODO: Is this safe? Do lines without leading whitespaces get processed?
-        if leading_whitespaces is None:
-            continue
-        leading_whitespaces = leading_whitespaces.group()
+
+        if leading_whitespaces is not None:
+            leading_whitespaces = leading_whitespaces.group()
         if "airplane_landing_" in line:
             animation = animation.replace(line, "")
             continue
@@ -74,31 +85,90 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
             # Remove possible comment sign
             if "#" in line:
                 new_line = line.replace("#", "")
+            else:
+                new_line = line
 
-            # Remove possible unwanted params
-            # Keep specifier, lighttype, x, y, z params
-            just_light = " ".join(new_line.split()[:5])
+            just_light = get_basic_light_params(new_line)
+
             new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_landing']}"
             animation = animation.replace(line, new_light_line)
 
     new_animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
-    print(new_animation)
+
     return new_animation
 
 
 def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str:
-    print("converting taxilights")
-    return ("hello")
+    print("Converting taxilights")
+
+    animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
+    light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
+
+    for line in animation.splitlines():
+        leading_whitespaces = re.match(r"\s*", line)
+
+        if leading_whitespaces is not None:
+            leading_whitespaces = leading_whitespaces.group()
+        if "airplane_taxi_" in line:
+            animation = animation.replace(line, "")
+            continue
+
+        if "airplane_taxi" in line:
+            # Remove possible comment sign
+            if "#" in line:
+                new_line = line.replace("#", "")
+            else:
+                new_line = line
+
+            just_light = get_basic_light_params(new_line)
+            new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_taxi']}"
+            animation = animation.replace(line, new_light_line)
+
+    new_animation = os.linesep.join(
+        [line for line in animation.splitlines() if line])
+
+    return new_animation
 
 
 def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
-    print("Comverting navlights")
-    return ("hello")
+    print("Converting navlights")
+    animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
+    light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
+
+    for line in animation.splitlines():
+        leading_whitespaces = re.match(r"\s*", line)
+
+        if leading_whitespaces is not None:
+            leading_whitespaces = leading_whitespaces.group()
+        if "airplane_nav_" in line:
+            animation = animation.replace(line, "")
+            continue
+
+        if "airplane_nav" in line:
+            # Remove possible comment sign
+            if "#" in line:
+                new_line = line.replace("#", "")
+            else:
+                new_line = line
+
+            just_light = get_basic_light_params(new_line)
+            new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_nav']}"
+            animation = animation.replace(line, new_light_line)
+
+    new_animation = os.linesep.join(
+        [line for line in animation.splitlines() if line])
+
+    return new_animation
 
 
 def convert_airplane_beacon_lights(animation: str, aircraft_icao_type: str) -> str:
     print("Converting beacon lights")
+    return ("hello")
+
+
+def convert_airplane_flashing_beacon_lights(animation: str, aircraft_icao_type: str) -> str:
+    print("Converting beacon to flashing beacon light")
     return ("hello")
 
 
@@ -221,7 +291,7 @@ def is_front_gear_fix_done(item: str) -> bool:
     return True
 
 
-def fix_taxilights(item: str, extra_hide_anim: str) -> str:
+def fix_taxilights(animation: str, extra_hide_anim: str) -> str:
     """Fixes the wrong dataref for taxilights where applicable
 
     Args:
@@ -232,7 +302,7 @@ def fix_taxilights(item: str, extra_hide_anim: str) -> str:
         str : Fixed textblock
     """
     log.debug("Fixing frontgear taxilights hide animation.")
-    new_item = item.replace("landing_lites_on", "taxi_lites_on")
+    new_item = animation.replace("landing_lites_on", "taxi_lites_on")
     original_taxi_anim_hide: list[str] = re.findall(
         "ANIM_hide.+taxi_lites_on", new_item
     )

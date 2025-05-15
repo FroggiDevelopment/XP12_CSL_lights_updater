@@ -42,6 +42,7 @@ from helpers import convert_airplane_landing_lights
 from helpers import convert_airplane_taxi_lights
 from helpers import convert_airplane_nav_lights
 from helpers import convert_airplane_beacon_lights
+from helpers import convert_airplane_flashing_beacon_lights
 from helpers import convert_airplane_strobe_lights
 
 from helpers.custom_exceptions import NoAnimationFoundError
@@ -97,7 +98,7 @@ POSITION_IDENTIFIERS: dict[str, str] = {
     "_tail": ""
 }
 
-convert_to_flashing_beacons: bool = False
+flashing_beacons: bool = False
 
 
 def remove_positional_name_from_line(line: str) -> str:
@@ -201,22 +202,22 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
                            "airplane_taxi": convert_airplane_taxi_lights,
                            "airplane_nav": convert_airplane_nav_lights,
                            "airplane_beacon": convert_airplane_beacon_lights,
+                           "airplane_beacon_flashing": convert_airplane_flashing_beacon_lights,
                            "airplane_strobe": convert_airplane_strobe_lights}
     light_params: dict[str, str] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
-
     list_of_animations: list[str] = get_list_of_animations(animations)
 
     for animation in list_of_animations:
         if any((found_light := light) in animation for light in OLD_AIRCRAFT_LIGHTS.values()):
             print(f"Found {found_light}! in {aircraft_icao_type}")
-            # if found_light == "airplane_landing":
+            if found_light == "airplane_beacon" and flashing_beacons:
+                found_light = "airplane_beacon_flashing"
             new_animation = _light_manupilators[found_light](
                 animation, aircraft_icao_type)
             animations = animations.replace(animation, new_animation)
-        else:
-            print("Ignoring this animation")
+
     print(animations)
     paused_exit()
 
@@ -255,7 +256,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
     # Take care of some special light cases
     new_animations_section = special_lights_treatment(
-        new_animations_section, convert_to_flashing_beacons, aircraft_icao_type)
+        new_animations_section, flashing_beacons, aircraft_icao_type)
 
     return new_animations_section
 
@@ -448,8 +449,8 @@ if __name__ == "__main__":
     args = parse_args()
     # To set this var as global, I do it here. Rest is set in the main() function
     if args.flashing_beacons:
-        convert_to_flashing_beacons = True
-        log.debug(f"Using flashing beacons: {convert_to_flashing_beacons}")
+        flashing_beacons = True
+        log.debug(f"Using flashing beacons: {flashing_beacons}")
 
     if args.csl_path is not None:
         csl_path = args.csl_path
