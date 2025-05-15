@@ -141,10 +141,10 @@ def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
 
         if leading_whitespaces is not None:
             leading_whitespaces = leading_whitespaces.group()
-        if "airplane_nav_" in line:
+        # TODO: needs change because of posistions....!!! Does noet work this way.
+        if "airplane_nav_right_" in line or "airplane_nav_left_" in line or "airplane_nav_tail_" in line or "_sp" in line:
             animation = animation.replace(line, "")
             continue
-
         if "airplane_nav" in line:
             # Remove possible comment sign
             if "#" in line:
