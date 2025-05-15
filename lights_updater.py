@@ -212,14 +212,13 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         if any((found_light := light) in animation for light in OLD_AIRCRAFT_LIGHTS.values()):
             print(f"Found {found_light}! in {aircraft_icao_type}")
             # if found_light == "airplane_landing":
-            _light_manupilators[found_light](animation, aircraft_icao_type)
-            # new_animation = animation.replace(
-            #     found_light, found_light + "_Changed")
-            # animations = animations.replace(animation, new_animation)
+            new_animation = _light_manupilators[found_light](
+                animation, aircraft_icao_type)
+            animations = animations.replace(animation, new_animation)
         else:
             print("Ignoring this animation")
-    # print(animations)
-    # paused_exit()
+    print(animations)
+    paused_exit()
 
     known_light_coordinates: list[str] = []
     new_animations_section = ""

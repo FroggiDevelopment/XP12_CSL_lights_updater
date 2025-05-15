@@ -55,8 +55,8 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
     Returns:
             str: The updated animations sequence with beacon lights
         """
-    print("Converting lannding lights")
-    return ("hello")
+    log.info("Converting landing lights")
+    new_line = ""
     animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
     light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
 
@@ -68,17 +68,23 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
         leading_whitespaces = leading_whitespaces.group()
         if "airplane_landing_" in line:
             animation = animation.replace(line, "")
+            continue
+
         if "airplane_landing" in line:
+            # Remove possible comment sign
+            if "#" in line:
+                new_line = line.replace("#", "")
+
             # Remove possible unwanted params
             # Keep specifier, lighttype, x, y, z params
-            new_lights = " ".join(line.split()[:5])
-            animation = animation.replace(
-                line, f"{leading_whitespaces}{new_lights} {light_params['airplane_landing']}")
-    # print(animation)
-    animation = os.linesep.join(
+            just_light = " ".join(new_line.split()[:5])
+            new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_landing']}"
+            animation = animation.replace(line, new_light_line)
+
+    new_animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
-    # print(animation)
-    # exit()
+    print(new_animation)
+    return new_animation
 
 
 def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str:
