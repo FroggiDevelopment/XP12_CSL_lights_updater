@@ -141,11 +141,17 @@ def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
 
         if leading_whitespaces is not None:
             leading_whitespaces = leading_whitespaces.group()
-        # TODO: needs change because of posistions....!!! Does noet work this way.
+
+        # TODO: Create better line to get all possibilities!
+        # if re.findall("airplane_nav_{left|right|tail}_.*", line):
+        #     print("found strange line!", line)
+        #     exit()
+
         if "airplane_nav_right_" in line or "airplane_nav_left_" in line or "airplane_nav_tail_" in line or "_sp" in line:
             animation = animation.replace(line, "")
             continue
         if "airplane_nav" in line:
+            nav_light = line.split()[1]
             # Remove possible comment sign
             if "#" in line:
                 new_line = line.replace("#", "")
@@ -153,7 +159,7 @@ def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
                 new_line = line
 
             just_light = get_basic_light_params(new_line)
-            new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_nav']}"
+            new_light_line = f"{leading_whitespaces}{just_light} {light_params[nav_light]}"
             animation = animation.replace(line, new_light_line)
 
     new_animation = os.linesep.join(
