@@ -30,7 +30,7 @@ AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params.json"
 
 
-def check_if_files_are_in_correct_json_format() -> bool:
+def check_if_files_are_in_correct_json() -> bool:
     """ Checks weather the contents of the necesssary datafiles are in correct json format
     """
     try:

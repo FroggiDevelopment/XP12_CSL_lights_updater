@@ -14,7 +14,7 @@ from .get_description import get_description as get_description
 
 from .aircraft_light_params import get_aircraft_categories as get_aircraft_categories
 from .aircraft_light_params import get_light_params_for_aircraft_type as get_light_params_for_aircraft_type
-from .aircraft_light_params import check_if_files_are_in_correct_json_format as check_if_files_are_in_correct_json_format
+from .aircraft_light_params import check_if_files_are_in_correct_json as check_if_files_are_in_correct_json
 
 from .aircraft_helpers import get_aircraft_objects_from_xsb_file as get_aircraft_objects_from_xsb_file
 from .aircraft_helpers import get_list_of_animations as get_list_of_animations
@@ -24,5 +24,9 @@ from .light_manipulators import filter_unwanted_light_params as filter_unwanted_
 from .light_manipulators import add_lateral_position_to_lights as add_lateral_position_to_lights
 from .light_manipulators import reduce_spill_intensity as reduce_spill_intensity
 from .light_manipulators import convert_airplane_landing_lights as convert_airplane_landing_lights
+from .light_manipulators import convert_airplane_taxi_lights as convert_airplane_taxi_lights
+from .light_manipulators import convert_airplane_nav_lights as convert_airplane_nav_lights
+from .light_manipulators import convert_airplane_beacon_lights as convert_airplane_beacon_lights
+from .light_manipulators import convert_airplane_strobe_lights as convert_airplane_strobe_lights
 
 from .custom_exceptions import NoFilesFoundError as NoFilesFoundError

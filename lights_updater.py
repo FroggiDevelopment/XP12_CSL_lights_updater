@@ -32,12 +32,17 @@ from helpers import get_list_of_animations
 from helpers import special_lights_treatment
 from helpers import filter_unwanted_light_params
 from helpers import add_lateral_position_to_lights
-from helpers import check_if_files_are_in_correct_json_format
+from helpers import check_if_files_are_in_correct_json
 from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
 from helpers import reduce_spill_intensity
+
 from helpers import convert_airplane_landing_lights
+from helpers import convert_airplane_taxi_lights
+from helpers import convert_airplane_nav_lights
+from helpers import convert_airplane_beacon_lights
+from helpers import convert_airplane_strobe_lights
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
@@ -192,24 +197,29 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     Returns:
         str: Processed text content with light parameters converted to XP 12 standard
     """
+    _light_manupilators = {"airplane_landing": convert_airplane_landing_lights,
+                           "airplane_taxi": convert_airplane_taxi_lights,
+                           "airplane_nav": convert_airplane_nav_lights,
+                           "airplane_beacon": convert_airplane_beacon_lights,
+                           "airplane_strobe": convert_airplane_strobe_lights}
     light_params: dict[str, str] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
 
     list_of_animations: list[str] = get_list_of_animations(animations)
-    light_manupilators = {"airplane_landing": convert_airplane_landing_lights}
+
     for animation in list_of_animations:
         if any((found_light := light) in animation for light in OLD_AIRCRAFT_LIGHTS.values()):
-            print(f"Found {found_light} in {aircraft_icao_type}")
-            if found_light == "airplane_landing":
-                light_manupilators[found_light](animation, aircraft_icao_type)
-            new_animation = animation.replace(
-                found_light, found_light + "_Changed")
-            animations = animations.replace(animation, new_animation)
+            print(f"Found {found_light}! in {aircraft_icao_type}")
+            # if found_light == "airplane_landing":
+            _light_manupilators[found_light](animation, aircraft_icao_type)
+            # new_animation = animation.replace(
+            #     found_light, found_light + "_Changed")
+            # animations = animations.replace(animation, new_animation)
         else:
             print("Ignoring this animation")
-    print(animations)
-    paused_exit()
+    # print(animations)
+    # paused_exit()
 
     known_light_coordinates: list[str] = []
     new_animations_section = ""
@@ -397,7 +407,7 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
         csl_path (str): The startpath for searching the xsb_aircraft.txt files
     """
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
-    if not check_if_files_are_in_correct_json_format():
+    if not check_if_files_are_in_correct_json():
         paused_exit()
 
     # Get the list of aircraft objects and its file locations

@@ -55,6 +55,8 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
     Returns:
             str: The updated animations sequence with beacon lights
         """
+    print("Converting lannding lights")
+    return ("hello")
     animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
     light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
 
@@ -72,11 +74,31 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
             new_lights = " ".join(line.split()[:5])
             animation = animation.replace(
                 line, f"{leading_whitespaces}{new_lights} {light_params['airplane_landing']}")
-    print(animation)
+    # print(animation)
     animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
-    print(animation)
-    exit()
+    # print(animation)
+    # exit()
+
+
+def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str:
+    print("converting taxilights")
+    return ("hello")
+
+
+def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
+    print("Comverting navlights")
+    return ("hello")
+
+
+def convert_airplane_beacon_lights(animation: str, aircraft_icao_type: str) -> str:
+    print("Converting beacon lights")
+    return ("hello")
+
+
+def convert_airplane_strobe_lights(animation: str, aircraft_icao_type: str) -> str:
+    print("COnvetring strobe lights")
+    return ("hello")
 
 
 def increase_flashing_beacon_light_intensity(animation: str) -> str:
