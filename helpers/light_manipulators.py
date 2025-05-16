@@ -55,7 +55,7 @@ def get_basic_light_params(line_with_light_information: str) -> str:
     Returns:
         str: line with onlyspecifier, lighttype, x, y, z params
     """
-    return " ".join(line_with_light_information.split()[1:5])
+    return " ".join(line_with_light_information.split()[0:5])
 
 
 def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> str:
@@ -71,27 +71,35 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
 
     animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
     light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
+    _light_type = "airplane_landing"
 
     for line in animation.splitlines():
         leading_whitespaces = re.match(r"\s*", line)
 
         if leading_whitespaces is not None:
             leading_whitespaces = leading_whitespaces.group()
-        if "airplane_landing_" in line:
+        else:
+            leading_whitespaces = ""
+        if f"{_light_type}_" in line:
             animation = animation.replace(line, "")
             continue
 
-        if "airplane_landing" in line:
+        if f"{_light_type}" in line:
             # Remove possible comment sign
             if "#" in line:
                 new_line = line.replace("#", "")
             else:
                 new_line = line
-
+            new_line = new_line.replace(
+                "airplane_landing", "airplane_landing_bb")
             just_light = get_basic_light_params(new_line)
 
             new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_landing']}"
-            animation = animation.replace(line, new_light_line)
+            spill_line = new_light_line.replace("_bb", "_sp")
+            spill_line = reduce_spill_intensity(spill_line, "airplane_landing")
+
+            animation = animation.replace(
+                line, new_light_line + "\n" + leading_whitespaces + spill_line)
 
     new_animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
@@ -142,15 +150,14 @@ def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
         if leading_whitespaces is not None:
             leading_whitespaces = leading_whitespaces.group()
 
-        # TODO: Create better line to get all possibilities!
-        # if re.findall("airplane_nav_{left|right|tail}_.*", line):
-        #     print("found strange line!", line)
-        #     exit()
-
-        if "airplane_nav_right_" in line or "airplane_nav_left_" in line or "airplane_nav_tail_" in line or "_sp" in line:
+        OLD_NAVS = ["airplane_nav_right_",
+                    "airplane_nav_left_", "airplane_nav_tail_", "_sp"]
+        if any(old_navs in line for old_navs in OLD_NAVS):
+            # if "airplane_nav_right_" in line or "airplane_nav_left_" in line or "airplane_nav_tail_" in line or "_sp" in line:
             animation = animation.replace(line, "")
             continue
         if "airplane_nav" in line:
+            print("NAVSSSSSS")
             nav_light = line.split()[1]
             # Remove possible comment sign
             if "#" in line:
@@ -160,6 +167,7 @@ def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
 
             just_light = get_basic_light_params(new_line)
             new_light_line = f"{leading_whitespaces}{just_light} {light_params[nav_light]}"
+            print(new_light_line)
             animation = animation.replace(line, new_light_line)
 
     new_animation = os.linesep.join(
@@ -474,6 +482,8 @@ def reduce_spill_intensity(line: str, reduce_light_type: str) -> str:
         str: A line with reduced intensity
     """
     reduce_factors = {
+        "airplane_landing": 0.75,
+        "airplane_taxi": 0.75,
         "airplane_nav": 0.40,
         "airplane_beacon": 0.35,
         "airplane_strobe": 0.50
