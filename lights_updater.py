@@ -219,17 +219,14 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     list_of_animations: list[str] = get_list_of_animations(animations)
     # TODO: Use datarefs instead?
     for animation in list_of_animations:
-        # if any((found_light := light) in animation for light in OLD_AIRCRAFT_LIGHTS.values()):
         if any((light_dataref := dataref) in animation for dataref in _light_datarefs.keys()):
             light_converter = _light_converters[_light_datarefs[light_dataref]]
-            # print(f"Found {light_dataref}! in {aircraft_icao_type}")
-            # print(_light_converters[_light_datarefs[light_dataref]])
-            # exit()
-            # if found_light == "airplane_beacon" and flashing_beacons:
-            #     found_light = "airplane_beacon_flashing"
+
             if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
                 light_converter = convert_airplane_flashing_beacon_lights
+
             new_animation = light_converter(animation, aircraft_icao_type)
+
             animations = animations.replace(animation, new_animation)
 
     print(animations)

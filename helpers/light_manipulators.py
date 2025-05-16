@@ -58,6 +58,36 @@ def get_basic_light_params(line_with_light_information: str) -> str:
     return " ".join(line_with_light_information.split()[0:5])
 
 
+def get_leading_whitespaces(line_with_light_information: str) -> str:
+    """ Get leading whitespaces from line to ensure identation
+
+    Args:
+        line_with_light_information (str): The line with the light information
+
+    Returns:
+        str: leading whitespaces
+    """
+    leading_whitespaces = re.match(r"^\s*", line_with_light_information)
+
+    if leading_whitespaces is None:
+        return ""
+    return leading_whitespaces.group()
+
+
+def create_spill_lines(line_with_light_information: str, light_type: str) -> str:
+    """ Create spill line
+
+    Args:
+        line_with_light_information (str): The line with the light information
+
+    Returns:
+        str: line with spill identifier and params
+    """
+    spill_line = line_with_light_information.replace("_bb", "_sp")
+    spill_line = reduce_spill_intensity(spill_line, light_type)
+    return spill_line
+
+
 def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> str:
     """ Convert airplane landing lights
 
@@ -74,12 +104,8 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
     _light_type = "airplane_landing"
 
     for line in animation.splitlines():
-        leading_whitespaces = re.match(r"\s*", line)
+        leading_whitespaces = get_leading_whitespaces(line)
 
-        if leading_whitespaces is not None:
-            leading_whitespaces = leading_whitespaces.group()
-        else:
-            leading_whitespaces = ""
         if f"{_light_type}_" in line:
             animation = animation.replace(line, "")
             continue
@@ -95,8 +121,8 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
             just_light = get_basic_light_params(new_line)
 
             new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_landing']}"
-            spill_line = new_light_line.replace("_bb", "_sp")
-            spill_line = reduce_spill_intensity(spill_line, "airplane_landing")
+
+            spill_line = create_spill_lines(new_light_line, _light_type)
 
             animation = animation.replace(
                 line, new_light_line + "\n" + leading_whitespaces + spill_line)
@@ -114,13 +140,15 @@ def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str
     light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
 
     for line in animation.splitlines():
-        leading_whitespaces = re.match(r"\s*", line)
+        leading_whitespaces = get_leading_whitespaces(line)
 
-        if leading_whitespaces is not None:
-            leading_whitespaces = leading_whitespaces.group()
         if "airplane_taxi_" in line:
             animation = animation.replace(line, "")
             continue
+
+        # As there are rare cases of landing lights in these animations... fix it!
+        if "airplane_landing" in line:
+            line = line.replace("airplane_landing", "airplane_taxi")
 
         if "airplane_taxi" in line:
             # Remove possible comment sign
@@ -128,14 +156,23 @@ def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str
                 new_line = line.replace("#", "")
             else:
                 new_line = line
-
+            new_line = new_line.replace("airplane_taxi", "airplane_taxi_bb")
             just_light = get_basic_light_params(new_line)
             new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_taxi']}"
-            animation = animation.replace(line, new_light_line)
+            spill_line = create_spill_lines(new_light_line, "airplane_taxi")
+            animation = animation.replace(
+                line, new_light_line + "\n" + leading_whitespaces + spill_line)
 
     new_animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
 
+    # Add ANIM_hide animation to hide when rectracted
+    if is_front_gear_fix_done(new_animation) is False:
+        print("Adding ANIM_hide animation to hide when rectracted")
+        extra_anim_hide: str = (
+            "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
+        )
+        new_animation = fix_taxilights(new_animation, extra_anim_hide)
     return new_animation
 
 
@@ -276,20 +313,17 @@ def filter_unwanted_light_params(line: str) -> str:
 
     # Check if old LIGHT_NAMED param exists and replace it with the new one
     if "LIGHT_NAMED" in line:
-        # log.debug(
-        #     f"Replacing LIGHT_NAMED in line {output_line} to LIGHT_PARAM")
         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
     # Some lines are commented out... Must be undone
-    if "#LIGHT_PARAM" in line or "#LIGHT_NAMED" in line:
-        # log.debug(f"Removing leading # from line {output_line}")
+    if "#LIGHT_PARAM" in line:
         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
     return line
 
 
-def is_front_gear_fix_done(item: str) -> bool:
-    """Check if the conversion already is done
+def is_front_gear_fix_done(animation: str) -> bool:
+    """Check if adding the hide animation when gear is retracted already is done
 
     Args:
         item (str): Textblock with the lights part
@@ -298,7 +332,7 @@ def is_front_gear_fix_done(item: str) -> bool:
         bool: True if already done, False otherwise
     """
     already_updated: list[str] = re.findall(
-        "libxplanemp/controls/gear_ratio", item)
+        "libxplanemp/controls/gear_ratio", animation)
     if already_updated == []:
         return False
     return True
@@ -317,14 +351,17 @@ def fix_taxilights(animation: str, extra_hide_anim: str) -> str:
     log.debug("Fixing frontgear taxilights hide animation.")
     new_item = animation.replace("landing_lites_on", "taxi_lites_on")
     original_taxi_anim_hide: list[str] = re.findall(
-        "ANIM_hide.+taxi_lites_on", new_item
+        r"\s*ANIM_hide.+taxi_lites_on", new_item
     )
+    leading_whitespaces = get_leading_whitespaces(original_taxi_anim_hide[0])
+
     if original_taxi_anim_hide != []:
         new_item = new_item.replace(
             original_taxi_anim_hide[0],
-            f"{original_taxi_anim_hide[0]}\n{extra_hide_anim}",
+            f"{original_taxi_anim_hide[0]}\n{leading_whitespaces}{extra_hide_anim}",
         )
     original_taxi_anim_show = re.findall("ANIM_show.+taxi_lites_on", new_item)
+
     if original_taxi_anim_show != []:
         new_item = new_item.replace(
             f"{original_taxi_anim_show[0]}\n",
