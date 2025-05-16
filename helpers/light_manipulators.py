@@ -153,7 +153,6 @@ def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
         OLD_NAVS = ["airplane_nav_right_",
                     "airplane_nav_left_", "airplane_nav_tail_", "_sp"]
         if any(old_navs in line for old_navs in OLD_NAVS):
-            # if "airplane_nav_right_" in line or "airplane_nav_left_" in line or "airplane_nav_tail_" in line or "_sp" in line:
             animation = animation.replace(line, "")
             continue
         if "airplane_nav" in line:

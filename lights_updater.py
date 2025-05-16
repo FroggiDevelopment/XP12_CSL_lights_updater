@@ -20,7 +20,6 @@ import argparse
 import logging
 from pathlib import Path
 from configparser import ConfigParser, NoSectionError, NoOptionError
-from collections.abc import Callable
 
 from helpers import make_backup
 from helpers import remove_backups
