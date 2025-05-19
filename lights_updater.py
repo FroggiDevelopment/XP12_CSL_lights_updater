@@ -20,6 +20,7 @@ import argparse
 import logging
 from pathlib import Path
 from configparser import ConfigParser, NoSectionError, NoOptionError
+from typing import Callable
 
 from helpers import make_backup
 from helpers import remove_backups
@@ -198,29 +199,33 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     Returns:
         str: Processed text content with light parameters converted to XP 12 standard
     """
-    _light_datarefs: dict[str, str] = {"libxplanemp/controls/landing_lites_on": "airplane_landing",
-                                       "libxplanemp/controls/taxi_lites_on": "airplane_taxi",
-                                       "libxplanemp/controls/nav_lites_on": "airplane_nav",
-                                       "libxplanemp/controls/beacon_lites_on": "airplane_beacon",
-                                       "libxplanemp/controls/strobe_lites_on": "airplane_strobe",
-                                       }
+    _lighttype_per_dataref: dict[str, str] = {
+        "libxplanemp/controls/landing_lites_on": "airplane_landing",
+        "libxplanemp/controls/taxi_lites_on": "airplane_taxi",
+        "libxplanemp/controls/nav_lites_on": "airplane_nav",
+        "libxplanemp/controls/beacon_lites_on": "airplane_beacon",
+        "libxplanemp/controls/strobe_lites_on": "airplane_strobe",
+    }
 
-    _light_converters = {"airplane_landing": convert_airplane_landing_lights,
-                         "airplane_taxi": convert_airplane_taxi_lights,
-                         "airplane_nav": convert_airplane_nav_lights,
-                         "airplane_beacon": convert_airplane_beacon_lights,
-                         "airplane_beacon_flashing": convert_airplane_flashing_beacon_lights,
-                         "airplane_strobe": convert_airplane_strobe_lights}
+    _light_converters_per_lighttype: dict[str, Callable[[str, str], str]] = {
+        "airplane_landing": convert_airplane_landing_lights,
+        "airplane_taxi": convert_airplane_taxi_lights,
+        "airplane_nav": convert_airplane_nav_lights,
+        "airplane_beacon": convert_airplane_beacon_lights,
+        "airplane_beacon_flashing": convert_airplane_flashing_beacon_lights,
+        "airplane_strobe": convert_airplane_strobe_lights
+    }
 
     light_params: dict[str, str] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
 
     list_of_animations: list[str] = get_list_of_animations(animations)
-    # TODO: Use datarefs instead?
+
     for animation in list_of_animations:
-        if any((light_dataref := dataref) in animation for dataref in _light_datarefs.keys()):
-            light_converter = _light_converters[_light_datarefs[light_dataref]]
+        if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
+            light_type = _lighttype_per_dataref[light_dataref]
+            light_converter = _light_converters_per_lighttype[light_type]
 
             if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
                 light_converter = convert_airplane_flashing_beacon_lights
