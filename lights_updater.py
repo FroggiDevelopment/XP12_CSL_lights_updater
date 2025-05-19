@@ -223,14 +223,19 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     list_of_animations: list[str] = get_list_of_animations(animations)
 
     for animation in list_of_animations:
+        # Replace old LIGHT_NAMED with new LIGHT_PARAM
+        _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
+
         if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
             light_type = _lighttype_per_dataref[light_dataref]
-            light_converter = _light_converters_per_lighttype[light_type]
 
             if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
-                light_converter = convert_airplane_flashing_beacon_lights
+                light_converter = _light_converters_per_lighttype["airplane_beacon_flashing"]
 
-            new_animation = light_converter(animation, aircraft_icao_type)
+            light_converter = _light_converters_per_lighttype[light_type]
+
+            new_animation = light_converter(
+                _animation, light_params[light_type])
 
             animations = animations.replace(animation, new_animation)
 

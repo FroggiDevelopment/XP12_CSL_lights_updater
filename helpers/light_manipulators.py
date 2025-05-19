@@ -20,7 +20,7 @@ import logging
 import random
 from .init_logging import init_logging
 from .aircraft_light_params import get_aircraft_categories
-from .aircraft_light_params import get_light_params_for_aircraft_type
+# from .aircraft_light_params import get_light_params_for_aircraft_type
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
@@ -89,7 +89,7 @@ def create_spill_lines(line_with_light_information: str, light_type: str) -> str
     return spill_line
 
 
-def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> str:
+def convert_airplane_landing_lights(animation: str, landing_light_params: str) -> str:
     """ Convert airplane landing lights
 
     Args:
@@ -98,20 +98,18 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
     Returns:
             str: The updated animations sequence with landing lights
         """
-    log.info("Converting landing lights")
-
-    animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
-    light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
-    _light_type = "airplane_landing"
+    print("Converting landing lights")
+    if re.findall(r"LIGHT_PARAM.+airplane_landing", animation) == []:
+        return animation
 
     for line in animation.splitlines():
         leading_whitespaces = get_leading_whitespaces(line)
 
-        if f"{_light_type}_" in line:
+        if "airplane_landing_" in line:
             animation = animation.replace(line, "")
             continue
 
-        if f"{_light_type}" in line:
+        if "airplane_landing" in line:
             # Remove possible comment sign
             if "#" in line:
                 new_line = line.replace("#", "")
@@ -121,9 +119,9 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
                 "airplane_landing", "airplane_landing_bb")
             just_light = get_basic_light_params(new_line)
 
-            new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_landing']}"
+            new_light_line = f"{leading_whitespaces}{just_light} {landing_light_params}"
 
-            spill_line = create_spill_lines(new_light_line, _light_type)
+            spill_line = create_spill_lines(new_light_line, "airplane_landing")
 
             animation = animation.replace(
                 line, new_light_line + "\n" + leading_whitespaces + spill_line)
@@ -132,16 +130,14 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
         [line for line in animation.splitlines() if line])
 
     # Fix landing lights on frontgear
-    fix_frontgear_landinglights(new_animation)
+    if is_front_gear_fix_done is False:
+        new_animation = fix_frontgear_landinglights(new_animation)
 
     return new_animation
 
 
-def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str:
+def convert_airplane_taxi_lights(animation: str, taxi_light_params: str) -> str:
     print("Converting taxilights")
-
-    animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
-    light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
 
     for line in animation.splitlines():
         leading_whitespaces = get_leading_whitespaces(line)
@@ -162,7 +158,7 @@ def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str
                 new_line = line
             new_line = new_line.replace("airplane_taxi", "airplane_taxi_bb")
             just_light = get_basic_light_params(new_line)
-            new_light_line = f"{leading_whitespaces}{just_light} {light_params['airplane_taxi']}"
+            new_light_line = f"{leading_whitespaces}{just_light} {taxi_light_params}"
             spill_line = create_spill_lines(new_light_line, "airplane_taxi")
             animation = animation.replace(
                 line, new_light_line + "\n" + leading_whitespaces + spill_line)
@@ -176,10 +172,10 @@ def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str
     return new_animation
 
 
-def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
+def convert_airplane_nav_lights(animation: str, nav_light_params: str) -> str:
     print("Converting navlights")
-    animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
-    light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
+
+    # light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
 
     for line in animation.splitlines():
         leading_whitespaces = re.match(r"\s*", line)
@@ -194,7 +190,7 @@ def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
             continue
         if "airplane_nav" in line:
             print("NAVSSSSSS")
-            nav_light = line.split()[1]
+            # nav_light = line.split()[1]
             # Remove possible comment sign
             if "#" in line:
                 new_line = line.replace("#", "")
@@ -202,7 +198,7 @@ def convert_airplane_nav_lights(animation: str, aircraft_icao_type: str) -> str:
                 new_line = line
 
             just_light = get_basic_light_params(new_line)
-            new_light_line = f"{leading_whitespaces}{just_light} {light_params[nav_light]}"
+            new_light_line = f"{leading_whitespaces}{just_light} {nav_light_params}"
             print(new_light_line)
             animation = animation.replace(line, new_light_line)
 
@@ -409,30 +405,39 @@ def fix_frontgear_landinglights(animation: str) -> str:
     )
 
     original_landinglight_anim_hide: list[str] = re.findall(
-        "ANIM_hide.+landing_lites_on", animation
+        r"\s*ANIM_hide.+libxplanemp/controls/landing_lites_on", animation
     )
+
+    original_landinglights_anim_show: list[str] = re.findall(
+        r"^\s*ANIM_show.+landing_lites_on", animation
+    )
+
     if original_landinglight_anim_hide == []:
+        log.debug("Nothing found")
         return animation
     landing_lights_anim_hide = original_landinglight_anim_hide[0]
+    leading_whitespaces = get_leading_whitespaces(
+        landing_lights_anim_hide).replace("\n", "")
+
     light_parameter: list[str] = re.findall(
         "LIGHT_PARAM airplane_landing.+", animation)
-    if light_parameter == []:
-        return animation
+
     x_position = float(light_parameter[0].split()[2])
-    new_animation = animation
+
     if x_position < 0.5 and x_position > -0.5:
         new_animation = animation.replace(
             landing_lights_anim_hide,
-            f"{landing_lights_anim_hide}\n{extra_anim_hide}",
+            f"{landing_lights_anim_hide}\n{leading_whitespaces}{extra_anim_hide}",
         )
-        original_landinglights_anim_show: list[str] = re.findall(
-            "ANIM_show.+landing_lites_on", new_animation
-        )
+
         if original_landinglights_anim_show != []:
             new_animation = new_animation.replace(
                 f"{original_landinglights_anim_show[0]}\n", ""
             )
-    return new_animation
+
+        return new_animation
+
+    return animation
 
 # TODO: Get rid of that bool here! Refactor this part and also in lights_updater main file.
 # First get list of animations and than process them.
@@ -462,9 +467,9 @@ def special_lights_treatment(object_content: str, convert_to_flashing_beacons: b
     )
 
     for animation in animations:
-        if is_front_gear_fix_done(animation):
-            log.debug("Front gear lights already fixed.")
-            continue
+        # if is_front_gear_fix_done(animation):
+        #     log.debug("Front gear lights already fixed.")
+        #     continue
         # extra_anim_hide: str = (
         #     "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
         # )
@@ -483,8 +488,8 @@ def special_lights_treatment(object_content: str, convert_to_flashing_beacons: b
             object_content = object_content.replace(animation, new_animation)
             continue
     # Additional fixes for taxilights after the animations have been processed
-    object_content = correct_wrong_landing_lights_in_taxi_lights_animation(
-        object_content)
+    # object_content = correct_wrong_landing_lights_in_taxi_lights_animation(
+    #     object_content)
     return object_content
 
 
