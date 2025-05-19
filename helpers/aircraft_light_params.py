@@ -27,7 +27,7 @@ init_logging()
 log = logging.getLogger(__name__)
 
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
-LIGHT_DEFINITIONS = "configs/light_params.json"
+LIGHT_DEFINITIONS = "configs/light_params_new.json"
 
 
 def check_if_files_are_in_correct_json() -> bool:
@@ -41,7 +41,7 @@ def check_if_files_are_in_correct_json() -> bool:
         paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
-            "aircrafts.json may be corrupted. Please check the file for consistency!"
+            f"{AIRCRAFT_DEFINITIONS} may be corrupted. Please check the file for consistency!"
         )
         return False
 
@@ -53,7 +53,7 @@ def check_if_files_are_in_correct_json() -> bool:
         paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
-            "light_params.json might be corrupted. Please check the file for consistency!"
+            f"{LIGHT_DEFINITIONS} might be corrupted. Please check the file for consistency!"
         )
         return False
     return True
@@ -81,13 +81,13 @@ def get_aircraft_categories() -> dict[str, str]:
     return aircraft_categories
 
 
-def get_light_params_per_aircraft_category() -> dict[str, dict[str, str]]:
+def get_light_params_per_aircraft_category() -> dict[str, dict[str, dict[str, str]]]:
     """Returns data from the light_params.json file
 
     Returns:
         dict[str, dict[str,str]]: A dictionary with the light parameters listed per category
     """
-    light_params_per_category: dict[str, dict[str, str]] = {}
+    light_params_per_category: dict[str, dict[str, dict[str, str]]] = {}
     try:
         with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
             light_params_per_category = json.load(
@@ -125,7 +125,7 @@ def get_aircraft_light_params() -> dict[str, dict[str, str]]:
     return light_params_per_category
 
 
-def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str]:
+def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, dict[str, str]]:
     """Returns the light parameters for the given aircraft type
 
     Args:
@@ -135,7 +135,7 @@ def get_light_params_for_aircraft_type(aircraft_icao_type: str) -> dict[str, str
         dict[str, str]: A dictionary with the corresponding light parameters for the given aircraft type
     """
     aircrafts: dict[str, str] = get_aircraft_categories()
-    light_params: dict[str, dict[str, str]
+    light_params: dict[str, dict[str, dict[str, str]]
                        ] = get_light_params_per_aircraft_category()
 
     for key, value in aircrafts.items():
