@@ -59,7 +59,8 @@ def get_basic_light_params(line_with_light_information: str) -> str:
 
 
 def get_leading_whitespaces(line_with_light_information: str) -> str:
-    """ Get leading whitespaces from line to ensure identation
+    """ Get leading whitespaces from line to ensure identation is kept
+        This is for the readability of the obj files themself
 
     Args:
         line_with_light_information (str): The line with the light information
@@ -83,7 +84,7 @@ def create_spill_lines(line_with_light_information: str, light_type: str) -> str
     Returns:
         str: line with spill identifier and params
     """
-    spill_line = line_with_light_information.replace("_bb", "_sp")
+    spill_line = line_with_light_information.replace("_bb", "_pm")
     spill_line = reduce_spill_intensity(spill_line, light_type)
     return spill_line
 
@@ -130,6 +131,9 @@ def convert_airplane_landing_lights(animation: str, aircraft_icao_type: str) -> 
     new_animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
 
+    # Fix landing lights on frontgear
+    fix_frontgear_landinglights(new_animation)
+
     return new_animation
 
 
@@ -168,11 +172,7 @@ def convert_airplane_taxi_lights(animation: str, aircraft_icao_type: str) -> str
 
     # Add ANIM_hide animation to hide when rectracted
     if is_front_gear_fix_done(new_animation) is False:
-        print("Adding ANIM_hide animation to hide when rectracted")
-        extra_anim_hide: str = (
-            "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
-        )
-        new_animation = fix_taxilights(new_animation, extra_anim_hide)
+        new_animation = fix_taxilights(new_animation)
     return new_animation
 
 
@@ -326,7 +326,7 @@ def is_front_gear_fix_done(animation: str) -> bool:
     """Check if adding the hide animation when gear is retracted already is done
 
     Args:
-        item (str): Textblock with the lights part
+        animation (str): Textblock with the lights part
 
     Returns:
         bool: True if already done, False otherwise
@@ -338,41 +338,45 @@ def is_front_gear_fix_done(animation: str) -> bool:
     return True
 
 
-def fix_taxilights(animation: str, extra_hide_anim: str) -> str:
+def fix_taxilights(animation: str) -> str:
     """Fixes the wrong dataref for taxilights where applicable
 
     Args:
-        item (str): Textblock with the lights
+        animation (str): Textblock with the lights
         extra_hide_anim (str): String with the hide 'animation' to kill the lights when retracted.
 
     Returns:
         str : Fixed textblock
     """
     log.debug("Fixing frontgear taxilights hide animation.")
-    new_item = animation.replace("landing_lites_on", "taxi_lites_on")
+    extra_anim_hide: str = (
+        "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
+    )
+    new_animation = animation.replace("landing_lites_on", "taxi_lites_on")
     original_taxi_anim_hide: list[str] = re.findall(
-        r"\s*ANIM_hide.+taxi_lites_on", new_item
+        r"\s*ANIM_hide.+taxi_lites_on", new_animation
     )
     leading_whitespaces = get_leading_whitespaces(original_taxi_anim_hide[0])
 
     if original_taxi_anim_hide != []:
-        new_item = new_item.replace(
+        new_animation = new_animation.replace(
             original_taxi_anim_hide[0],
-            f"{original_taxi_anim_hide[0]}\n{leading_whitespaces}{extra_hide_anim}",
+            f"{original_taxi_anim_hide[0]}\n{leading_whitespaces}{extra_anim_hide}",
         )
-    original_taxi_anim_show = re.findall("ANIM_show.+taxi_lites_on", new_item)
+    original_taxi_anim_show = re.findall(
+        "ANIM_show.+taxi_lites_on", new_animation)
 
     if original_taxi_anim_show != []:
-        new_item = new_item.replace(
+        new_animation = new_animation.replace(
             f"{original_taxi_anim_show[0]}\n",
             "",
         )
-    return new_item
+    return new_animation
 
 
-def correct_wrong_landing_lights_in_taxi_lights_animation(item: str):
+def correct_wrong_landing_lights_in_taxi_lights_animation(animation: str):
     taxilight_animations = re.findall(
-        r"(?s)(?=ANIM_show\s+1\s+1\s+libxplanemp/controls/taxi_lites_on)(.+?)(?=ANIM_end)", item)
+        r"(?s)(?=ANIM_show\s+1\s+1\s+libxplanemp/controls/taxi_lites_on)(.+?)(?=ANIM_end)", animation)
 
     if len(taxilight_animations) > 0:
         for taxilight_animation in taxilight_animations:
@@ -383,47 +387,52 @@ def correct_wrong_landing_lights_in_taxi_lights_animation(item: str):
                 log.debug(
                     "Repaired wrong lighttype from landing to taxi!")
             if new_taxilight_animation != "":
-                item = item.replace(
+                animation = animation.replace(
                     taxilight_animation, new_taxilight_animation)
-    return item
+    return animation
 
 
-def fix_frontgear_landinglights(item: str, extra_hide_anim: str) -> str:
+def fix_frontgear_landinglights(animation: str) -> str:
     """Fixes the case where the frontgear landinglights were still visible after the landing gear is retracted
 
     Args:
-        item (str): Textblock with the lights
+        animation (str): Textblock with the lights
         extra_hide_anim (str): String with the hide 'animation' to kill the lights when retracted.
 
     Returns:
         str | None: Fixed textblock, None if nothing has changed
     """
     log.debug("Fixing frontgear landinglights hide animation.")
+
+    extra_anim_hide: str = (
+        "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
+    )
+
     original_landinglight_anim_hide: list[str] = re.findall(
-        "ANIM_hide.+landing_lites_on", item
+        "ANIM_hide.+landing_lites_on", animation
     )
     if original_landinglight_anim_hide == []:
-        return item
+        return animation
     landing_lights_anim_hide = original_landinglight_anim_hide[0]
     light_parameter: list[str] = re.findall(
-        "LIGHT_PARAM airplane_landing.+", item)
+        "LIGHT_PARAM airplane_landing.+", animation)
     if light_parameter == []:
-        return item
+        return animation
     x_position = float(light_parameter[0].split()[2])
-    new_item = item
+    new_animation = animation
     if x_position < 0.5 and x_position > -0.5:
-        new_item = item.replace(
+        new_animation = animation.replace(
             landing_lights_anim_hide,
-            f"{landing_lights_anim_hide}\n{extra_hide_anim}",
+            f"{landing_lights_anim_hide}\n{extra_anim_hide}",
         )
         original_landinglights_anim_show: list[str] = re.findall(
-            "ANIM_show.+landing_lites_on", new_item
+            "ANIM_show.+landing_lites_on", new_animation
         )
         if original_landinglights_anim_show != []:
-            new_item = new_item.replace(
+            new_animation = new_animation.replace(
                 f"{original_landinglights_anim_show[0]}\n", ""
             )
-    return new_item
+    return new_animation
 
 # TODO: Get rid of that bool here! Refactor this part and also in lights_updater main file.
 # First get list of animations and than process them.
@@ -456,18 +465,18 @@ def special_lights_treatment(object_content: str, convert_to_flashing_beacons: b
         if is_front_gear_fix_done(animation):
             log.debug("Front gear lights already fixed.")
             continue
-        extra_anim_hide: str = (
-            "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
-        )
-        if "airplane_taxi_pm" in animation:
-            new_animation = fix_taxilights(animation, extra_anim_hide)
-            object_content = object_content.replace(animation, new_animation)
-        if "landing_lites" in animation:
-            new_animation = fix_frontgear_landinglights(
-                animation, extra_anim_hide)
-            if new_animation == animation:
-                continue
-            object_content = object_content.replace(animation, new_animation)
+        # extra_anim_hide: str = (
+        #     "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
+        # )
+        # if "airplane_taxi_pm" in animation:
+        #     new_animation = fix_taxilights(animation)
+        #     object_content = object_content.replace(animation, new_animation)
+        # if "landing_lites" in animation:
+        #     new_animation: str = fix_frontgear_landinglights(
+        #         animation)
+        #     if new_animation == animation:
+        #         continue
+        #     object_content = object_content.replace(animation, new_animation)
         if "airplane_beacon" in animation and convert_to_flashing_beacons is True:
             new_animation = convert_beacons_to_flashing_beacons(
                 animation, aircraft_icao_type)
