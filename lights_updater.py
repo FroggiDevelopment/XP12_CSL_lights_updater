@@ -207,7 +207,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "libxplanemp/controls/strobe_lites_on": "airplane_strobe",
     }
 
-    _light_converters_per_lighttype: dict[str, Callable[[str, str], str]] = {
+    _light_converters_per_lighttype: dict[str, Callable[[str, dict[str, str]], str]] = {
         "airplane_landing": convert_airplane_landing_lights,
         "airplane_taxi": convert_airplane_taxi_lights,
         "airplane_nav": convert_airplane_nav_lights,
@@ -216,7 +216,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "airplane_strobe": convert_airplane_strobe_lights
     }
 
-    light_params: dict[str, str] = get_light_params_for_aircraft_type(
+    light_params: dict[str, dict[str, str]] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
 
@@ -269,8 +269,8 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
                 line = line.replace(
                     old_light_param, OLD_AIRCRAFT_LIGHTS[old_light_param])
 
-        if any(lighttype in line for lighttype in OLD_AIRCRAFT_LIGHTS.keys()):
-            line = process_lights(line, light_params)
+        # if any(lighttype in line for lighttype in OLD_AIRCRAFT_LIGHTS.keys()):
+        #     line = process_lights(line, light_params)
 
         if len(line) > 0:
             new_animations_section += f"{line}\n"
