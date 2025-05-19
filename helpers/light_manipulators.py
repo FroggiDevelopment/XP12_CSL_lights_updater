@@ -89,7 +89,7 @@ def create_spill_lines(line_with_light_information: str, light_type: str) -> str
     return spill_line
 
 
-def convert_airplane_landing_lights(animation: str, landing_light_params: str) -> str:
+def convert_airplane_landing_lights(animation: str, landing_light_params_dict: dict[str, str]) -> str:
     """ Convert airplane landing lights
 
     Args:
@@ -119,7 +119,7 @@ def convert_airplane_landing_lights(animation: str, landing_light_params: str) -
                 "airplane_landing", "airplane_landing_bb")
             just_light = get_basic_light_params(new_line)
 
-            new_light_line = f"{leading_whitespaces}{just_light} {landing_light_params}"
+            new_light_line = f"{leading_whitespaces}{just_light} {landing_light_params_dict['airplane_landing']}"
 
             spill_line = create_spill_lines(new_light_line, "airplane_landing")
 
@@ -136,7 +136,7 @@ def convert_airplane_landing_lights(animation: str, landing_light_params: str) -
     return new_animation
 
 
-def convert_airplane_taxi_lights(animation: str, taxi_light_params: str) -> str:
+def convert_airplane_taxi_lights(animation: str, taxi_light_params_dict: dict[str, str]) -> str:
     print("Converting taxilights")
 
     for line in animation.splitlines():
@@ -158,7 +158,7 @@ def convert_airplane_taxi_lights(animation: str, taxi_light_params: str) -> str:
                 new_line = line
             new_line = new_line.replace("airplane_taxi", "airplane_taxi_bb")
             just_light = get_basic_light_params(new_line)
-            new_light_line = f"{leading_whitespaces}{just_light} {taxi_light_params}"
+            new_light_line = f"{leading_whitespaces}{just_light} {taxi_light_params_dict['airplane_taxi']}"
             spill_line = create_spill_lines(new_light_line, "airplane_taxi")
             animation = animation.replace(
                 line, new_light_line + "\n" + leading_whitespaces + spill_line)
@@ -172,35 +172,44 @@ def convert_airplane_taxi_lights(animation: str, taxi_light_params: str) -> str:
     return new_animation
 
 
-def convert_airplane_nav_lights(animation: str, nav_light_params: str) -> str:
+def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str, str]) -> str:
     print("Converting navlights")
 
-    # light_params = get_light_params_for_aircraft_type(aircraft_icao_type)
-
     for line in animation.splitlines():
-        leading_whitespaces = re.match(r"\s*", line)
 
-        if leading_whitespaces is not None:
-            leading_whitespaces = leading_whitespaces.group()
+        leading_whitespaces = get_leading_whitespaces(line)
 
-        OLD_NAVS = ["airplane_nav_right_",
-                    "airplane_nav_left_", "airplane_nav_tail_", "_sp"]
-        if any(old_navs in line for old_navs in OLD_NAVS):
+        _old_navs = ["airplane_nav_right_",
+                     "airplane_nav_left_", "airplane_nav_tail_", "_sp"]
+        _positional_agruments = ["_right", "_left", "_tail"]
+
+        if any(old_navs in line for old_navs in _old_navs):
             animation = animation.replace(line, "")
             continue
         if "airplane_nav" in line:
             print("NAVSSSSSS")
-            # nav_light = line.split()[1]
+
             # Remove possible comment sign
             if "#" in line:
                 new_line = line.replace("#", "")
             else:
                 new_line = line
+            nav_light_with_position = line.split()[1]
+            nav_light_params = nav_light_params_dict[nav_light_with_position]
 
             just_light = get_basic_light_params(new_line)
-            new_light_line = f"{leading_whitespaces}{just_light} {nav_light_params}"
-            print(new_light_line)
-            animation = animation.replace(line, new_light_line)
+            new_line = f"{just_light} {nav_light_params}"
+
+            # Remove positional arguments from the line
+            if any((position := positional_argument) in new_line for positional_argument in _positional_agruments):
+                new_line = new_line.replace(position, "")
+
+            new_line = new_line.replace("airplane_nav", "airplane_nav_bb")
+
+            spill_line = create_spill_lines(new_line, "airplane_nav")
+            new_line = f"{leading_whitespaces}{new_line}\n{leading_whitespaces}{spill_line}"
+
+            animation = animation.replace(line, new_line)
 
     new_animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
@@ -208,18 +217,18 @@ def convert_airplane_nav_lights(animation: str, nav_light_params: str) -> str:
     return new_animation
 
 
-def convert_airplane_beacon_lights(animation: str, aircraft_icao_type: str) -> str:
+def convert_airplane_beacon_lights(animation: str, beacon_light_params: dict[str, str]) -> str:
     print("Converting beacon lights")
     return ("hello")
 
 
-def convert_airplane_flashing_beacon_lights(animation: str, aircraft_icao_type: str) -> str:
+def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params: dict[str, str]) -> str:
     print("Converting beacon to flashing beacon light")
     return ("hello")
 
 
-def convert_airplane_strobe_lights(animation: str, aircraft_icao_type: str) -> str:
-    print("COnvetring strobe lights")
+def convert_airplane_strobe_lights(animation: str, strobe_light_params: dict[str, str]) -> str:
+    print("Converting strobe lights")
     return ("hello")
 
 
