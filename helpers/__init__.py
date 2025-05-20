@@ -19,7 +19,7 @@ from .aircraft_light_params import check_if_files_are_in_correct_json as check_i
 from .aircraft_helpers import get_aircraft_objects_from_xsb_file as get_aircraft_objects_from_xsb_file
 from .aircraft_helpers import get_list_of_animations as get_list_of_animations
 
-from .light_manipulators import special_lights_treatment as special_lights_treatment
+# from .light_manipulators import special_lights_treatment as special_lights_treatment
 from .light_manipulators import filter_unwanted_light_params as filter_unwanted_light_params
 from .light_manipulators import add_lateral_position_to_lights as add_lateral_position_to_lights
 from .light_manipulators import reduce_spill_intensity as reduce_spill_intensity
