@@ -29,8 +29,9 @@ from helpers import remove_xpmp2_files
 from helpers import copy_new_to_old
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
+from helpers import get_aircraft_categories
 from helpers import get_list_of_animations
-from helpers import special_lights_treatment
+# from helpers import special_lights_treatment
 from helpers import filter_unwanted_light_params
 from helpers import add_lateral_position_to_lights
 from helpers import check_if_files_are_in_correct_json
@@ -228,11 +229,13 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
         if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
             light_type = _lighttype_per_dataref[light_dataref]
+            light_converter = _light_converters_per_lighttype[light_type]
 
             if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
-                light_converter = _light_converters_per_lighttype["airplane_beacon_flashing"]
-
-            light_converter = _light_converters_per_lighttype[light_type]
+                aircraft_categories = get_aircraft_categories()
+                for category in aircraft_categories.items():
+                    if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
+                        light_converter = _light_converters_per_lighttype["airplane_beacon_flashing"]
 
             new_animation = light_converter(
                 _animation, light_params[light_type])
@@ -276,8 +279,8 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
             new_animations_section += f"{line}\n"
 
     # Take care of some special light cases
-    new_animations_section = special_lights_treatment(
-        new_animations_section, flashing_beacons, aircraft_icao_type)
+    # new_animations_section = special_lights_treatment(
+    #     new_animations_section, flashing_beacons, aircraft_icao_type)
 
     return new_animations_section
 
