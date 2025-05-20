@@ -19,7 +19,7 @@ import re
 import logging
 import random
 from .init_logging import init_logging
-from .aircraft_light_params import get_aircraft_categories
+# from .aircraft_light_params import get_aircraft_categories
 # from .aircraft_light_params import get_light_params_for_aircraft_type
 
 # Some constants
@@ -124,7 +124,6 @@ def convert_airplane_landing_lights(animation: str, landing_light_params_dict: d
     Returns:
             str: The updated animations sequence with landing lights
     """
-    print("Converting landing lights")
     if re.findall(r"LIGHT_PARAM.+airplane_landing", animation) == []:
         return animation
 
@@ -168,8 +167,6 @@ def convert_airplane_taxi_lights(animation: str, taxi_light_params_dict: dict[st
     Returns:
             str: The updated animations sequence with taxi lights
     """
-    print("Converting taxilights")
-
     for line in animation.splitlines():
         leading_whitespaces = get_leading_whitespaces(line)
 
@@ -209,8 +206,6 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
     Returns:
             str: The updated animations sequence with nav lights
     """
-    print("Converting navlights")
-
     for line in animation.splitlines():
 
         leading_whitespaces = get_leading_whitespaces(line)
@@ -257,8 +252,6 @@ def convert_airplane_beacon_lights(animation: str, beacon_light_params_dict: dic
      Returns:
              str: The updated animations sequence with beacon lights
      """
-    print("Converting beacon lights")
-
     known_light_coordinates: list[str] = []
     _old_beacons = ["airplane_beacon_rotate",
                     "airplane_beacon_rotate_sp", "airplane_beacon_strobe"]
@@ -271,7 +264,7 @@ def convert_airplane_beacon_lights(animation: str, beacon_light_params_dict: dic
             light_source_coordinates = get_light_coordinates(new_line)
 
             if light_source_coordinates in known_light_coordinates:
-                print(
+                log.debug(
                     f"Navigation light at {light_source_coordinates} already converted!")
                 new_line = ""
             else:
@@ -327,8 +320,9 @@ def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_
     original_beacon_anim_hide = re.findall(
         "ANIM_hide.+libxplanemp/controls/beacon_lites_on", new_animation)
 
-    new_animation = new_animation.replace(
-        original_beacon_anim_hide[0], new_anim_hide)
+    if original_beacon_anim_hide != []:
+        new_animation = new_animation.replace(
+            original_beacon_anim_hide[0], new_anim_hide)
 
     new_animation = new_animation.replace(
         "airplane_beacon", "airplane_generic")
@@ -339,8 +333,6 @@ def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_
 
 
 def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dict[str, str]) -> str:
-    print("Converting strobe lights")
-
     for line in animation.splitlines():
 
         leading_whitespaces = get_leading_whitespaces(line)
@@ -411,45 +403,45 @@ def increase_flashing_beacon_light_intensity(animation: str) -> str:
     return animation
 
 
-def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str) -> str:
-    """ Converts existing beacon lights to flashing lights simulating a flashing beacon
+# def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str) -> str:
+#     """ Converts existing beacon lights to flashing lights simulating a flashing beacon
 
-    Args:
-        animation (str): The original animations sequence from the aircraft object file
-        aircraft_icao_type (str): ICAO identifier for this specific airrcaft to determine if conversion is neccessary.
+#     Args:
+#         animation (str): The original animations sequence from the aircraft object file
+#         aircraft_icao_type (str): ICAO identifier for this specific airrcaft to determine if conversion is neccessary.
 
-    Returns:
-        str: Converted animation with flashing 'beacon' lights and an increased intensity
-    """
+#     Returns:
+#         str: Converted animation with flashing 'beacon' lights and an increased intensity
+#     """
 
-    flash_sequences = [
-        "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
-        "ANIM_show    0.3 0.4    sim/time/total_running_time_sec",
-        "ANIM_show    0.6 0.7    sim/time/total_running_time_sec"
-    ]
-    flash_sequence = random.choice(flash_sequences)
-    new_anim_hide = f"""
-    ANIM_hide	-1.0 1.0	libxplanemp/controls/beacon_lites_on
-    {flash_sequence}
-    ANIM_keyframe_loop 1.5
-    """
-    # TODO: Is it better to use list of icao-identifiers??? How to determine who's in?
-    aircraft_categories = get_aircraft_categories()
+#     flash_sequences = [
+#         "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
+#         "ANIM_show    0.3 0.4    sim/time/total_running_time_sec",
+#         "ANIM_show    0.6 0.7    sim/time/total_running_time_sec"
+#     ]
+#     flash_sequence = random.choice(flash_sequences)
+#     new_anim_hide = f"""
+#     ANIM_hide	-1.0 1.0	libxplanemp/controls/beacon_lites_on
+#     {flash_sequence}
+#     ANIM_keyframe_loop 1.5
+#     """
+#     # TODO: Is it better to use list of icao-identifiers??? How to determine who's in?
+#     aircraft_categories = get_aircraft_categories()
 
-    for category in aircraft_categories.items():
-        if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
-            original_beacon_anim_hide = re.findall(
-                "ANIM_hide.+libxplanemp/controls/beacon_lites_on", animation)
+#     for category in aircraft_categories.items():
+#         if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
+#             original_beacon_anim_hide = re.findall(
+#                 "ANIM_hide.+libxplanemp/controls/beacon_lites_on", animation)
 
-            animation = animation.replace(
-                original_beacon_anim_hide[0], new_anim_hide)
+#             animation = animation.replace(
+#                 original_beacon_anim_hide[0], new_anim_hide)
 
-            animation = animation.replace(
-                "airplane_beacon", "airplane_generic")
-            log.debug(
-                f"Converted beacon lights for {aircraft_icao_type} to flashing beacons.")
-            animation = increase_flashing_beacon_light_intensity(animation)
-    return animation
+#             animation = animation.replace(
+#                 "airplane_beacon", "airplane_generic")
+#             log.debug(
+#                 f"Converted beacon lights for {aircraft_icao_type} to flashing beacons.")
+#             animation = increase_flashing_beacon_light_intensity(animation)
+#     return animation
 
 
 def filter_unwanted_light_params(line: str) -> str:
@@ -511,9 +503,10 @@ def fix_taxilights(animation: str) -> str:
     original_taxi_anim_hide: list[str] = re.findall(
         r"\s*ANIM_hide.+taxi_lites_on", new_animation
     )
-    leading_whitespaces = get_leading_whitespaces(original_taxi_anim_hide[0])
 
     if original_taxi_anim_hide != []:
+        leading_whitespaces = get_leading_whitespaces(
+            original_taxi_anim_hide[0])
         new_animation = new_animation.replace(
             original_taxi_anim_hide[0],
             f"{original_taxi_anim_hide[0]}\n{leading_whitespaces}{extra_anim_hide}",
