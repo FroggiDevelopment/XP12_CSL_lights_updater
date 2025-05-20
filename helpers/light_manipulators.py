@@ -120,6 +120,7 @@ def convert_airplane_landing_lights(animation: str, landing_light_params_dict: d
 
     Args:
         animation (str): The animations sequence with the landing lights
+        landing_light_params_dict (dict[str, str]): The params for the landing lights
 
     Returns:
             str: The updated animations sequence with landing lights
@@ -163,6 +164,7 @@ def convert_airplane_taxi_lights(animation: str, taxi_light_params_dict: dict[st
 
     Args:
         animation (str): The animations sequence with the taxi lights
+        taxi_light_params_dict (dict[str, str]): The params for the taxi lights
 
     Returns:
             str: The updated animations sequence with taxi lights
@@ -202,6 +204,7 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
 
     Args:
         animation (str): The animations sequence with the nav lights
+        nav_light_params_dict (dict[str, str]): The params for the nav lights
 
     Returns:
             str: The updated animations sequence with nav lights
@@ -244,10 +247,11 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
 
 
 def convert_airplane_beacon_lights(animation: str, beacon_light_params_dict: dict[str, str]) -> str:
-    """ Convert airplane beacon lights
+    """ Converts airplane beacon lights
 
      Args:
          animation (str): The animations sequence with the beacon lights
+         beacon_light_params_dict (dict[str, str]): The params for the beacon lights
 
      Returns:
              str: The updated animations sequence with beacon lights
@@ -293,10 +297,11 @@ def convert_airplane_beacon_lights(animation: str, beacon_light_params_dict: dic
 
 
 def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_dict: dict[str, str]) -> str:
-    """ Convert airplane beacon lights to flashing beacons
+    """ Converts airplane beacon lights to flashing beacons
 
      Args:
          animation (str): The animations sequence with the beacon lights
+         beacon_light_params_dict (dict[str, str]): The beacon light parameters
 
      Returns:
              str: The updated animations sequence with flashing beacon lights
@@ -333,6 +338,15 @@ def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_
 
 
 def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dict[str, str]) -> str:
+    """Converts airplane strobe lights
+
+    Args:
+        animation (str): The animations sequence with the strobe lights
+        strobe_light_params_dict (dict[str, str]): The params for the strobe lights
+
+    Returns:
+        str: The updated animations sequence with strobe lights
+    """
     for line in animation.splitlines():
 
         leading_whitespaces = get_leading_whitespaces(line)
