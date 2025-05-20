@@ -242,8 +242,10 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
             animations = animations.replace(animation, new_animation)
 
-    print(animations)
-    paused_exit()
+    # print(animations)
+    # paused_exit()
+
+    return animations
 
     known_light_coordinates: list[str] = []
     new_animations_section = ""
