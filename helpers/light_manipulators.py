@@ -300,6 +300,14 @@ def convert_airplane_beacon_lights(animation: str, beacon_light_params_dict: dic
 
 
 def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_dict: dict[str, str]) -> str:
+    """ Convert airplane beacon lights to flashing beacons
+
+     Args:
+         animation (str): The animations sequence with the beacon lights
+
+     Returns:
+             str: The updated animations sequence with flashing beacon lights
+     """
     new_animation = convert_airplane_beacon_lights(
         animation, beacon_light_params_dict)
 
@@ -521,22 +529,22 @@ def fix_taxilights(animation: str) -> str:
     return new_animation
 
 
-def correct_wrong_landing_lights_in_taxi_lights_animation(animation: str):
-    taxilight_animations = re.findall(
-        r"(?s)(?=ANIM_show\s+1\s+1\s+libxplanemp/controls/taxi_lites_on)(.+?)(?=ANIM_end)", animation)
+# def correct_wrong_landing_lights_in_taxi_lights_animation(animation: str):
+#     taxilight_animations = re.findall(
+#         r"(?s)(?=ANIM_show\s+1\s+1\s+libxplanemp/controls/taxi_lites_on)(.+?)(?=ANIM_end)", animation)
 
-    if len(taxilight_animations) > 0:
-        for taxilight_animation in taxilight_animations:
-            new_taxilight_animation = ""
-            if "airplane_landing" in taxilight_animation:
-                new_taxilight_animation = taxilight_animation.replace(
-                    "airplane_landing", "airplane_taxi")
-                log.debug(
-                    "Repaired wrong lighttype from landing to taxi!")
-            if new_taxilight_animation != "":
-                animation = animation.replace(
-                    taxilight_animation, new_taxilight_animation)
-    return animation
+#     if len(taxilight_animations) > 0:
+#         for taxilight_animation in taxilight_animations:
+#             new_taxilight_animation = ""
+#             if "airplane_landing" in taxilight_animation:
+#                 new_taxilight_animation = taxilight_animation.replace(
+#                     "airplane_landing", "airplane_taxi")
+#                 log.debug(
+#                     "Repaired wrong lighttype from landing to taxi!")
+#             if new_taxilight_animation != "":
+#                 animation = animation.replace(
+#                     taxilight_animation, new_taxilight_animation)
+#     return animation
 
 
 def fix_frontgear_landinglights(animation: str) -> str:
