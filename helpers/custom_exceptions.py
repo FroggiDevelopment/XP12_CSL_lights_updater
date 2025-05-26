@@ -30,3 +30,11 @@ class NoAnimationFoundError(Exception):
     def __init__(self, message: str = "This file contains no animation section!") -> None:
         self.message = message
         super().__init__(self.message)
+
+
+class WrongAnimationTypeError(Exception):
+    """Exception raised when no animations are found"""
+
+    def __init__(self, message: str = "This file contains the wrong type of animation section!") -> None:
+        self.message = message
+        super().__init__(self.message)

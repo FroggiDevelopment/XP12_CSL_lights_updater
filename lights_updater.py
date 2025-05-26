@@ -32,7 +32,7 @@ from helpers import get_aircraft_objects_from_xsb_file
 from helpers import get_aircraft_categories
 from helpers import get_list_of_animations
 # from helpers import special_lights_treatment
-from helpers import filter_unwanted_light_params
+# from helpers import filter_unwanted_light_params
 # from helpers import add_lateral_position_to_lights
 from helpers import check_if_files_are_in_correct_json
 from helpers import get_description
@@ -48,6 +48,8 @@ from helpers import convert_airplane_flashing_beacon_lights
 from helpers import convert_airplane_strobe_lights
 
 from helpers.custom_exceptions import NoAnimationFoundError
+from helpers.custom_exceptions import WrongAnimationTypeError
+
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
 
@@ -224,7 +226,6 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     list_of_animations: list[str] = get_list_of_animations(animations)
 
     for animation in list_of_animations:
-        # Replace old LIGHT_NAMED with new LIGHT_PARAM
         _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
         if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
@@ -237,54 +238,16 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
                     if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
                         light_converter = _light_converters_per_lighttype["airplane_beacon_flashing"]
 
-            new_animation = light_converter(
-                _animation, light_params[light_type])
+            try:
+                new_animation = light_converter(
+                    _animation, light_params[light_type])
+            except WrongAnimationTypeError as err:
+                log.error(err)
+                paused_exit()
 
             animations = animations.replace(animation, new_animation)
 
-    # print(animations)
-    # paused_exit()
-
     return animations
-
-    known_light_coordinates: list[str] = []
-    new_animations_section = ""
-    # for line in aircraft_object_content:
-    for line in animations.split("\n"):
-        # First filter the lights
-        line = filter_unwanted_light_params(line)
-
-        # Ignore comment lines.
-        if line.strip().startswith("#") and "blender" not in line.lower():
-            continue
-
-        # Handle rotating beacons and avoid duplicates
-        coordinates = f"{':'.join(line.split()[2:5])}"
-
-        # Replace all 'odd' light params with the XP12 supported ones according to available information.
-        # Things like _sp, _size, _core, _glow, etc.
-        if any((old_light_param := lighttype) in line.split() for lighttype in OLD_AIRCRAFT_LIGHTS):
-            if coordinates in known_light_coordinates:
-                log.debug(
-                    f"{old_light_param} at {coordinates} already processed! for ICAO {aircraft_icao_type}")
-                line = ""
-                continue
-            else:
-                known_light_coordinates.append(coordinates)
-                line = line.replace(
-                    old_light_param, OLD_AIRCRAFT_LIGHTS[old_light_param])
-
-        # if any(lighttype in line for lighttype in OLD_AIRCRAFT_LIGHTS.keys()):
-        #     line = process_lights(line, light_params)
-
-        if len(line) > 0:
-            new_animations_section += f"{line}\n"
-
-    # Take care of some special light cases
-    # new_animations_section = special_lights_treatment(
-    #     new_animations_section, flashing_beacons, aircraft_icao_type)
-
-    return new_animations_section
 
 
 @time_benchmark

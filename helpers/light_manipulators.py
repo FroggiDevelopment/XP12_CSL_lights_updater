@@ -19,8 +19,7 @@ import re
 import logging
 import random
 from .init_logging import init_logging
-# from .aircraft_light_params import get_aircraft_categories
-# from .aircraft_light_params import get_light_params_for_aircraft_type
+from helpers.custom_exceptions import WrongAnimationTypeError
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
@@ -209,6 +208,10 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
     Returns:
             str: The updated animations sequence with nav lights
     """
+    # Found a very bad form of misuse of strobes in the nav light animation.
+    # Sending this one to the strobe converter
+    if "airplane_strobe" in animation:
+        raise WrongAnimationTypeError("This is a airplane_strobe animation")
 
     _good_navs = ["airplane_nav_right",
                   "airplane_nav_left",
@@ -218,13 +221,21 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
                  "airplane_nav_right_",
                  "airplane_nav_left_",
                  "airplane_nav_tail_",
-                 "_sp"]
+                 "airplane_nav_sp"]
 
-    _positional_agruments = ["_right", "_left", "_tail"]
+    # Check if normal airplane_nav is available in animation, else take first other nav light line to create it!!
+    if any(good_nav in animation for good_nav in _good_navs):
+        pass
+    else:
+        if any((gotcha := old_nav) in animation for old_nav in _old_navs):
+            matching_light_line = re.search(r'^\s*LIGHT_PARAM\s+airplane_nav.*$',
+                                            animation, re.MULTILINE)
+            if matching_light_line:
+                line_to_replace = matching_light_line.group()
 
-    # Check if normal airplane_nav is available in animation, else take _sp line to create it!!
-    if not any(good_nav in animation for good_nav in _good_navs) and "airplane_nav_sp" in animation:
-        animation = animation.replace("airplane_nav_sp", "airplane_nav")
+                replaced_line = line_to_replace.replace(gotcha, 'airplane_nav')
+                animation = animation.replace(
+                    line_to_replace, replaced_line, 1)
 
     for line in animation.splitlines():
 
@@ -239,7 +250,7 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
             new_line = uncomment_light_line(line)
 
             # Add positional arguments to the line if it is missing
-            if not any(positional_argument in line for positional_argument in _positional_agruments):
+            if not any(positional_argument in line for positional_argument in POSITION_IDENTIFIERS):
                 new_line = add_lateral_position_to_lights(line)
 
             nav_light_with_position = new_line.split()[1]
@@ -249,7 +260,7 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
             new_line = f"{just_light} {nav_light_params}"
 
             # Remove positional arguments from the line
-            if any((position := positional_argument) in new_line for positional_argument in _positional_agruments):
+            if any((position := positional_argument) in new_line for positional_argument in POSITION_IDENTIFIERS):
                 new_line = new_line.replace(position, "")
 
             new_line = new_line.replace("airplane_nav", "airplane_nav_bb")
@@ -366,19 +377,37 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
     Returns:
         str: The updated animations sequence with strobe lights
     """
-    # TODO: Directional strobes (left right or tail)??
+    _good_strobes = ["airplane_strobe_right",
+                     "airplane_strobe_left",
+                     "airplane_strobe_tail"]
+
+    _old_strobes = ["PLN_airplane_strobe",
+                    "_airplane_",
+                    "airplane_strobe_right_",
+                    "airplane_strobe_left_",
+                    "airplane_strobe_tail_",
+                    "airplane_strobe_omni",
+                    "airplane_strobe_dir",
+                    "airplane_strobe_sp"]
+
+    # Check if normal airplanestrobes are available in animation, else take first other strobe light line to create it!!
+    if any(good_strobe in animation for good_strobe in _good_strobes):
+        pass
+    else:
+        if any((gotcha := old_strobe) in animation for old_strobe in _old_strobes):
+            matching_light_line = re.search(r'^\s*LIGHT_PARAM\s.*airplane_strobe.*$',
+                                            animation, re.MULTILINE)
+            if matching_light_line:
+                line_to_replace = matching_light_line.group()
+
+                replaced_line = line_to_replace.replace(
+                    gotcha, 'airplane_strobe')
+                animation = animation.replace(
+                    line_to_replace, replaced_line, 1)
+
     for line in animation.splitlines():
 
         leading_whitespaces = get_leading_whitespaces(line)
-
-        _old_strobes = ["airplane_strobe_right_",
-                        "airplane_strobe_left_",
-                        "airplane_strobe_tail_",
-                        "airplane_strobe_omni",
-                        "airplane_strobe_dir",
-                        "airplane_strobe_sp"]
-
-        _positional_agruments = ["_right", "_left", "_tail"]
 
         if any(old_strobes in line for old_strobes in _old_strobes):
             animation = animation.replace(line, "")
@@ -394,7 +423,7 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
             new_line = f"{just_light} {strobe_light_params}"
 
             # Remove positional arguments from the line
-            if any((position := positional_argument) in new_line for positional_argument in _positional_agruments):
+            if any((position := positional_argument) in new_line for positional_argument in POSITION_IDENTIFIERS):
                 new_line = new_line.replace(position, "")
 
             new_line = new_line.replace(
@@ -437,70 +466,29 @@ def increase_flashing_beacon_light_intensity(animation: str) -> str:
     return animation
 
 
-# def convert_beacons_to_flashing_beacons(animation: str, aircraft_icao_type: str) -> str:
-#     """ Converts existing beacon lights to flashing lights simulating a flashing beacon
+# def filter_unwanted_light_params(line: str) -> str:
+#     """Filter out light params that are old or otherwise wrong.
+#        Can be expanded for future cases.
 
 #     Args:
-#         animation (str): The original animations sequence from the aircraft object file
-#         aircraft_icao_type (str): ICAO identifier for this specific airrcaft to determine if conversion is neccessary.
+#         line (str): Line with light parameters
 
 #     Returns:
-#         str: Converted animation with flashing 'beacon' lights and an increased intensity
+#         str: Corrected line with light parameters
 #     """
+#     # If light is on the ignore list, ignore it and retrun empty line
+#     if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
+#         return ""
 
-#     flash_sequences = [
-#         "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
-#         "ANIM_show    0.3 0.4    sim/time/total_running_time_sec",
-#         "ANIM_show    0.6 0.7    sim/time/total_running_time_sec"
-#     ]
-#     flash_sequence = random.choice(flash_sequences)
-#     new_anim_hide = f"""
-#     ANIM_hide	-1.0 1.0	libxplanemp/controls/beacon_lites_on
-#     {flash_sequence}
-#     ANIM_keyframe_loop 1.5
-#     """
-#     # TODO: Is it better to use list of icao-identifiers??? How to determine who's in?
-#     aircraft_categories = get_aircraft_categories()
+#     # Check if old LIGHT_NAMED param exists and replace it with the new one
+#     if "LIGHT_NAMED" in line:
+#         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
-#     for category in aircraft_categories.items():
-#         if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
-#             original_beacon_anim_hide = re.findall(
-#                 "ANIM_hide.+libxplanemp/controls/beacon_lites_on", animation)
+#     # Some lines are commented out... Must be undone
+#     if "#LIGHT_PARAM" in line:
+#         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
 
-#             animation = animation.replace(
-#                 original_beacon_anim_hide[0], new_anim_hide)
-
-#             animation = animation.replace(
-#                 "airplane_beacon", "airplane_generic")
-#             log.debug(
-#                 f"Converted beacon lights for {aircraft_icao_type} to flashing beacons.")
-#             animation = increase_flashing_beacon_light_intensity(animation)
-#     return animation
-
-
-def filter_unwanted_light_params(line: str) -> str:
-    """Filter out light params that are old or otherwise wrong.
-       Can be expanded for future cases.
-
-    Args:
-        line (str): Line with light parameters
-
-    Returns:
-        str: Corrected line with light parameters
-    """
-    # If light is on the ignore list, ignore it and retrun empty line
-    if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
-        return ""
-
-    # Check if old LIGHT_NAMED param exists and replace it with the new one
-    if "LIGHT_NAMED" in line:
-        line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
-
-    # Some lines are commented out... Must be undone
-    if "#LIGHT_PARAM" in line:
-        line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
-
-    return line
+#     return line
 
 
 def is_front_gear_fix_done(animation: str) -> bool:
@@ -556,24 +544,6 @@ def fix_taxilights(animation: str) -> str:
     return new_animation
 
 
-# def correct_wrong_landing_lights_in_taxi_lights_animation(animation: str):
-#     taxilight_animations = re.findall(
-#         r"(?s)(?=ANIM_show\s+1\s+1\s+libxplanemp/controls/taxi_lites_on)(.+?)(?=ANIM_end)", animation)
-
-#     if len(taxilight_animations) > 0:
-#         for taxilight_animation in taxilight_animations:
-#             new_taxilight_animation = ""
-#             if "airplane_landing" in taxilight_animation:
-#                 new_taxilight_animation = taxilight_animation.replace(
-#                     "airplane_landing", "airplane_taxi")
-#                 log.debug(
-#                     "Repaired wrong lighttype from landing to taxi!")
-#             if new_taxilight_animation != "":
-#                 animation = animation.replace(
-#                     taxilight_animation, new_taxilight_animation)
-#     return animation
-
-
 def fix_frontgear_landinglights(animation: str) -> str:
     """Fixes the case where the frontgear landinglights were still visible after the landing gear is retracted
 
@@ -625,59 +595,6 @@ def fix_frontgear_landinglights(animation: str) -> str:
 
     return animation
 
-# TODO: Get rid of that bool here! Refactor this part and also in lights_updater main file.
-# First get list of animations and than process them.
-# def get_list_of_animations(object_content: str) -> list[str]:
-
-
-# def special_lights_treatment(object_content: str, convert_to_flashing_beacons: bool, aircraft_icao_type: str) -> str:
-    # """
-    # Treat some special light effects.
-
-    # 1. Add missing taxilights on some airplanes.
-    #    The original dataref for the taxilights is set to landing_lites_on instead of taxi_lites_on.
-
-    # 2. Landing lights on front gear were visible even if that gear is retracted.
-    #    ANIM_hide animation is added to the front gear landing lights.
-
-    # 3. Based on switch -f / --flashing_beacons change beacons to be flashing
-
-    # Args:
-    #     object_content (str): Original aricraft object content.
-
-    # Returns:
-    #     object_content (str): Fixed aircraft object content.
-    # """
-    # animations: list[str] = re.findall(
-    #     "(?s)(?=ANIM_begin)(.+?ANIM_end)", object_content
-    # )
-
-    # for animation in animations:
-    # if is_front_gear_fix_done(animation):
-    #     log.debug("Front gear lights already fixed.")
-    #     continue
-    # extra_anim_hide: str = (
-    #     "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
-    # )
-    # if "airplane_taxi_pm" in animation:
-    #     new_animation = fix_taxilights(animation)
-    #     object_content = object_content.replace(animation, new_animation)
-    # if "landing_lites" in animation:
-    #     new_animation: str = fix_frontgear_landinglights(
-    #         animation)
-    #     if new_animation == animation:
-    #         continue
-    #     object_content = object_content.replace(animation, new_animation)
-    # if "airplane_beacon" in animation and convert_to_flashing_beacons is True:
-    #     new_animation = convert_beacons_to_flashing_beacons(
-    #         animation, aircraft_icao_type)
-    #     object_content = object_content.replace(animation, new_animation)
-    #     continue
-    # Additional fixes for taxilights after the animations have been processed
-    # object_content = correct_wrong_landing_lights_in_taxi_lights_animation(
-    #     object_content)
-    # return object_content
-
 
 def add_lateral_position_to_lights(line: str) -> str:
     """To determine directional parameters add left, right or tail to the light param
@@ -693,7 +610,7 @@ def add_lateral_position_to_lights(line: str) -> str:
     # If the line already includes position, return it unprocessed.
     if any(position in line for position in POSITION_IDENTIFIERS):
         return line
-    print(line)
+
     _x_position = float(line.split()[2:3][0])
     actual_lighttype = line.split()[1]
 
