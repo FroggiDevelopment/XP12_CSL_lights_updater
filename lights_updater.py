@@ -33,12 +33,12 @@ from helpers import get_aircraft_categories
 from helpers import get_list_of_animations
 # from helpers import special_lights_treatment
 from helpers import filter_unwanted_light_params
-from helpers import add_lateral_position_to_lights
+# from helpers import add_lateral_position_to_lights
 from helpers import check_if_files_are_in_correct_json
 from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
-from helpers import reduce_spill_intensity
+# from helpers import reduce_spill_intensity
 
 from helpers import convert_airplane_landing_lights
 from helpers import convert_airplane_taxi_lights
@@ -118,56 +118,56 @@ def remove_positional_name_from_line(line: str) -> str:
     return line
 
 
-def process_lights(line: str, light_params: dict[str, str]) -> str:
-    """Changes the light parameters to XP12 specs
+# def process_lights(line: str, light_params: dict[str, str]) -> str:
+#     """Changes the light parameters to XP12 specs
 
-    Args:
-        line (str): A string with light specifics parameters
-        light_params (dict[str, str]): A dictionary with the light parameters
+#     Args:
+#         line (str): A string with light specifics parameters
+#         light_params (dict[str, str]): A dictionary with the light parameters
 
-    Returns:
-        str: A line with updated light parameters
-    """
-    # Remove possible unwanted params
-    # Keep specifier, lighttype, x, y, z params
-    line = " ".join(line.split()[:5])
+#     Returns:
+#         str: A line with updated light parameters
+#     """
+#     # Remove possible unwanted params
+#     # Keep specifier, lighttype, x, y, z params
+#     line = " ".join(line.split()[:5])
 
-    # Remove billboard lines, will be (re)build later on.
-    if "_bb" in line:
-        return ""
+#     # Remove billboard lines, will be (re)build later on.
+#     if "_bb" in line:
+#         return ""
 
-    # Remove pm suffix
-    if "_pm" in line:
-        line = line.replace("_pm", "")
+#     # Remove pm suffix
+#     if "_pm" in line:
+#         line = line.replace("_pm", "")
 
-    # Add position info to get correct light parameters from lights configuration file
-    if "airplane_nav" in line or "airplane_strobe" in line:
-        line = add_lateral_position_to_lights(line)
+#     # Add position info to get correct light parameters from lights configuration file
+#     if "airplane_nav" in line or "airplane_strobe" in line:
+#         line = add_lateral_position_to_lights(line)
 
-    lighttype = line.split()[1]
+#     lighttype = line.split()[1]
 
-    line = line.replace("\n", "")
-    line += f" {light_params[lighttype]}\n"
+#     line = line.replace("\n", "")
+#     line += f" {light_params[lighttype]}\n"
 
-    # Remove psotion identifiers from line as they are "illegal" in light parameters
-    if any(position in line for position in POSITION_IDENTIFIERS.keys()):
-        line = remove_positional_name_from_line(line)
+#     # Remove psotion identifiers from line as they are "illegal" in light parameters
+#     if any(position in line for position in POSITION_IDENTIFIERS.keys()):
+#         line = remove_positional_name_from_line(line)
 
-    lighttype = line.split()[1]
+#     lighttype = line.split()[1]
 
-    if lighttype in ["airplane_nav", "airplane_beacon", "airplane_strobe"]:
-        reduced_intensity_line = reduce_spill_intensity(
-            line, lighttype)
-        reduced_intensity_line = reduced_intensity_line.replace(
-            f"{lighttype}", f"{lighttype}_pm")
-        line = line.replace(
-            f"{lighttype}", f"{lighttype}_bb") + reduced_intensity_line
-        line = f"{line}\n"
-    else:
-        line = line.replace(f"{lighttype}", f"{lighttype}_pm")
-        line += line.replace("_pm", "_bb")
+#     if lighttype in ["airplane_nav", "airplane_beacon", "airplane_strobe"]:
+#         reduced_intensity_line = reduce_spill_intensity(
+#             line, lighttype)
+#         reduced_intensity_line = reduced_intensity_line.replace(
+#             f"{lighttype}", f"{lighttype}_pm")
+#         line = line.replace(
+#             f"{lighttype}", f"{lighttype}_bb") + reduced_intensity_line
+#         line = f"{line}\n"
+#     else:
+#         line = line.replace(f"{lighttype}", f"{lighttype}_pm")
+#         line += line.replace("_pm", "_bb")
 
-    return line
+#     return line
 
 
 def split_object_file(object_file: str) -> tuple[str, str]:

@@ -29,6 +29,8 @@ log = logging.getLogger(__name__)
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params_new.json"
 
+# TODO: Move function to helpers. File as argument.
+
 
 def check_if_files_are_in_correct_json() -> bool:
     """ Checks weather the contents of the necesssary datafiles are in correct json format

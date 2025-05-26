@@ -209,21 +209,40 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
     Returns:
             str: The updated animations sequence with nav lights
     """
+
+    _good_navs = ["airplane_nav_right",
+                  "airplane_nav_left",
+                  "airplane_nav_tail"]
+
+    _old_navs = ["_airplane_",
+                 "airplane_nav_right_",
+                 "airplane_nav_left_",
+                 "airplane_nav_tail_",
+                 "_sp"]
+
+    _positional_agruments = ["_right", "_left", "_tail"]
+
+    # Check if normal airplane_nav is available in animation, else take _sp line to create it!!
+    if not any(good_nav in animation for good_nav in _good_navs) and "airplane_nav_sp" in animation:
+        animation = animation.replace("airplane_nav_sp", "airplane_nav")
+
     for line in animation.splitlines():
 
         leading_whitespaces = get_leading_whitespaces(line)
 
-        _old_navs = ["airplane_nav_right_",
-                     "airplane_nav_left_", "airplane_nav_tail_", "_sp"]
-        _positional_agruments = ["_right", "_left", "_tail"]
-
         if any(old_navs in line for old_navs in _old_navs):
             animation = animation.replace(line, "")
             continue
+
         if "airplane_nav" in line:
             # Remove possible comment sign
             new_line = uncomment_light_line(line)
-            nav_light_with_position = line.split()[1]
+
+            # Add positional arguments to the line if it is missing
+            if not any(positional_argument in line for positional_argument in _positional_agruments):
+                new_line = add_lateral_position_to_lights(line)
+
+            nav_light_with_position = new_line.split()[1]
             nav_light_params = nav_light_params_dict[nav_light_with_position]
 
             just_light = get_basic_light_params(new_line)
@@ -347,6 +366,7 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
     Returns:
         str: The updated animations sequence with strobe lights
     """
+    # TODO: Directional strobes (left right or tail)??
     for line in animation.splitlines():
 
         leading_whitespaces = get_leading_whitespaces(line)
@@ -673,7 +693,7 @@ def add_lateral_position_to_lights(line: str) -> str:
     # If the line already includes position, return it unprocessed.
     if any(position in line for position in POSITION_IDENTIFIERS):
         return line
-
+    print(line)
     _x_position = float(line.split()[2:3][0])
     actual_lighttype = line.split()[1]
 
