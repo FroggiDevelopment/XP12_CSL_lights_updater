@@ -28,7 +28,7 @@ init_logging()
 log = logging.getLogger(__name__)
 
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
-LIGHT_DEFINITIONS = "configs/light_params_new.json"
+LIGHT_DEFINITIONS = "configs/light_params.json"
 
 
 def check_if_files_are_in_correct_json() -> bool:
