@@ -31,14 +31,10 @@ from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 from helpers import get_aircraft_categories
 from helpers import get_list_of_animations
-# from helpers import special_lights_treatment
-# from helpers import filter_unwanted_light_params
-# from helpers import add_lateral_position_to_lights
 from helpers import check_if_files_are_in_correct_json
 from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
-# from helpers import reduce_spill_intensity
 
 from helpers import convert_airplane_landing_lights
 from helpers import convert_airplane_taxi_lights
