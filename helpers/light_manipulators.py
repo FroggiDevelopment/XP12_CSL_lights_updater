@@ -241,7 +241,8 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
         raise WrongLightInAnimationError(
             f"This animation conatins the wrong light type for airplane_nav!\n{animation}")
 
-    _good_navs = ["airplane_nav_right",
+    _good_navs = ["airplane_nav",
+                  "airplane_nav_right",
                   "airplane_nav_left",
                   "airplane_nav_tail"]
 
@@ -405,7 +406,8 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
     Returns:
         str: The updated animations sequence with strobe lights
     """
-    _good_strobes = ["airplane_strobe_right",
+    _good_strobes = ["airplane_strobe",
+                     "airplane_strobe_right",
                      "airplane_strobe_left",
                      "airplane_strobe_tail"]
 
@@ -418,7 +420,7 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
                     "airplane_strobe_dir",
                     "airplane_strobe_sp"]
 
-    # Check if normal airplanestrobes are available in animation, else take first other strobe light line to create it!!
+    # Check if normal airplane strobes are available in animation or take first other strobe light line to create it!
     if any(good_strobe in animation for good_strobe in _good_strobes):
         pass
     else:
@@ -430,6 +432,7 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
 
                 replaced_line = line_to_replace.replace(
                     gotcha, 'airplane_strobe')
+
                 animation = animation.replace(
                     line_to_replace, replaced_line, 1)
 
@@ -440,11 +443,16 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
         if any(old_strobes in line for old_strobes in _old_strobes):
             animation = animation.replace(line, "")
             continue
+
         if "airplane_strobe" in line:
             # Remove possible comment sign
             new_line = uncomment_light_line(line)
 
-            strobe_light_with_position = line.split()[1]
+            # Add positional arguments to the line if it is missing
+            if not any(positional_argument in new_line for positional_argument in POSITION_IDENTIFIERS):
+                new_line = add_lateral_position_to_lights(new_line)
+
+            strobe_light_with_position = new_line.split()[1]
             strobe_light_params = strobe_light_params_dict[strobe_light_with_position]
 
             just_light = get_basic_light_params(new_line)
@@ -492,31 +500,6 @@ def increase_flashing_beacon_light_intensity(animation: str) -> str:
         animation = animation.replace(
             light_intensity, new_light_intensity)
     return animation
-
-
-# def filter_unwanted_light_params(line: str) -> str:
-#     """Filter out light params that are old or otherwise wrong.
-#        Can be expanded for future cases.
-
-#     Args:
-#         line (str): Line with light parameters
-
-#     Returns:
-#         str: Corrected line with light parameters
-#     """
-#     # If light is on the ignore list, ignore it and retrun empty line
-#     if any(to_ignore in line for to_ignore in LIGHTS_TO_IGNORE):
-#         return ""
-
-#     # Check if old LIGHT_NAMED param exists and replace it with the new one
-#     if "LIGHT_NAMED" in line:
-#         line = line.replace("LIGHT_NAMED", "LIGHT_PARAM")
-
-#     # Some lines are commented out... Must be undone
-#     if "#LIGHT_PARAM" in line:
-#         line = line.replace("#LIGHT_PARAM", "LIGHT_PARAM")
-
-#     return line
 
 
 def is_front_gear_fix_done(animation: str) -> bool:
