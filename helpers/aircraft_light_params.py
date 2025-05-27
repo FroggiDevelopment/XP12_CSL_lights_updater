@@ -19,6 +19,7 @@ import json
 import logging
 
 from .helpers import paused_exit
+from .helpers import is_correct_json_file
 
 from .init_logging import init_logging
 
@@ -29,36 +30,16 @@ log = logging.getLogger(__name__)
 AIRCRAFT_DEFINITIONS = "configs/aircrafts.json"
 LIGHT_DEFINITIONS = "configs/light_params_new.json"
 
-# TODO: Move function to helpers. File as argument.
-
 
 def check_if_files_are_in_correct_json() -> bool:
     """ Checks weather the contents of the necesssary datafiles are in correct json format
-    """
-    try:
-        with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
-            json.load(aircrafts_definitions)
-    except FileNotFoundError:
-        log.error("Missing aircrafts.json file. Stopping now!")
-        paused_exit()
-    except json.decoder.JSONDecodeError:
-        log.error(
-            f"{AIRCRAFT_DEFINITIONS} may be corrupted. Please check the file for consistency!"
-        )
-        return False
 
-    try:
-        with open(LIGHT_DEFINITIONS, "r") as lights_definitions:
-            json.load(lights_definitions)
-    except FileNotFoundError:
-        log.error("Missing light_params.json file. Stopping now!")
-        paused_exit()
-    except json.decoder.JSONDecodeError:
-        log.error(
-            f"{LIGHT_DEFINITIONS} might be corrupted. Please check the file for consistency!"
-        )
-        return False
-    return True
+    Returns:
+        bool: True if correct, False otherwise
+    """
+    if is_correct_json_file(AIRCRAFT_DEFINITIONS) and is_correct_json_file(LIGHT_DEFINITIONS):
+        return True
+    return False
 
 
 def get_aircraft_categories() -> dict[str, str]:
@@ -73,11 +54,11 @@ def get_aircraft_categories() -> dict[str, str]:
             aircraft_categories = json.load(
                 aircrafts_definitions)
     except FileNotFoundError:
-        log.error("Missing aircrafts.json file. Stopping now!")
+        log.error(f"Missing {AIRCRAFT_DEFINITIONS} file. Stopping now!")
         paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
-            "aircrafts.json may be corrupted. Please check the file for consistency!"
+            f"{AIRCRAFT_DEFINITIONS} may be corrupted. Please check the file for consistency!"
         )
         paused_exit()
     return aircraft_categories
@@ -99,7 +80,7 @@ def get_light_params_per_aircraft_category() -> dict[str, dict[str, dict[str, st
         paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
-            "light_params.json might be corrupted. Please check the file for consistency!"
+            f"{LIGHT_DEFINITIONS} might be corrupted. Please check the file for consistency!"
         )
         paused_exit()
     return light_params_per_category
@@ -117,11 +98,11 @@ def get_aircraft_light_params() -> dict[str, dict[str, str]]:
             light_params_per_category = json.load(
                 lights_definitions)
     except FileNotFoundError:
-        log.error("Missing light_params.json file. Stopping now!")
+        log.error(f"Missing {LIGHT_DEFINITIONS} file. Stopping now!")
         paused_exit()
     except json.decoder.JSONDecodeError:
         log.error(
-            "light_params.json might be corrupted. Please check the file for consistency!"
+            f"{LIGHT_DEFINITIONS} might be corrupted. Please check the file for consistency!"
         )
         paused_exit()
     return light_params_per_category
