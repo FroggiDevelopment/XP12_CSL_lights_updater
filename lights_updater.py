@@ -48,7 +48,7 @@ from helpers import convert_airplane_flashing_beacon_lights
 from helpers import convert_airplane_strobe_lights
 
 from helpers.custom_exceptions import NoAnimationFoundError
-from helpers.custom_exceptions import WrongAnimationTypeError
+from helpers.custom_exceptions import WrongLightInAnimationError
 
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
@@ -241,9 +241,9 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
             try:
                 new_animation = light_converter(
                     _animation, light_params[light_type])
-            except WrongAnimationTypeError as err:
+            except WrongLightInAnimationError as err:
                 log.error(err)
-                paused_exit()
+                continue
 
             animations = animations.replace(animation, new_animation)
 
