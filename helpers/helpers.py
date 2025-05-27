@@ -17,6 +17,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 
 import logging
 import sys
+import json
 from pathlib import Path
 
 from .init_logging import init_logging
@@ -173,6 +174,30 @@ def get_list_of_files(searchpath: Path, filename: str) -> list[Path]:
     # log.debug(f"Found these files while globing: {files}")
     log.debug(f"Found {len(files)} xsb_aircraft.txt files!")
     return files
+
+
+def is_correct_json_file(json_file: str) -> bool:
+    """Check if the json file is correct.
+
+    Args:
+        json_file (Path): The path to the json file
+
+    Returns:
+        bool: True if correct, False otherwise
+    """
+    try:
+        with open(json_file, "r") as aircrafts_definitions:
+            json.load(aircrafts_definitions)
+    except FileNotFoundError:
+        log.error(f"Missing {json_file} file. Stopping now!")
+        return False
+    except json.decoder.JSONDecodeError:
+        log.error(
+            f"{json_file} may be corrupted. Please check the file for consistency!"
+        )
+        return False
+
+    return True
 
 
 def filepath_is_valid(filepath: Path) -> bool:
