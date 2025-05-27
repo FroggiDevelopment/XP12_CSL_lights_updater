@@ -47,6 +47,26 @@ STANDARD_AIRPLANE_LIGHTS = [
     "airplane_strobe",
 ]
 
+OLD_LANDING_LIGHTS = [
+    "airplane_landing_core ",
+    "airplane_landing_glow ",
+    "airplane_landing_flare ",
+    "airplane_landing_sp",
+    "airplane_landing0 ",
+    "airplane_landing1 ",
+    "airplane_landing2 ",
+    "airplane_landing3 ",
+    "airplane_landing_size ",
+    "airplane_landing_flash ",
+    "PLN_airplane_landing "
+]
+
+GOOD_LANDING_LIGHTS = [
+    "airplane_landing_bb ",
+    "airplane_landing_pm ",
+    "airplane_landing "
+]
+
 # Setup logging
 init_logging()
 log = logging.getLogger(__name__)
@@ -154,10 +174,27 @@ def convert_airplane_landing_lights(animation: str, landing_light_params_dict: d
     """
     if re.findall(r"LIGHT_PARAM.+airplane_landing", animation) == []:
         return animation
+    # TODO: Can be refactored to be one function on its own????? Will it work for all lights? I think so!!
+    if any(good_landing in animation for good_landing in GOOD_LANDING_LIGHTS):
+        pass
+    else:
+        if any((gotcha := old_landing) in animation for old_landing in OLD_LANDING_LIGHTS):
+            print(f"Gotcha: {gotcha}")
+            searchstring = fr"^\s*LIGHT_PARAM\s+{gotcha}.*$"
+            matching_light_line = re.search(searchstring,
+                                            animation, re.MULTILINE)
+            if matching_light_line:
+                line_to_replace = matching_light_line.group()
+                print(f"Line to replace: {line_to_replace}")
 
+                replaced_line = line_to_replace.replace(
+                    gotcha, 'airplane_landing')
+                animation = animation.replace(
+                    line_to_replace, replaced_line, 1)
+    print(animation)
     for line in animation.splitlines():
         leading_whitespaces = get_leading_whitespaces(line)
-        # TODO: Maybe creating airplane landing lights from none standard here is also necessary? To be checked....
+
         if "airplane_landing_" in line:
             animation = animation.replace(line, "")
             continue
@@ -182,7 +219,7 @@ def convert_airplane_landing_lights(animation: str, landing_light_params_dict: d
     # Fix landing lights on frontgear
     if is_front_gear_fix_done is False:
         new_animation = fix_frontgear_landinglights(new_animation)
-
+    print(new_animation)
     return new_animation
 
 
@@ -241,15 +278,18 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
         raise WrongLightInAnimationError(
             f"This animation contains the wrong light type for airplane_nav!\n{animation}")
 
-    _good_navs = ["airplane_nav",
-                  "airplane_nav_right",
-                  "airplane_nav_left",
-                  "airplane_nav_tail"]
+    _good_navs = ["airplane_nav ",
+                  "airplane_nav_right ",
+                  "airplane_nav_left ",
+                  "airplane_nav_tail "]
 
     _old_navs = ["_airplane_",
-                 "airplane_nav_right_",
-                 "airplane_nav_left_",
-                 "airplane_nav_tail_",
+                 "airplane_nav_right ",
+                 "airplane_nav_right_size",
+                 "airplane_nav_left ",
+                 "airplane_nav_left_size",
+                 "airplane_nav_tail ",
+                 "airplane_nav_tail_size",
                  "airplane_nav_sp"]
 
     # Check if normal airplane_nav is available in animation, else take first other nav light line to create it!!
@@ -416,7 +456,10 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
     _old_strobes = ["PLN_airplane_strobe",
                     "_airplane_",
                     "airplane_strobe_right_",
+                    "airplane_strobe_right_",
+                    "airplane_strobe_left",
                     "airplane_strobe_left_",
+                    "airplane_strobe_tail",
                     "airplane_strobe_tail_",
                     "airplane_strobe_omni",
                     "airplane_strobe_dir",
