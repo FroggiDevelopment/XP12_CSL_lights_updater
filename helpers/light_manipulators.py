@@ -19,7 +19,7 @@ import re
 import logging
 import random
 from .init_logging import init_logging
-from helpers.custom_exceptions import WrongAnimationTypeError
+from helpers.custom_exceptions import WrongLightInAnimationError
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
@@ -38,11 +38,39 @@ LIGHTS_TO_IGNORE = [
     "LIGHT_SPILL_CUSTOM",
 ]
 
+STANDARD_AIRPLANE_LIGHTS = [
+    "airplane_landing",
+    "airplane_taxi",
+    "airplane_nav",
+    "airplane_beacon",
+    "airplane_flashing",
+    "airplane_strobe",
+]
+
 # Setup logging
 init_logging()
 log = logging.getLogger(__name__)
 
 # aircraft_categories = get_aircraft_categories()
+
+
+def is_wrong_light_in_animation(animation: str, good_light: str) -> bool:
+    """ Check if the animation contains a light that should not be in it
+        Creates a list of bad lights based on STANDARD_AIRPLANE_LIGHTS
+        and good_light
+
+    Args:
+        animation (str): The animation to check
+        good_light (str): The light that should be in it
+
+    Returns:
+        bool: True if the animation contains a light that should not be in it
+    """
+    _bad_lights = [
+        bad_light for bad_light in STANDARD_AIRPLANE_LIGHTS if bad_light not in good_light]
+    if any(_bad_lights in animation for _bad_lights in _bad_lights):
+        return True
+    return False
 
 
 def uncomment_light_line(line: str) -> str:
@@ -208,10 +236,10 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
     Returns:
             str: The updated animations sequence with nav lights
     """
-    # Found a very bad form of misuse of strobes in the nav light animation.
-    # Sending this one to the strobe converter
-    if "airplane_strobe" in animation:
-        raise WrongAnimationTypeError("This is a airplane_strobe animation")
+    # Sometimes the lights are wrong in this animation. It's a shame!
+    if is_wrong_light_in_animation(animation, "airplane_nav"):
+        raise WrongLightInAnimationError(
+            f"This animation conatins the wrong light type for airplane_nav!\n{animation}")
 
     _good_navs = ["airplane_nav_right",
                   "airplane_nav_left",
