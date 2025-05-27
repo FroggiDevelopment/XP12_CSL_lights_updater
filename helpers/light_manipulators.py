@@ -157,7 +157,7 @@ def convert_airplane_landing_lights(animation: str, landing_light_params_dict: d
 
     for line in animation.splitlines():
         leading_whitespaces = get_leading_whitespaces(line)
-
+        # TODO: Maybe creating airplane landing lights from none standard here is also necessary? To be checked....
         if "airplane_landing_" in line:
             animation = animation.replace(line, "")
             continue
@@ -198,7 +198,7 @@ def convert_airplane_taxi_lights(animation: str, taxi_light_params_dict: dict[st
     """
     for line in animation.splitlines():
         leading_whitespaces = get_leading_whitespaces(line)
-
+        # TODO: Maybe creating airplane taxi lights from none standard here is also necessary? To be checked....
         if "airplane_taxi_" in line:
             animation = animation.replace(line, "")
             continue
