@@ -239,7 +239,7 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
     # Sometimes the lights are wrong in this animation. It's a shame!
     if is_wrong_light_in_animation(animation, "airplane_nav"):
         raise WrongLightInAnimationError(
-            f"This animation conatins the wrong light type for airplane_nav!\n{animation}")
+            f"This animation contains the wrong light type for airplane_nav!\n{animation}")
 
     _good_navs = ["airplane_nav",
                   "airplane_nav_right",
@@ -346,7 +346,9 @@ def convert_airplane_beacon_lights(animation: str, beacon_light_params_dict: dic
 
                 spill_line = create_spill_lines(
                     new_light_line, "airplane_beacon")
+
                 new_line = f"{leading_whitespaces}{new_light_line}\n{leading_whitespaces}{spill_line}"
+
             animation = animation.replace(line, new_line)
 
     new_animation = os.linesep.join(
@@ -486,13 +488,15 @@ def increase_flashing_beacon_light_intensity(animation: str) -> str:
             str: The updated animations sequence with increased candelar intensity for beacon lights
         """
     increase_beacon_intensity_factor: float = 2.0
+
     light_intensity_list: list[str] = re.findall(
         r"\d+cd", animation.lower())
+
     unique_light_intensity_list: list[str] = []
+
     [unique_light_intensity_list.append(
         val) for val in light_intensity_list if val not in unique_light_intensity_list]
 
-    # Increase light intensity for flashing
     for light_intensity in unique_light_intensity_list:
         original_candelar = float(light_intensity.replace("cd", ""))
         increased_candelar = original_candelar * increase_beacon_intensity_factor
