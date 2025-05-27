@@ -120,58 +120,6 @@ def remove_positional_name_from_line(line: str) -> str:
     return line
 
 
-# def process_lights(line: str, light_params: dict[str, str]) -> str:
-#     """Changes the light parameters to XP12 specs
-
-#     Args:
-#         line (str): A string with light specifics parameters
-#         light_params (dict[str, str]): A dictionary with the light parameters
-
-#     Returns:
-#         str: A line with updated light parameters
-#     """
-#     # Remove possible unwanted params
-#     # Keep specifier, lighttype, x, y, z params
-#     line = " ".join(line.split()[:5])
-
-#     # Remove billboard lines, will be (re)build later on.
-#     if "_bb" in line:
-#         return ""
-
-#     # Remove pm suffix
-#     if "_pm" in line:
-#         line = line.replace("_pm", "")
-
-#     # Add position info to get correct light parameters from lights configuration file
-#     if "airplane_nav" in line or "airplane_strobe" in line:
-#         line = add_lateral_position_to_lights(line)
-
-#     lighttype = line.split()[1]
-
-#     line = line.replace("\n", "")
-#     line += f" {light_params[lighttype]}\n"
-
-#     # Remove psotion identifiers from line as they are "illegal" in light parameters
-#     if any(position in line for position in POSITION_IDENTIFIERS.keys()):
-#         line = remove_positional_name_from_line(line)
-
-#     lighttype = line.split()[1]
-
-#     if lighttype in ["airplane_nav", "airplane_beacon", "airplane_strobe"]:
-#         reduced_intensity_line = reduce_spill_intensity(
-#             line, lighttype)
-#         reduced_intensity_line = reduced_intensity_line.replace(
-#             f"{lighttype}", f"{lighttype}_pm")
-#         line = line.replace(
-#             f"{lighttype}", f"{lighttype}_bb") + reduced_intensity_line
-#         line = f"{line}\n"
-#     else:
-#         line = line.replace(f"{lighttype}", f"{lighttype}_pm")
-#         line += line.replace("_pm", "_bb")
-
-#     return line
-
-
 def split_object_file(object_file: str) -> tuple[str, str]:
     """Splits the object file in object part and animation part
 
