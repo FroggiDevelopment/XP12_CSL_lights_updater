@@ -142,6 +142,47 @@ def create_spill_lines(line_with_light_information: str, light_type: str) -> str
     return spill_line
 
 
+def create_spill_light_from_possibilities(animation: str, spill_light_name: str):
+    possible_light = re.search(
+        rf'^\s*LIGHT_PARAM\s+{spill_light_name.replace("_sp", "")}.*$', animation, re.MULTILINE)
+    if possible_light is not None:
+        light_name = possible_light.group().split()[1]
+        animation = animation.replace(light_name, spill_light_name)
+
+    return animation
+
+
+def replace_spill_light_with_convertable_light_type(animation: str, old_lights: list[str], light_to_find: str):
+    """ Searches for any spill light to create a light that can be converted
+
+    Args:
+        animation (str): The animations sequence with the lights
+        old_lights (list[str]): The old lights
+        light_to_find (str): The light to find
+
+    Returns:
+        str: The updated animations sequence with the convertable light
+    """
+    if "_sp" not in animation:
+        animation = create_spill_light_from_possibilities(
+            animation, light_to_find)
+
+    if any(old_light in animation for old_light in old_lights):
+        needle = rf'^\s*LIGHT_PARAM\s+{light_to_find}.*$'
+        matching_light_lines: list[str] = re.findall(needle,
+                                                     animation, re.MULTILINE)
+        for match in matching_light_lines:
+            if light_to_find in match:
+                animation = animation.replace(
+                    match,
+                    match.replace(
+                        light_to_find,
+                        light_to_find.replace("_sp", ""))
+                )
+
+    return animation
+
+
 def convert_airplane_landing_lights(animation: str, landing_light_params_dict: dict[str, str]) -> str:
     """ Converts airplane landing lights
 
@@ -180,17 +221,12 @@ def convert_airplane_landing_lights(animation: str, landing_light_params_dict: d
     if any(good_landing in animation for good_landing in _GOOD_LANDING_LIGHTS):
         pass
     else:
-        if any((gotcha := old_landing) in animation for old_landing in _OLD_LANDING_LIGHTS):
-            searchstring = fr"^\s*LIGHT_PARAM\s+{gotcha}.*$"
-            matching_light_line = re.search(searchstring,
-                                            animation, re.MULTILINE)
-            if matching_light_line:
-                line_to_replace = matching_light_line.group()
+        animation = replace_spill_light_with_convertable_light_type(
+            animation,
+            _OLD_LANDING_LIGHTS,
+            "airplane_landing_sp"
+        )
 
-                replaced_line = line_to_replace.replace(
-                    gotcha, 'airplane_landing ')
-                animation = animation.replace(
-                    line_to_replace, replaced_line, 1)
     for line in animation.splitlines():
         leading_whitespaces = get_leading_whitespaces(line)
 
@@ -255,17 +291,11 @@ def convert_airplane_taxi_lights(animation: str, taxi_light_params_dict: dict[st
     if any(good_taxi in animation for good_taxi in _GOOD_TAXI_LIGHTS):
         pass
     else:
-        if any((gotcha := old_taxi) in animation for old_taxi in _OLD_TAXI_LIGHTS):
-            searchstring = fr"^\s*LIGHT_PARAM\s+{gotcha}.*$"
-            matching_light_line = re.search(searchstring,
-                                            animation, re.MULTILINE)
-            if matching_light_line:
-                line_to_replace = matching_light_line.group()
-
-                replaced_line = line_to_replace.replace(
-                    gotcha, 'airplane_taxi ')
-                animation = animation.replace(
-                    line_to_replace, replaced_line, 1)
+        animation = replace_spill_light_with_convertable_light_type(
+            animation,
+            _OLD_TAXI_LIGHTS,
+            "airplane_taxi_sp"
+        )
 
     for line in animation.splitlines():
         leading_whitespaces = get_leading_whitespaces(line)
@@ -344,16 +374,12 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
     if any(good_nav in animation for good_nav in _GOOD_NAVS):
         pass
     else:
-        if any(old_nav in animation for old_nav in _OLD_NAVS):
-            matching_light_lines: list[str] = re.findall(r'^\s*LIGHT_PARAM\s+airplane_nav_.*$',
-                                                         animation, re.MULTILINE)
-            for match in matching_light_lines:
-                if "airplane_nav_sp" in match:
-                    animation = animation.replace(
-                        match,
-                        match.replace("airplane_nav_sp", "airplane_nav "),
-                    )
-        # TODO: Errorhandling if no nav light is found??
+        animation = replace_spill_light_with_convertable_light_type(
+            animation,
+            _OLD_NAVS,
+            "airplane_nav_sp"
+        )
+
     for line in animation.splitlines():
 
         leading_whitespaces = get_leading_whitespaces(line)
@@ -413,13 +439,22 @@ def convert_airplane_beacon_lights(animation: str, beacon_light_params_dict: dic
         "airplane_beacon_size",
     ]
 
-    # _GOOD_BEACONS = [
-    #     "airplane_beacon",
-    #     "airplane_beacon_bb",
-    #     "airplane_beacon_pm"
-    # ]
+    _GOOD_BEACONS = [
+        "airplane_beacon",
+        "airplane_beacon_bb",
+        "airplane_beacon_pm"
+    ]
 
     known_light_coordinates: list[str] = []
+
+    if any(good_beacon in animation for good_beacon in _GOOD_BEACONS):
+        pass
+    else:
+        animation = replace_spill_light_with_convertable_light_type(
+            animation,
+            _OLD_BEACONS,
+            "airplane_beacon_sp"
+        )
 
     for line in animation.splitlines():
         if "airplane_beacon" in line:
@@ -528,16 +563,11 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
     if any(good_strobe in animation for good_strobe in _GOOD_STROBES):
         pass
     else:
-        if any(old_strobe in animation for old_strobe in _OLD_STROBES):
-            matching_light_lines: list[str] = re.findall(r'^\s*LIGHT_PARAM\s+airplane_strobe_.*$',
-                                                         animation, re.MULTILINE)
-            for match in matching_light_lines:
-                if "airplane_strobe_sp" in match:
-                    animation = animation.replace(
-                        match,
-                        match.replace("airplane_strobe_sp",
-                                      "airplane_strobe "),
-                    )
+        animation = replace_spill_light_with_convertable_light_type(
+            animation,
+            _OLD_STROBES,
+            "airplane_strobe_sp"
+        )
 
     for line in animation.splitlines():
 
