@@ -217,7 +217,7 @@ def convert_airplane_landing_lights(animation: str, landing_light_params_dict: d
     animation = animation.replace("\t", "    ")
     if re.findall(r"LIGHT_PARAM.+airplane_landing", animation) == []:
         return animation
-    # TODO [LUFX-1]: Can be refactored to be one function on its own????? Will it work for all lights? I think so!!
+
     if any(good_landing in animation for good_landing in _GOOD_LANDING_LIGHTS):
         pass
     else:
