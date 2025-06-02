@@ -217,7 +217,7 @@ def convert_airplane_landing_lights(animation: str, landing_light_params_dict: d
     animation = animation.replace("\t", "    ")
     if re.findall(r"LIGHT_PARAM.+airplane_landing", animation) == []:
         return animation
-    # TODO: Can be refactored to be one function on its own????? Will it work for all lights? I think so!!
+    # TODO [LUFX-1]: Can be refactored to be one function on its own????? Will it work for all lights? I think so!!
     if any(good_landing in animation for good_landing in _GOOD_LANDING_LIGHTS):
         pass
     else:
@@ -631,7 +631,7 @@ def increase_flashing_beacon_light_intensity(animation: str) -> str:
     for light_intensity in unique_light_intensity_list:
         original_candelar = float(light_intensity.replace("cd", ""))
         increased_candelar = original_candelar * increase_beacon_intensity_factor
-        new_light_intensity = f"{increased_candelar}cd"
+        new_light_intensity = f"{int(increased_candelar)}cd"
         animation = animation.replace(
             light_intensity, new_light_intensity)
     return animation
@@ -770,7 +770,7 @@ def add_lateral_position_to_lights(line: str) -> str:
     return line.replace(actual_lighttype, lighttype)
 
 
-def reduce_spill_intensity(line: str, reduce_light_type: str) -> str:
+def reduce_spill_intensity(line: str, light_type: str) -> str:
     """Reduces the groundspill intensity of a light
 
     Args:
@@ -780,20 +780,26 @@ def reduce_spill_intensity(line: str, reduce_light_type: str) -> str:
     Returns:
         str: A line with reduced intensity
     """
-    reduce_factors = {
-        "airplane_landing": 0.75,
+    reduce_factors: dict[str, float] = {
+        "airplane_landing": 1.00,
         "airplane_taxi": 0.75,
         "airplane_nav": 0.40,
         "airplane_beacon": 0.35,
         "airplane_strobe": 0.50
     }
 
-    split_line = line.split()
-    intensity = int(split_line[9].replace("cd", ""))
+    current_candelar = re.search(r"\d+cd", line)
 
-    reduced_intensity = int(
-        intensity * (reduce_factors[reduce_light_type]))
-    split_line[9] = f"{str(reduced_intensity)}cd"
-    line_to_return = " ".join(split_line)
+    if current_candelar:
+        raw_candelar_value = current_candelar.group(0).replace("cd", "")
 
-    return line_to_return
+        reduced_candelar = int(float(raw_candelar_value)
+                               * reduce_factors[light_type])
+        print(f"Reduced candelar: {reduced_candelar}")
+
+        new_intensity_line = line.replace(
+            current_candelar.group(0), f"{str(reduced_candelar)}cd")
+
+        return new_intensity_line
+    log.error(f"Foudn no candelar value in {line}")
+    return line
