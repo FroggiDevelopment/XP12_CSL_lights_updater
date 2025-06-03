@@ -154,7 +154,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "libxplanemp/controls/strobe_lites_on": "airplane_strobe",
     }
 
-    _light_converters_per_lighttype: dict[str, Callable[[str, dict[str, str]], str]] = {
+    _light_converters: dict[str, Callable[[str, dict[str, str]], str]] = {
         "airplane_landing": convert_airplane_landing_lights,
         "airplane_taxi": convert_airplane_taxi_lights,
         "airplane_nav": convert_airplane_nav_lights,
@@ -174,13 +174,13 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
         if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
             light_type = _lighttype_per_dataref[light_dataref]
-            light_converter = _light_converters_per_lighttype[light_type]
+            light_converter = _light_converters[light_type]
 
             if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
                 aircraft_categories = get_aircraft_categories()
                 for category in aircraft_categories.items():
                     if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
-                        light_converter = _light_converters_per_lighttype["airplane_beacon_flashing"]
+                        light_converter = _light_converters["airplane_beacon_flashing"]
 
             try:
                 new_animation = light_converter(
