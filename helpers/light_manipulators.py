@@ -568,7 +568,7 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
             _OLD_STROBES,
             "airplane_strobe_sp"
         )
-
+    # TODO [LUFX-3]: Add routine to let the strobes flash with different frequency starts (same as beacons)
     for line in animation.splitlines():
 
         leading_whitespaces = get_leading_whitespaces(line)
@@ -795,7 +795,6 @@ def reduce_spill_intensity(line: str, light_type: str) -> str:
 
         reduced_candelar = int(float(raw_candelar_value)
                                * reduce_factors[light_type])
-        print(f"Reduced candelar: {reduced_candelar}")
 
         new_intensity_line = line.replace(
             current_candelar.group(0), f"{str(reduced_candelar)}cd")
