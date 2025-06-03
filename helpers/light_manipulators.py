@@ -535,6 +535,47 @@ def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_
     return new_animation
 
 
+def randomize_strobe_light_frequency(animation: str) -> str:
+    """ Randomizes the ferquency for strobe lights so that not all
+        aircraft flash at the same time
+
+     Args:
+         animation (str): The animations sequence with the strobe lights
+
+     Returns:
+             str: The updated animation with random strobe light frequency
+     """
+
+    flash_sequences = [
+        "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
+        "ANIM_show    0.3 0.4    sim/time/total_running_time_sec",
+        "ANIM_show    0.6 0.7    sim/time/total_running_time_sec"
+    ]
+    flash_sequence = random.choice(flash_sequences)
+
+    new_anim_hide = f"""
+    ANIM_hide	-1.0 1.0	libxplanemp/controls/strobe_lites_on
+    {flash_sequence}
+    ANIM_keyframe_loop 1.5
+    """
+
+    original_beacon_anim_hide = re.findall(
+        "ANIM_hide.+libxplanemp/controls/strobe_lites_on", animation)
+
+    if original_beacon_anim_hide == []:
+        return animation
+
+    new_animation = animation.replace(
+        original_beacon_anim_hide[0], new_anim_hide)
+
+    new_animation = new_animation.replace(
+        "airplane_strobe", "airplane_generic")
+
+    # new_animation = increase_flashing_beacon_light_intensity(new_animation)
+
+    return new_animation
+
+
 def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dict[str, str]) -> str:
     """Converts airplane strobe lights
 
@@ -606,6 +647,8 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
     new_animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
 
+    # add random strobe light frequency
+    # new_animation = randomize_strobe_light_frequency(new_animation)
     return new_animation
 
 
