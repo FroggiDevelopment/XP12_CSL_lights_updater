@@ -19,7 +19,6 @@ import re
 import logging
 import random
 from .init_logging import init_logging
-# from helpers.custom_exceptions import WrongLightInAnimationError
 
 # Some constants
 POSITION_IDENTIFIERS = ["_left", "_right", "_tail"]
@@ -50,8 +49,6 @@ STANDARD_AIRPLANE_LIGHTS = [
 # Setup logging
 init_logging()
 log = logging.getLogger(__name__)
-
-# aircraft_categories = get_aircraft_categories()
 
 
 def is_wrong_light_in_animation(animation: str, good_light: str) -> bool:
@@ -337,10 +334,6 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
     Returns:
             str: The updated animations sequence with nav lights
     """
-    # Sometimes the lights are wrong in this animation. It's a shame!
-    # if is_wrong_light_in_animation(animation, good_light="airplane_nav"):
-    #     raise WrongLightInAnimationError(
-    #         f"This animation contains the wrong light type for airplane_nav!\n{animation}")
 
     _GOOD_NAVS = [
         "airplane_nav ",
