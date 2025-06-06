@@ -29,5 +29,6 @@ from .light_manipulators import convert_airplane_nav_lights as convert_airplane_
 from .light_manipulators import convert_airplane_beacon_lights as convert_airplane_beacon_lights
 from .light_manipulators import convert_airplane_flashing_beacon_lights as convert_airplane_flashing_beacon_lights
 from .light_manipulators import convert_airplane_strobe_lights as convert_airplane_strobe_lights
+from .light_manipulators import convert_airbus_strobe_lights as convert_airbus_strobe_lights
 
 from .custom_exceptions import NoFilesFoundError as NoFilesFoundError
