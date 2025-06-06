@@ -500,15 +500,48 @@ def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_
     new_animation = convert_airplane_beacon_lights(
         animation, beacon_light_params_dict)
 
+    beacon_sequence_1 = """
+        ANIM_hide    0.0 0.1   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.2 1.5   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_2 = """
+        ANIM_hide    0.0 0.4   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.5 1.5   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_3 = """
+        ANIM_hide    0.0 0.7   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.8 1.5   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_4 = """
+        ANIM_hide    0.0 1.0   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.1 1.5   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_5 = """
+        ANIM_hide    0.0 1.3   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.4 1.5   sim/time/total_running_time_sec
+    """
+
     flash_sequences = [
-        "ANIM_show    0.0 0.1    sim/time/total_running_time_sec",
-        "ANIM_show    0.3 0.4    sim/time/total_running_time_sec",
-        "ANIM_show    0.6 0.7    sim/time/total_running_time_sec"
+        beacon_sequence_1,
+        beacon_sequence_2,
+        beacon_sequence_3,
+        beacon_sequence_4,
+        beacon_sequence_5
     ]
+
     flash_sequence = random.choice(flash_sequences)
 
     new_anim_hide = f"""
-    ANIM_hide	-1.0 1.0	libxplanemp/controls/beacon_lites_on
+    ANIM_hide	-1.0 0.0	libxplanemp/controls/beacon_lites_on
     {flash_sequence}
     ANIM_keyframe_loop 1.5
     """
@@ -572,11 +605,20 @@ def convert_airbus_strobe_lights(animation: str, strobe_light_params_dict: dict[
         ANIM_hide    1.3 1.5   sim/time/total_running_time_sec
     """
 
+    airbus_sequence_5: str = """
+        ANIM_hide    0.0 1.1   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.2 1.3   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.4 1.5   sim/time/total_running_time_sec
+    """
+
     flash_sequences = [
         airbus_sequence_1,
         airbus_sequence_2,
         airbus_sequence_3,
-        airbus_sequence_4
+        airbus_sequence_4,
+        airbus_sequence_5
     ]
 
     flash_sequence: str = random.choice(flash_sequences)
