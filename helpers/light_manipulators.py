@@ -181,76 +181,33 @@ def replace_spill_light_with_convertable_light_type(animation: str, old_lights: 
 
 
 def convert_airplane_landing_lights(animation: str, landing_light_params_dict: dict[str, str]) -> str:
-    """ Converts airplane landing lights
-
-    Args:
-        animation (str): The animations sequence with the landing lights
-        landing_light_params_dict (dict[str, str]): The params for the landing lights
-
-    Returns:
-            str: The updated animations sequence with landing lights
-    """
-
-    _OLD_LANDING_LIGHTS = [
-        "airplane_landing_core ",
-        "airplane_landing_glow ",
-        "airplane_landing_flare ",
-        "airplane_landing_sp",
-        "airplane_landing0 ",
-        "airplane_landing1 ",
-        "airplane_landing2 ",
-        "airplane_landing3 ",
-        "airplane_landing_size ",
-        "airplane_landing_flash ",
-        "PLN_airplane_landing "
-    ]
-
-    _GOOD_LANDING_LIGHTS = [
-        "airplane_landing_bb ",
-        "airplane_landing_pm ",
-        "airplane_landing "
-    ]
-
-    animation = animation.replace("\t", "    ")
-    if re.findall(r"LIGHT_PARAM.+airplane_landing", animation) == []:
-        return animation
-
-    if any(good_landing in animation for good_landing in _GOOD_LANDING_LIGHTS):
-        pass
-    else:
-        animation = replace_spill_light_with_convertable_light_type(
-            animation,
-            _OLD_LANDING_LIGHTS,
-            "airplane_landing_sp"
-        )
+    _known_coordinates: list[str] = []
+    animation.replace("\t", "....")
+    # animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
     for line in animation.splitlines():
-        leading_whitespaces = get_leading_whitespaces(line)
-
-        if "airplane_landing_" in line:
-            animation = animation.replace(line, "")
-            continue
-
         if "airplane_landing" in line:
-            # Remove possible comment sign
-            new_line = uncomment_light_line(line)
-            new_line = new_line.replace(
-                "airplane_landing", "airplane_landing_bb")
-            just_light = get_basic_light_params(new_line)
+            leading_whitespaces = get_leading_whitespaces(line)
+            coordinates = f"{line.split()[2]}    {line.split()[3]}    {line.split()[4]}"
+            if coordinates in _known_coordinates:
+                animation = animation.replace(line, "")
+                continue
+            _known_coordinates.append(coordinates)
+            line_start = "LIGHT_PARAM    airplane_landing_bb"
+            line_end = f"{landing_light_params_dict['airplane_landing']}"
 
-            new_light_line = f"{leading_whitespaces}{just_light} {landing_light_params_dict['airplane_landing']}"
+            new_line = f"{line_start}   {coordinates}   {line_end}"
+            spill_line = new_line.replace("_bb", "_pm")
+            spill_line = reduce_spill_intensity(
+                spill_line, "airplane_landing")
 
-            spill_line = create_spill_lines(new_light_line, "airplane_landing")
+            new_line = f"{leading_whitespaces}{new_line}\n{leading_whitespaces}{spill_line}"
 
-            animation = animation.replace(
-                line, new_light_line + "\n" + leading_whitespaces + spill_line)
+            animation = animation.replace(line, new_line)
 
+    # remove empty lines
     new_animation = os.linesep.join(
         [line for line in animation.splitlines() if line])
-
-    # Fix landing lights on frontgear
-    if is_front_gear_fix_done is False:
-        new_animation = fix_frontgear_landinglights(new_animation)
 
     return new_animation
 
@@ -985,5 +942,5 @@ def reduce_spill_intensity(line: str, light_type: str) -> str:
             current_candelar.group(0), f"{str(reduced_candelar)}cd")
 
         return new_intensity_line
-    log.error(f"Foudn no candelar value in {line}")
+    log.error(f"Found no candelar value in {line}")
     return line

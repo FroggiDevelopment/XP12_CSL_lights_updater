@@ -36,7 +36,7 @@ from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
 
-from helpers import convert_airplane_landing_lights
+from light_converters import convert_airplane_landing_lights
 from helpers import convert_airplane_taxi_lights
 from helpers import convert_airplane_nav_lights
 from helpers import convert_airplane_beacon_lights
@@ -195,7 +195,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "BCS3"
     ]
 
-    light_params: dict[str, dict[str, str]] = get_light_params_for_aircraft_type(
+    light_params_dict: dict[str, dict[str, str]] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
 
@@ -219,7 +219,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
             try:
                 new_animation: str = light_converter(
-                    _animation, light_params[light_type])
+                    _animation, light_params_dict[light_type])
             except WrongLightInAnimationError as err:
                 log.error(err)
                 continue
