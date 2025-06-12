@@ -1,1 +1,3 @@
 from .airplane_landing_converter import convert_airplane_landing_lights
+from .airplane_taxi_converter import convert_airplane_taxi_lights
+from .airplane_nav_converter import convert_airplane_nav_lights

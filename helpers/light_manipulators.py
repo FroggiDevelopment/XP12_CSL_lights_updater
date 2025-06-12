@@ -180,105 +180,105 @@ def replace_spill_light_with_convertable_light_type(animation: str, old_lights: 
     return animation
 
 
-def convert_airplane_landing_lights(animation: str, landing_light_params_dict: dict[str, str]) -> str:
-    _known_coordinates: list[str] = []
-    animation.replace("\t", "....")
-    # animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
+# def convert_airplane_landing_lights(animation: str, landing_light_params_dict: dict[str, str]) -> str:
+#     _known_coordinates: list[str] = []
+#     animation.replace("\t", "....")
+#     # animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
-    for line in animation.splitlines():
-        if "airplane_landing" in line:
-            leading_whitespaces = get_leading_whitespaces(line)
-            coordinates = f"{line.split()[2]}    {line.split()[3]}    {line.split()[4]}"
-            if coordinates in _known_coordinates:
-                animation = animation.replace(line, "")
-                continue
-            _known_coordinates.append(coordinates)
-            line_start = "LIGHT_PARAM    airplane_landing_bb"
-            line_end = f"{landing_light_params_dict['airplane_landing']}"
+#     for line in animation.splitlines():
+#         if "airplane_landing" in line:
+#             leading_whitespaces = get_leading_whitespaces(line)
+#             coordinates = f"{line.split()[2]}    {line.split()[3]}    {line.split()[4]}"
+#             if coordinates in _known_coordinates:
+#                 animation = animation.replace(line, "")
+#                 continue
+#             _known_coordinates.append(coordinates)
+#             line_start = "LIGHT_PARAM    airplane_landing_bb"
+#             line_end = f"{landing_light_params_dict['airplane_landing']}"
 
-            new_line = f"{line_start}   {coordinates}   {line_end}"
-            spill_line = new_line.replace("_bb", "_pm")
-            spill_line = reduce_spill_intensity(
-                spill_line, "airplane_landing")
+#             new_line = f"{line_start}   {coordinates}   {line_end}"
+#             spill_line = new_line.replace("_bb", "_pm")
+#             spill_line = reduce_spill_intensity(
+#                 spill_line, "airplane_landing")
 
-            new_line = f"{leading_whitespaces}{new_line}\n{leading_whitespaces}{spill_line}"
+#             new_line = f"{leading_whitespaces}{new_line}\n{leading_whitespaces}{spill_line}"
 
-            animation = animation.replace(line, new_line)
+#             animation = animation.replace(line, new_line)
 
-    # remove empty lines
-    new_animation = os.linesep.join(
-        [line for line in animation.splitlines() if line])
+#     # remove empty lines
+#     new_animation = os.linesep.join(
+#         [line for line in animation.splitlines() if line])
 
-    return new_animation
+#     return new_animation
 
 
-def convert_airplane_taxi_lights(animation: str, taxi_light_params_dict: dict[str, str]) -> str:
-    """ Converts airplane taxi lights to XP12 standard
+# def convert_airplane_taxi_lights(animation: str, taxi_light_params_dict: dict[str, str]) -> str:
+#     """ Converts airplane taxi lights to XP12 standard
 
-    Args:
-        animation (str): The animations sequence with the taxi lights
-        taxi_light_params_dict (dict[str, str]): The params for the taxi lights
+#     Args:
+#         animation (str): The animations sequence with the taxi lights
+#         taxi_light_params_dict (dict[str, str]): The params for the taxi lights
 
-    Returns:
-            str: The updated animations sequence with taxi lights
-    """
+#     Returns:
+#             str: The updated animations sequence with taxi lights
+#     """
 
-    _GOOD_TAXI_LIGHTS = [
-        "airplane_taxi ",
-        "airplane_taxi_bb ",
-        "airplane_taxi_pm "
-    ]
+#     _GOOD_TAXI_LIGHTS = [
+#         "airplane_taxi ",
+#         "airplane_taxi_bb ",
+#         "airplane_taxi_pm "
+#     ]
 
-    _OLD_TAXI_LIGHTS = [
-        "airplane_taxi_bb",
-        "airplane_taxi_core",
-        "airplane_taxi_glow",
-        "airplane_taxi_flare",
-        "airplane_taxi_sp",
-        "airplane_taxi_size",
-        "airplane_taxi_flash",
-        "PLN_airplane_taxi",
-    ]
+#     _OLD_TAXI_LIGHTS = [
+#         "airplane_taxi_bb",
+#         "airplane_taxi_core",
+#         "airplane_taxi_glow",
+#         "airplane_taxi_flare",
+#         "airplane_taxi_sp",
+#         "airplane_taxi_size",
+#         "airplane_taxi_flash",
+#         "PLN_airplane_taxi",
+#     ]
 
-    animation = animation.replace("\t", "    ")
+#     animation = animation.replace("\t", "    ")
 
-    if any(good_taxi in animation for good_taxi in _GOOD_TAXI_LIGHTS):
-        pass
-    else:
-        animation = replace_spill_light_with_convertable_light_type(
-            animation,
-            _OLD_TAXI_LIGHTS,
-            "airplane_taxi_sp"
-        )
+#     if any(good_taxi in animation for good_taxi in _GOOD_TAXI_LIGHTS):
+#         pass
+#     else:
+#         animation = replace_spill_light_with_convertable_light_type(
+#             animation,
+#             _OLD_TAXI_LIGHTS,
+#             "airplane_taxi_sp"
+#         )
 
-    for line in animation.splitlines():
-        leading_whitespaces = get_leading_whitespaces(line)
-        # TODO [LUFX-2]: Maybe creating airplane taxi lights from none standard here is also necessary? To be checked.
-        if "airplane_taxi_" in line:
-            animation = animation.replace(line, "")
-            continue
+#     for line in animation.splitlines():
+#         leading_whitespaces = get_leading_whitespaces(line)
+#         # TODO [LUFX-2]: Maybe creating airplane taxi lights from none standard here is also necessary? To be checked.
+#         if "airplane_taxi_" in line:
+#             animation = animation.replace(line, "")
+#             continue
 
-        # As there are rare cases of landing lights in these animations... fix it!
-        if "airplane_landing" in line:
-            line = line.replace("airplane_landing", "airplane_taxi")
+#         # As there are rare cases of landing lights in these animations... fix it!
+#         if "airplane_landing" in line:
+#             line = line.replace("airplane_landing", "airplane_taxi")
 
-        if "airplane_taxi" in line:
-            # Remove possible comment sign
-            new_line = uncomment_light_line(line)
-            new_line = new_line.replace("airplane_taxi", "airplane_taxi_bb")
-            just_light = get_basic_light_params(new_line)
-            new_light_line = f"{leading_whitespaces}{just_light} {taxi_light_params_dict['airplane_taxi']}"
-            spill_line = create_spill_lines(new_light_line, "airplane_taxi")
-            animation = animation.replace(
-                line, new_light_line + "\n" + leading_whitespaces + spill_line)
+#         if "airplane_taxi" in line:
+#             # Remove possible comment sign
+#             new_line = uncomment_light_line(line)
+#             new_line = new_line.replace("airplane_taxi", "airplane_taxi_bb")
+#             just_light = get_basic_light_params(new_line)
+#             new_light_line = f"{leading_whitespaces}{just_light} {taxi_light_params_dict['airplane_taxi']}"
+#             spill_line = create_spill_lines(new_light_line, "airplane_taxi")
+#             animation = animation.replace(
+#                 line, new_light_line + "\n" + leading_whitespaces + spill_line)
 
-    new_animation = os.linesep.join(
-        [line for line in animation.splitlines() if line])
+#     new_animation = os.linesep.join(
+#         [line for line in animation.splitlines() if line])
 
-    # Add ANIM_hide animation to hide when rectracted
-    if is_front_gear_fix_done(new_animation) is False:
-        new_animation = fix_taxilights(new_animation)
-    return new_animation
+#     # Add ANIM_hide animation to hide when rectracted
+#     if is_front_gear_fix_done(new_animation) is False:
+#         new_animation = fix_taxilights(new_animation)
+#     return new_animation
 
 
 def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str, str]) -> str:
@@ -344,7 +344,7 @@ def convert_airplane_nav_lights(animation: str, nav_light_params_dict: dict[str,
 
             # Add positional arguments to the line if it is missing
             if not any(positional_argument in line for positional_argument in POSITION_IDENTIFIERS):
-                new_line = add_lateral_position_to_lights(line)
+                new_line = add_lateral_position_to_lights(new_line)
 
             nav_light_with_position = new_line.split()[1]
             nav_light_params = nav_light_params_dict[nav_light_with_position]

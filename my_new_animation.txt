@@ -1,0 +1,13 @@
+ANIM_begin
+	ANIM_hide	-1.0 0.0	libxplanemp/controls/landing_lites_on
+	#LIGHT_NAMED	airplane_landing	 2.1435    2.3514    0.0077
+	LIGHT_PARAM	airplane_landing_core	 2.1435    2.3514    0.0077	0 0 -1 1 0.4
+	LIGHT_PARAM	airplane_landing_glow	 2.1435    2.3514    0.0077 0 0 -1 1 0.5
+	LIGHT_PARAM	airplane_landing_flare	 2.1435    2.3514    0.0077	0 0 -1 1 1.0
+	LIGHT_PARAM	airplane_landing_sp	 2.1435    2.3514    0.0077	2 2 2.5 1 300 0.7
+	#LIGHT_NAMED	airplane_landing	-2.1430    2.3514    0.0077
+	LIGHT_PARAM	airplane_landing_core	-2.1430    2.3514    0.0077	0 0 -1 1 0.4
+	LIGHT_PARAM	airplane_landing_glow	-2.1430    2.3514    0.0077 0 0 -1 1 0.5
+	LIGHT_PARAM	airplane_landing_flare	-2.1430    2.3514    0.0077	0 0 -1 1 1.0
+	LIGHT_PARAM	airplane_landing_sp	-2.1430    2.3514    0.0077	2 2 2.5 1 300 0.7
+ANIM_end
