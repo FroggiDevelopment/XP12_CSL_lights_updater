@@ -1,8 +1,0 @@
-ANIM_begin
-ANIM_hide 0.000000 0.500000 libxplanemp/misc/touch_down
-ANIM_show 0.500000 1.000000 libxplanemp/misc/touch_down
-smoke_black -2.317832 -2.914060 -0.000683 2.000000
-smoke_black 2.080105 -2.854628 -0.000683 2.000000
-smoke_white -2.317832 -2.914060 -0.000683 4.000000
-smoke_white 2.080105 -2.854628 -0.000683 4.000000
-ANIM_end
