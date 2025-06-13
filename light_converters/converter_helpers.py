@@ -1,4 +1,5 @@
 import re
+import json
 
 
 def reduce_spill_intensity(line: str, light_type: str) -> str:
@@ -11,13 +12,11 @@ def reduce_spill_intensity(line: str, light_type: str) -> str:
     Returns:
         str: A line with reduced intensity
     """
-    reduce_factors: dict[str, float] = {
-        "airplane_landing": 1.00,
-        "airplane_taxi": 0.75,
-        "airplane_nav": 0.40,
-        "airplane_beacon": 0.35,
-        "airplane_strobe": 0.50
-    }
+
+    # get reduce factors from file
+    with open("configs/aircraft_data.json", "r") as aircraft_data:
+        aircraft_data = json.load(aircraft_data)
+        reduce_factors = aircraft_data["reduce_factors"]
 
     current_candelar = re.search(r"\d+cd", line)
 
