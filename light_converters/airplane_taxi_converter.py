@@ -1,6 +1,6 @@
+import re
 import logging
 from helpers import init_logging
-import re
 from .base_converter import convert_airplane_lights
 
 # Setup logging
