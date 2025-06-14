@@ -59,8 +59,8 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
             new_line = f"{leading_whitespaces}{billboard_line}\n{leading_whitespaces}{spill_line}"
             animation = animation.replace(line, new_line)
 
-    # # remove empty lines
+    # remove empty lines
     new_animation = os.linesep.join(
-        [line for line in animation.splitlines() if line])
+        [line for line in animation.splitlines() if line.strip() != ""])
 
     return new_animation
