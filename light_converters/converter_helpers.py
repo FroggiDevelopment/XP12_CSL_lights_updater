@@ -101,3 +101,31 @@ def get_light_position(line: str) -> str:
         position = "_right"
 
     return position
+
+
+def increase_flashing_beacon_light_intensity(animation: str) -> str:
+    """ Increase the candelar for the beacon if they are flashing
+
+    Args:
+        animation (str): The animations sequence with the beacons
+
+    Returns:
+            str: The updated animations sequence with increased candelar intensity for beacon lights
+        """
+    increase_beacon_intensity_factor: float = 2.0
+
+    light_intensity_list: list[str] = re.findall(
+        r"\d+cd", animation.lower())
+
+    unique_light_intensity_list: list[str] = []
+
+    [unique_light_intensity_list.append(
+        val) for val in light_intensity_list if val not in unique_light_intensity_list]
+
+    for light_intensity in unique_light_intensity_list:
+        original_candelar = float(light_intensity.replace("cd", ""))
+        increased_candelar = original_candelar * increase_beacon_intensity_factor
+        new_light_intensity = f"{int(increased_candelar)}cd"
+        animation = animation.replace(
+            light_intensity, new_light_intensity)
+    return animation
