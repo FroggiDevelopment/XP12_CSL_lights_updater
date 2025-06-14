@@ -39,8 +39,8 @@ from helpers import paused_exit
 from light_converters import convert_airplane_landing_lights
 from light_converters import convert_airplane_taxi_lights
 from light_converters import convert_airplane_nav_lights
-from helpers import convert_airplane_beacon_lights
-from helpers import convert_airplane_flashing_beacon_lights
+from light_converters import convert_airplane_beacon_lights
+from light_converters import convert_airplane_flashing_beacon_lights
 from helpers import convert_airplane_strobe_lights
 from helpers import convert_airbus_strobe_lights
 
