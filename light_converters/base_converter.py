@@ -1,8 +1,16 @@
 import os
 import re
+
+import logging
+from helpers.init_logging import init_logging
+
 from .converter_helpers import reduce_spill_intensity
 from .converter_helpers import get_light_position
 from .converter_helpers import get_leading_whitespaces
+
+# Setup logging
+init_logging()
+log = logging.getLogger(__name__)
 
 
 def remove_flashing_sequences(animation: str, light_type: str) -> str:
@@ -35,7 +43,7 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
     # tabs to spaces
     animation.replace("\t", "    ")
 
-    # remove flashing sequences if present (clean base to comnvert)
+    # remove flashing sequences if present (create clean base to comnvert)
     if "sim/time/total_running_time_sec" in animation:
         animation = remove_flashing_sequences(animation, light_type)
 
@@ -50,17 +58,19 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
             coordinates = f"{line.split()[2]}    {line.split()[3]}    {line.split()[4]}"
             if coordinates in _known_coordinates:
                 animation = animation.replace(line, "")
+                log.debug(
+                    f"{light_type} at {coordinates} already converted, skipping this one!")
                 continue
             else:
                 _known_coordinates.append(coordinates)
 
             leading_whitespaces = get_leading_whitespaces(line)
-            if re.search(r"\d+cd", line):
+            if re.search(r"\d+", line):
                 new_line = line.replace("#", "")
             else:
                 continue
 
-            if light_type in ["airplane_nav"]:
+            if light_type in ["airplane_nav", "airplane_strobe"]:
                 light_position = get_light_position(new_line)
                 new_line = new_line.replace(
                     f"{light_type}", f"{light_type}{light_position}")

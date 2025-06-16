@@ -2,7 +2,14 @@ import re
 import os
 import random
 
+import logging
+from helpers.init_logging import init_logging
+
 from .base_converter import convert_airplane_lights
+
+# Setup logging
+init_logging()
+log = logging.getLogger(__name__)
 
 
 def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dict[str, str]) -> str:

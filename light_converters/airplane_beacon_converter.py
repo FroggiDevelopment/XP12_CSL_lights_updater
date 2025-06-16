@@ -2,8 +2,15 @@ import re
 import os
 import random
 
+import logging
+from helpers.init_logging import init_logging
+
 from .base_converter import convert_airplane_lights
 from .converter_helpers import increase_flashing_beacon_light_intensity
+
+# Setup logging
+init_logging()
+log = logging.getLogger(__name__)
 
 
 def convert_airplane_beacon_lights(animation: str, light_params_dict: dict[str, str]) -> str:
