@@ -41,8 +41,9 @@ from light_converters import convert_airplane_taxi_lights
 from light_converters import convert_airplane_nav_lights
 from light_converters import convert_airplane_beacon_lights
 from light_converters import convert_airplane_flashing_beacon_lights
-from helpers import convert_airplane_strobe_lights
-from helpers import convert_airbus_strobe_lights
+from light_converters import convert_airplane_strobe_lights
+from light_converters import convert_airbus_strobe_lights
+# from helpers import convert_airbus_strobe_lights
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from helpers.custom_exceptions import WrongLightInAnimationError
@@ -161,8 +162,8 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "airplane_nav": convert_airplane_nav_lights,
         "airplane_beacon": convert_airplane_beacon_lights,
         "airplane_beacon_flashing": convert_airplane_flashing_beacon_lights,
-        "airplane_airbus_strobe": convert_airbus_strobe_lights,
-        "airplane_strobe": convert_airplane_strobe_lights
+        "airplane_strobe": convert_airplane_strobe_lights,
+        "airplane_airbus_strobe": convert_airbus_strobe_lights
     }
 
     # TODO: Move this list to a config or at least up in this code
