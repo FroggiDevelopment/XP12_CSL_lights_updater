@@ -56,7 +56,7 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
             spill_line = billboard_line.replace("_bb", "_pm")
             spill_line = reduce_spill_intensity(
                 spill_line, light_type)
-            new_line = f"{leading_whitespaces}{billboard_line}\n{leading_whitespaces}{spill_line}"
+            new_line = f"{leading_whitespaces}{billboard_line}{os.linesep}{leading_whitespaces}{spill_line}"
             animation = animation.replace(line, new_line)
 
     # remove empty lines
