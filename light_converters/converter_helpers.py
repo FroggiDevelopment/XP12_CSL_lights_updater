@@ -107,3 +107,55 @@ def increase_flashing_beacon_light_intensity(animation: str) -> str:
         animation = animation.replace(
             light_intensity, new_light_intensity)
     return animation
+
+
+def fix_frontgear_landinglights(animation: str) -> str:
+    """Fixes the case where the frontgear landinglights were still visible after the landing gear is retracted
+
+    Args:
+        animation (str): Textblock with the lights
+        extra_hide_anim (str): String with the hide 'animation' to kill the lights when retracted.
+
+    Returns:
+        str | None: Fixed textblock, None if nothing has changed
+    """
+    log.debug("Fixing frontgear landinglights hide animation.")
+
+    extra_anim_hide: str = (
+        "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
+    )
+
+    original_landinglight_anim_hide: list[str] = re.findall(
+        r"\s*ANIM_hide.+libxplanemp/controls/landing_lites_on", animation
+    )
+
+    original_landinglights_anim_show: list[str] = re.findall(
+        r"^\s*ANIM_show.+landing_lites_on", animation
+    )
+
+    if original_landinglight_anim_hide == []:
+        log.debug("Nothing found")
+        return animation
+    landing_lights_anim_hide = original_landinglight_anim_hide[0]
+    leading_whitespaces = get_leading_whitespaces(
+        landing_lights_anim_hide).replace("\n", "")
+
+    light_parameter: list[str] = re.findall(
+        "LIGHT_PARAM airplane_landing.+", animation)
+
+    x_position = float(light_parameter[0].split()[2])
+
+    if x_position < 0.5 and x_position > -0.5:
+        new_animation = animation.replace(
+            landing_lights_anim_hide,
+            f"{landing_lights_anim_hide}\n{leading_whitespaces}{extra_anim_hide}",
+        )
+
+        if original_landinglights_anim_show != []:
+            new_animation = new_animation.replace(
+                f"{original_landinglights_anim_show[0]}\n", ""
+            )
+
+        return new_animation
+
+    return animation
