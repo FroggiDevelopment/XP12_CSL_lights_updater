@@ -55,7 +55,10 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
                 _known_coordinates.append(coordinates)
 
             leading_whitespaces = get_leading_whitespaces(line)
-            new_line = line.replace("#", "")
+            if re.search(r"\d+cd", line):
+                new_line = line.replace("#", "")
+            else:
+                continue
 
             if light_type in ["airplane_nav"]:
                 light_position = get_light_position(new_line)
