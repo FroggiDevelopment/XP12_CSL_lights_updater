@@ -1,4 +1,5 @@
 import re
+import os
 import logging
 from helpers import init_logging
 from .base_converter import convert_airplane_lights
@@ -47,14 +48,14 @@ def fix_taxilights(animation: str) -> str:
             leading_whitespaces.group()
             new_animation = new_animation.replace(
                 original_taxi_anim_hide[0],
-                f"{original_taxi_anim_hide[0]}\n{leading_whitespaces}{extra_anim_hide}",
+                f"{original_taxi_anim_hide[0]}{os.linesep}{leading_whitespaces}{extra_anim_hide}",
             )
         original_taxi_anim_show = re.findall(
             "ANIM_show.+taxi_lites_on", new_animation)
 
         if original_taxi_anim_show != []:
             new_animation = new_animation.replace(
-                f"{original_taxi_anim_show[0]}\n",
+                f"{original_taxi_anim_show[0]}{os.linesep}",
                 "",
             )
         return new_animation
