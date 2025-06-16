@@ -16,6 +16,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 """
 
 import re
+import os
 import logging
 from pathlib import Path
 
@@ -108,7 +109,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: Path) -> list[dict[str, str]]
                 aircraft_object: dict[str, str] = {}
                 legit_object_paths: list[str] = []
 
-                for line in aircraft_description.split("\n"):
+                for line in aircraft_description.split(os.linesep):
                     # Get ICAO identifier for this aircraft
                     if line.startswith("#"):
                         continue
