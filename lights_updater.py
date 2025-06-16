@@ -16,6 +16,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 import re
+import os
 import argparse
 import logging
 from pathlib import Path
@@ -249,7 +250,7 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             continue
         except UnicodeDecodeError as err:
             log.error(
-                f"Object file seems damaged! See: {err}\n Trying to repair it.")
+                f"Object file seems damaged! See: {err}{os.linesep}Trying to repair it.")
             continue
 
         if aircraft_object_content == "":
@@ -328,9 +329,10 @@ def parse_args() -> argparse.Namespace:
         action="store",
         metavar="path",
         dest="csl_path",
-        help="Set path to location of CSL aircrafts.\n"
-        "If there are whitespaces in the path,\nyou MUST use quotation marks around the path!\n"
-        "To be save: Always use them.",
+        help="""Set path to location of CSL aircrafts.
+If there are whitespaces in the path, you MUST use quotation marks around the path!
+To be save: Always use them.
+        """,
     )
 
     parser.add_argument(
