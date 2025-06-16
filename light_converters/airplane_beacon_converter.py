@@ -8,8 +8,21 @@ from .converter_helpers import increase_flashing_beacon_light_intensity
 
 def convert_airplane_beacon_lights(animation: str, light_params_dict: dict[str, str]) -> str:
     light_type = "airplane_beacon"
+
+    # Remove flashing sequence if present to get a clean version or go back to none flashing
+    pattern = r"(?s)(ANIM_hide.+sim/time/total_running_time_sec.+?ANIM_keyframe_loop \d.\d)"
+    matches = re.findall(pattern, animation, re.MULTILINE)
+
+    if matches != []:
+        animation = animation.replace("generic", "beacon")
+        for match in matches:
+            print(match)
+            animation = animation.replace(
+                match, "ANIM_hide -1.000000 0.000000 libxplanemp/controls/beacon_lites_on")
+
     new_animation = convert_airplane_lights(
         animation, light_params_dict, light_type)
+
     return new_animation
 
 
