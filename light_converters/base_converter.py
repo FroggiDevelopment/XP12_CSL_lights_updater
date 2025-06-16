@@ -1,7 +1,22 @@
 import os
+import re
 from .converter_helpers import reduce_spill_intensity
 from .converter_helpers import get_light_position
 from .converter_helpers import get_leading_whitespaces
+
+
+def remove_flashing_sequences(animation: str, light_type: str) -> str:
+    pattern = r"(?s)(ANIM_hide.+sim/time/total_running_time_sec.+?ANIM_keyframe_loop \d.\d)"
+    matches = re.findall(pattern, animation, re.MULTILINE)
+
+    light_name = light_type.split("_")[1]
+    if matches != []:
+        animation = animation.replace("generic", light_name)
+        for match in matches:
+            animation = animation.replace(
+                match, f"ANIM_hide -1.000000 0.000000 libxplanemp/controls/{light_name}_lites_on")
+
+    return animation
 
 
 def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], light_type: str) -> str:
@@ -19,6 +34,10 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
 
     # tabs to spaces
     animation.replace("\t", "    ")
+
+    # remove flashing sequences if present (clean base to comnvert)
+    if "sim/time/total_running_time_sec" in animation:
+        animation = remove_flashing_sequences(animation, light_type)
 
     # remove spill line extension so the new one(s) don't get delete in the process
     animation = animation.replace("_pm", "")
