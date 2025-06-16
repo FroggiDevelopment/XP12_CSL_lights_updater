@@ -32,7 +32,8 @@ If you specify a path with -p / --path when processing the objects and you want 
 or remove the backup files with -r / --remove-backups, you need the specify the path again!
 If you don't and there is a path specified in the config.ini, results may not be what you expected!\x1b[0m
 
-Now you know!\n
+Now you know!
+
 """
 
 DESCRIPTION_WINDOWS = """
@@ -51,7 +52,7 @@ If you specify a path with -p / --path when processing the objects and you want 
 or remove the backup files with -r / --remove-backups, you need the specify the path again!
 If you don't and there is a path specified in the config.ini, results may not be what you expected!\x1b[0m
 
-Now you know!\n
+Now you know!
 """
 
 
