@@ -55,7 +55,7 @@ def fix_frontgear_landinglights(animation: str) -> str:
     log.debug("Fixing frontgear landinglights hide animation.")
 
     extra_anim_hide: str = (
-        "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
+        "ANIM_hide -1.000000 0.800000 libxplanemp/controls/gear_ratio"
     )
 
     original_landinglight_anim_show: re.Match[str] | None = re.search(

@@ -35,7 +35,7 @@ def fix_taxilights(animation: str) -> str:
     """
     log.debug("Fixing frontgear taxilights hide animation.")
     extra_anim_hide: str = (
-        "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
+        "ANIM_hide -1.000000 0.800000 libxplanemp/controls/gear_ratio"
     )
     new_animation = animation.replace("landing_lites_on", "taxi_lites_on")
 
