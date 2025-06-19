@@ -1,8 +1,11 @@
 import re
 import os
+
 import logging
 from helpers import init_logging
+
 from .base_converter import convert_airplane_lights
+from .converter_helpers import get_leading_whitespaces
 
 # Setup logging
 init_logging()
@@ -35,21 +38,19 @@ def fix_taxilights(animation: str) -> str:
         "ANIM_hide -1.000000 0.500000 libxplanemp/controls/gear_ratio"
     )
     new_animation = animation.replace("landing_lites_on", "taxi_lites_on")
-    original_taxi_anim_hide: re.Match[str] | None = re.match(
-        r"\s*ANIM_hide.+taxi_lites_on", new_animation
+
+    original_taxi_anim_hide: re.Match[str] | None = re.search(
+        r"ANIM_hide.+libxplanemp/controls/taxi_lites_on", new_animation
     )
     if original_taxi_anim_hide:
         anim_hide_line = original_taxi_anim_hide.group()
 
-        leading_whitespaces: re.Match[str] | None = re.match(
-            r"^\s*", anim_hide_line)
+        leading_whitespaces = get_leading_whitespaces(anim_hide_line)
 
-        if leading_whitespaces:
-            leading_whitespaces.group()
-            new_animation = new_animation.replace(
-                original_taxi_anim_hide[0],
-                f"{original_taxi_anim_hide[0]}{os.linesep}{leading_whitespaces}{extra_anim_hide}",
-            )
+        new_animation = new_animation.replace(
+            original_taxi_anim_hide[0],
+            f"{original_taxi_anim_hide[0]}{os.linesep}{leading_whitespaces}{extra_anim_hide}",
+        )
         original_taxi_anim_show = re.findall(
             "ANIM_show.+taxi_lites_on", new_animation)
 
