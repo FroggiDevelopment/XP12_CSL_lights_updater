@@ -44,13 +44,15 @@ from light_converters import convert_airplane_beacon_lights
 from light_converters import convert_airplane_flashing_beacon_lights
 from light_converters import convert_airplane_strobe_lights
 from light_converters import convert_airbus_strobe_lights
-# from helpers import convert_airbus_strobe_lights
+
+import configs.aircraft_processing_data as aircraft_processing_data
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from helpers.custom_exceptions import WrongLightInAnimationError
 
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
+from light_converters.converter_helpers import remove_show_animation
 
 # Setup logging
 init_logging()
@@ -206,18 +208,30 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     for animation in list_of_animations:
         _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
-        if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
+        # remvoe ANIM_show line if present as it is not needed
+        _animation = remove_show_animation(_animation)
+
+        if any((light_dataref := dataref) in _animation for dataref in _lighttype_per_dataref.keys()):
             light_type: str = _lighttype_per_dataref[light_dataref]
             light_converter = _light_converters[light_type]
 
+            # Special case 1: Flashing beacons
             if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
                 aircraft_categories = get_aircraft_categories()
                 for category in aircraft_categories.items():
                     if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
                         light_converter = _light_converters["airplane_beacon_flashing"]
 
+            # Special case 2: Airbus strobe
             if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icaos:
                 light_converter = _light_converters["airplane_airbus_strobe"]
+
+            # Special case 3: Taxilight in wrong landing lights animation (found with Bluebell's)
+            if light_dataref == "libxplanemp/controls/landing_lites_on" and "airplane_taxi" in _animation:
+                _animation = _animation.replace(
+                    "landing_lites_on", "taxi_lites_on")
+                light_type = "airplane_taxi"
+                light_converter = _light_converters["airplane_taxi"]
 
             try:
                 new_animation: str = light_converter(
@@ -263,6 +277,12 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             continue
 
         log.info(f"Processing {aircraft_object_path}")
+
+        # Set data for usage in submodules
+        aircraft_processing_data.AircraftData.icao_type = aircraft_object["icao_type"]
+        aircraft_processing_data.AircraftData.full_object_path = aircraft_object[
+            "full_object_path"]
+
         new_animations_section = process_animations_section(
             animations, aircraft_object["icao_type"])
 
