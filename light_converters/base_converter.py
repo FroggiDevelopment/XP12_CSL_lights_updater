@@ -7,6 +7,7 @@ from helpers.init_logging import init_logging
 from .converter_helpers import reduce_spill_intensity
 from .converter_helpers import get_light_position
 from .converter_helpers import get_leading_whitespaces
+from .converter_helpers import remove_show_animation
 
 # Setup logging
 init_logging()
@@ -49,6 +50,9 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
 
     # remove spill line extension so the new one(s) don't get delete in the process
     animation = animation.replace("_pm", "")
+
+    # remove ANIM_show line if present as it is not needed
+    animation = remove_show_animation(animation)
 
     list_of_animation_lines: list[str] = animation.splitlines()
     for line in list_of_animation_lines:
