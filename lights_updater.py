@@ -52,7 +52,6 @@ from helpers.custom_exceptions import WrongLightInAnimationError
 
 from decorators.time_benchmark import named_time_benchmark, time_benchmark
 from configs._version import __version__
-from light_converters.converter_helpers import remove_show_animation
 
 # Setup logging
 init_logging()
@@ -207,9 +206,6 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
     for animation in list_of_animations:
         _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
-
-        # remvoe ANIM_show line if present as it is not needed
-        _animation = remove_show_animation(_animation)
 
         if any((light_dataref := dataref) in _animation for dataref in _lighttype_per_dataref.keys()):
             light_type: str = _lighttype_per_dataref[light_dataref]
