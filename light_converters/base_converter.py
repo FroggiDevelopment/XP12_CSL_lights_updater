@@ -54,8 +54,11 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
     for line in list_of_animation_lines:
         light_position: str = ""
         if light_type in line:
-
+            if "#~" in line:
+                animation = animation.replace(line, "")
+                continue
             coordinates = f"{line.split()[2]}    {line.split()[3]}    {line.split()[4]}"
+
             if coordinates in _known_coordinates:
                 animation = animation.replace(line, "")
                 log.debug(
@@ -85,6 +88,7 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
                 light_type = light_type.replace(position, "")
 
             billboard_line = f"{line_start}   {coordinates}   {line_end}"
+
             spill_line = billboard_line.replace("_bb", "_pm")
             spill_line = reduce_spill_intensity(
                 spill_line, light_type)
