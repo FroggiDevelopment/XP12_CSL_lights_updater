@@ -110,7 +110,9 @@ def increase_flashing_beacon_light_intensity(animation: str) -> str:
 
 
 def remove_show_animation(animation: str) -> str:
-    """ Remove the show animation line (ANIM_show) from the animation
+    """ Remove the show animation line (ANIM_show) from the animation.
+        In case of light animations it seem not necessary and somtimes
+        overrules the settings from this programm
 
     Args:
         animation (str): The animations
