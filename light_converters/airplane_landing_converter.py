@@ -48,9 +48,8 @@ def fix_frontgear_landinglights(animation: str) -> str:
         r"LIGHT_PARAM\s+airplane_landing.+", animation)
 
     if light_parameter == []:
-        log.error("No light parameter found!")
         log.error(
-            f"Filepath: {aircraft_processing_data.AircraftData.full_object_path}")
+            f"No light parameter found in file: {aircraft_processing_data.AircraftData.full_object_path}")
         return animation
 
     log.debug("Fixing frontgear landinglights hide animation.")
