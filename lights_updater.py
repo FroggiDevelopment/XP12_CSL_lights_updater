@@ -17,13 +17,12 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 """
 import re
 import os
+import sys
 import argparse
 import logging
 from pathlib import Path
 from configparser import ConfigParser, NoSectionError, NoOptionError
 from typing import Callable
-
-from tkinter import messagebox
 
 from helpers import make_backup
 from helpers import remove_backups
@@ -414,11 +413,6 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
 
     # Special actions first!
 
-    if args.gui:
-        messagebox.showinfo(  # type: ignore
-            "Information", "Script started with GUI")
-        paused_exit()
-
     if args.undo:  # Undo changes, recover object from backup.
         recover_from_backup(aircraft_objects)
         return
@@ -450,6 +444,13 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
 
 if __name__ == "__main__":
     args = parse_args()
+    # GUI? You get it!
+    if args.gui:
+        from helpers.app_gui import ConfigCreator
+        config = ConfigCreator()
+        config.show_gui()
+        sys.exit()
+
     # To set this var as global, I do it here. Rest is set in the main() function
     if args.flashing_beacons:
         flashing_beacons = True
