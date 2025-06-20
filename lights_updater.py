@@ -23,6 +23,8 @@ from pathlib import Path
 from configparser import ConfigParser, NoSectionError, NoOptionError
 from typing import Callable
 
+from tkinter import messagebox
+
 from helpers import make_backup
 from helpers import remove_backups
 from helpers import recover_from_backup
@@ -352,6 +354,15 @@ To be save: Always use them.
     )
 
     parser.add_argument(
+        "-g",
+        "--gui",
+        required=False,
+        action="store_true",
+        help="""Starts a graphical user interface for the ligts_updater.
+        """,
+    )
+
+    parser.add_argument(
         "-f",
         "--flashing-beacons",
         required=False,
@@ -402,6 +413,11 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
         searchpath=csl_path)
 
     # Special actions first!
+
+    if args.gui:
+        messagebox.showinfo(  # type: ignore
+            "Information", "Script started with GUI")
+        paused_exit()
 
     if args.undo:  # Undo changes, recover object from backup.
         recover_from_backup(aircraft_objects)
