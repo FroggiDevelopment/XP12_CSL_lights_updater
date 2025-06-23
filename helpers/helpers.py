@@ -24,17 +24,24 @@ from .init_logging import init_logging
 
 from .custom_exceptions import NoFilesFoundError
 
+import configs.program_env as program_env
+
 from decorators.time_benchmark import time_benchmark
 
 # Setup logging
 init_logging()
 log = logging.getLogger(__name__)
 
+interactive = program_env.ProgramEnv.interactive
+
 
 def paused_exit() -> None:
     """ Before exiting ask the user to press key. Will help seeing possible messages before the window closes.
     """
-    input("Press any key to continue...")
+    if interactive:
+        print(f"Interactive is set to: {interactive}")
+        input("Press any key to continue...")
+    print("Exiting the rude way.. Bye!")
     sys.exit()
 
 
@@ -105,14 +112,10 @@ def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
                                                  including path information
     """
     files_to_remove: list[Path] = []
-    log.info("Backups will be removed now! This is PERMANENT!!")
-    yes_no = input("Are you sure? yes/No: " or "No")
-    if yes_no.lower() == "yes" or yes_no.lower() == "y":
-        log.info("Okay! Let's do it....!!")
-        for aircraft_object in aircraft_objects:
-            files_to_remove.append(Path(aircraft_object["full_object_path"]))
-        delete_files(files_to_remove, ".BCK")
-        log.info("Backup files removed successfully!")
+    for aircraft_object in aircraft_objects:
+        files_to_remove.append(Path(aircraft_object["full_object_path"]))
+    delete_files(files_to_remove, ".BCK")
+    log.info("Backup files removed successfully!")
 
 
 @time_benchmark

@@ -17,7 +17,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 """
 import re
 import os
-import sys
+
 import argparse
 import logging
 from pathlib import Path
@@ -47,6 +47,7 @@ from light_converters import convert_airplane_strobe_lights
 from light_converters import convert_airbus_strobe_lights
 
 import configs.aircraft_processing_data as aircraft_processing_data
+import configs.program_env as program_env
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from helpers.custom_exceptions import WrongLightInAnimationError
@@ -104,6 +105,7 @@ POSITION_IDENTIFIERS: dict[str, str] = {
 }
 
 flashing_beacons: bool = False
+interactive: bool = True
 
 
 def remove_positional_name_from_line(line: str) -> str:
@@ -315,11 +317,13 @@ def set_csl_path() -> str:
         except NoSectionError:
             log.error(
                 "No csl section found in config.ini! Please check your config file!")
-            paused_exit()
+            if interactive:
+                paused_exit()
         except NoOptionError:
             log.error(
                 "No csl_path option found in config.ini! Please check your config file!")
-            paused_exit()
+            if interactive:
+                paused_exit()
     return ""
 
 
@@ -353,17 +357,15 @@ To be save: Always use them.
     )
 
     parser.add_argument(
-        "-g",
-        "--gui",
+        "--from_gui",
         required=False,
         action="store_true",
-        help="""Starts a graphical user interface for the ligts_updater.
-        """,
+        help=argparse.SUPPRESS
     )
 
     parser.add_argument(
         "-f",
-        "--flashing-beacons",
+        "--flashing_beacons",
         required=False,
         action="store_true",
         help="Sets the beacons to be flashing beacons on bigger airplanes!",
@@ -379,7 +381,7 @@ To be save: Always use them.
 
     parser.add_argument(
         "-r",
-        "--remove-backups",
+        "--remove_backups",
         action="store_true",
         help="Removes the backup files. Be careful!",
     )
@@ -405,7 +407,8 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
     """
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     if not check_if_files_are_in_correct_json():
-        paused_exit()
+        if interactive:
+            paused_exit()
 
     # Get the list of aircraft objects and its file locations
     aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(
@@ -418,7 +421,15 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
         return
 
     if args.remove_backups:  # Remove the backupfiles.
-        remove_backups(aircraft_objects)
+        log.info("Backups will be removed now! This is PERMANENT!!")
+
+        if interactive is False:
+            yes_no = "yes"
+        else:
+            yes_no = input("Are you sure? yes/No: " or "No")
+        if yes_no.lower() == "yes" or yes_no.lower() == "y":
+            log.info("Okay! Let's do it....!!")
+            remove_backups(aircraft_objects)
         return
 
     # Start of main processing
@@ -444,12 +455,10 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
 
 if __name__ == "__main__":
     args = parse_args()
-    # GUI? You get it!
-    if args.gui:
-        from helpers.app_gui import ConfigCreator
-        config = ConfigCreator()
-        config.show_gui()
-        sys.exit()
+
+    if args.from_gui:
+        interactive = False
+        program_env.ProgramEnv.interactive = False
 
     # To set this var as global, I do it here. Rest is set in the main() function
     if args.flashing_beacons:
@@ -465,6 +474,8 @@ if __name__ == "__main__":
     if csl_path.is_dir() is False:
         log.info(
             "CSL path seems not to be a valid directory! Please check the path!")
-        paused_exit()
+        if interactive:
+            paused_exit()
     main(args, csl_path)
-    paused_exit()
+    if interactive:
+        paused_exit()

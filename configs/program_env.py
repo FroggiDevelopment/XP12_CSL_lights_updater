@@ -1,0 +1,2 @@
+class ProgramEnv:
+    interactive = True
