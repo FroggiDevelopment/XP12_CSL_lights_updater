@@ -33,7 +33,7 @@ def init_logging():
             sys.exit()
         except json.decoder.JSONDecodeError:
             print(
-                "Logging config might be corrupted. Please check the configfile for consistency!"
+                "Logging config might be corrupted. Please check the configfile for consistency!", flush=True
             )
             input("Press any key to continue...")
             sys.exit()
