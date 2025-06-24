@@ -13,6 +13,9 @@ class StdOutRedirect:
         self.widget = widget
 
     def write(self, text: str):
+        self.widget.after(0, self._write, text)
+
+    def _write(self, text: str):
         self.widget.insert(tkinter.END, text)
         self.widget.yview(tkinter.END)  # type: ignore
 
@@ -22,7 +25,7 @@ class StdOutRedirect:
 
 class UpdaterGui:
     def __init__(self) -> None:
-        self.config: dict[str, str] = {"csl_path": "."}
+        self.config: dict[str, str] = {"csl_path": ""}
 
     def show_gui(self) -> None:
         self.root = tkinter.Tk()
@@ -42,8 +45,13 @@ class UpdaterGui:
             self.root, text="No processing running!", fg="blue", padx=5, pady=5
         )
         self.process_info_label.pack()
-        self.selected_dir_label = tkinter.Label(
-            self.root, text="No CSL directory selected!", fg="red", padx=5, pady=5)
+        if self.config["csl_path"] == "":
+            self.selected_dir_label = tkinter.Label(
+                self.root, text="CSL directory: not selected!", fg="red", padx=5, pady=5)
+        else:
+            self.selected_dir_label = tkinter.Label(
+                self.root, text=f"CSL directory: {self.config['csl_path']}", fg="red", padx=5, pady=5)
+
         self.selected_dir_label.pack()
 
         self.output = ScrolledText(self.root)
@@ -75,9 +83,9 @@ class UpdaterGui:
 
         self.file_menu.add_command(label="Exit", command=self.root.destroy)
 
-        self.config_menu = tkinter.Menu(self.menu, tearoff=False)
+        self.CSL_menu = tkinter.Menu(self.menu, tearoff=False)
 
-        self.config_menu.add_command(
+        self.CSL_menu.add_command(
             label="Select CSL directory",
             command=self.set_csl_directory
         )
@@ -94,8 +102,8 @@ class UpdaterGui:
         )
 
         self.menu.add_cascade(
-            label="Config",
-            menu=self.config_menu,
+            label="CSL",
+            menu=self.CSL_menu,
             underline=0
         )
 
@@ -123,32 +131,32 @@ class UpdaterGui:
 
     def run_process(self, cli_params: str) -> None:
         self.output.delete(1.0, tkinter.END)
-        if cli_params == "":
-            process: subprocess.Popen[str] | None = subprocess.Popen(
-                ["python3", "lights_updater.py", "-p",
-                 self.config["csl_path"], "--from_gui"],
-                text=True, stdout=subprocess.PIPE, bufsize=0, shell=False
-            )
-        else:
-            process: subprocess.Popen[str] | None = subprocess.Popen(
-                ["python3", "lights_updater.py", "-p",
-                    self.config["csl_path"], cli_params, "--from_gui"],
-                text=True, stdout=subprocess.PIPE, bufsize=0, shell=False
+        self.process_info_label.config(text="Processing...", fg="blue")
+
+        cmd = ["python3", "lights_updater.py", "-p",
+               self.config["csl_path"], "--from_gui"]
+        if cli_params:
+            cmd.insert(-1, cli_params)
+
+        def reader_thread():
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1
             )
 
-        while True:
-            if process.poll() is not None:
-                break
-            msg: str = process.stdout.readline().strip()  # type: ignore
-            if (msg):
-                print(msg)
-            else:
-                print("Done!")
-                break
+            for line in iter(process.stdout.readline, ''):  # type: ignore
+                print(line, end='')  # 'print' writes to redirected stdout
+            process.stdout.close()  # type: ignore
+            process.wait()
+            print("Done!")
+
+        threading.Thread(target=reader_thread, daemon=True).start()
 
     def undo_conversion(self):
-        if "csl_path" in self.config:
-            self.output.delete(1.0, tkinter.END)
+        if self.config["csl_path"] != "":
             self.process_info_label.config(
                 text="Undoing prior conversions", fg="green")
             cli_params = "-u"
@@ -158,8 +166,7 @@ class UpdaterGui:
                 "Error", "No directory selected")
 
     def start_conversion(self) -> None:
-        if "csl_path" in self.config:
-            self.output.delete(1.0, tkinter.END)
+        if self.config["csl_path"] != "":
             self.process_info_label.config(
                 text="Run 'normal' conversion", fg="green")
             cli_params = ""
@@ -169,8 +176,7 @@ class UpdaterGui:
                 "Error", "No directory selected")
 
     def startconversion_with_flashing_beacons(self) -> None:
-        if "csl_path" in self.config:
-            self.output.delete(1.0, tkinter.END)
+        if self.config["csl_path"] != "":
             self.process_info_label.config(
                 text="Run conversion with flashing beacons", fg="green")
             cli_params = "--flashing_beacons"
@@ -180,8 +186,7 @@ class UpdaterGui:
                 "Error", "No directory selected")
 
     def remove_backup_files(self) -> None:
-        if "csl_path" in self.config:
-            self.output.delete(1.0, tkinter.END)
+        if self.config["csl_path"] != "":
             self.process_info_label.config(
                 text="Removing backups. Be careful!", fg="green")
             answer = self.show_warning(
@@ -190,28 +195,16 @@ class UpdaterGui:
                 cli_params = "--remove-backups"
                 self.run_process(cli_params)
             else:
-                print("No backusp removed.")
+                print("No backusp removed.", flush=True)
                 return
         else:
             messagebox.showerror(  # type: ignore
                 "Error", "No CSL directory selected")
 
     def show_version(self) -> None:
-        self.output.delete(1.0, tkinter.END)
         self.process_info_label.config(text="Programm version", fg="green")
-        process: subprocess.Popen[str] | None = subprocess.Popen(
-            "python3 lights_updater.py --version".split(
-            ),
-            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0
-        )
-        while True:
-            if process.poll() is not None:
-                break
-            msg: str = process.stdout.readline().strip()  # type: ignore
-            if (msg):
-                print(msg)
-            else:
-                break
+        cli_params = "--version"
+        self.run_process(cli_params)
 
     def set_csl_directory(self) -> None:
         csl_directory = filedialog.askdirectory(
