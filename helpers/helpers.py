@@ -41,6 +41,7 @@ def paused_exit() -> None:
     if interactive:
         print(f"Interactive is set to: {interactive}")
         input("Press any key to continue...")
+        sys.exit()
     print("Exiting the rude way.. Bye!")
     sys.exit()
 
