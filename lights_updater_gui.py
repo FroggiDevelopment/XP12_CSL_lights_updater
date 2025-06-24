@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import tkinter
 from tkinter import filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
@@ -13,7 +14,7 @@ class StdOutRedirect:
 
     def write(self, text: str):
         self.widget.insert(tkinter.END, text)
-        # self.widget.see(tkinter.END)
+        self.widget.yview(tkinter.END)  # type: ignore
 
     def flush(self):
         pass
@@ -21,7 +22,7 @@ class StdOutRedirect:
 
 class UpdaterGui:
     def __init__(self) -> None:
-        self.config: dict[str, str] = {}
+        self.config: dict[str, str] = {"csl_path": "."}
 
     def show_gui(self) -> None:
         self.root = tkinter.Tk()
@@ -37,6 +38,10 @@ class UpdaterGui:
         self.root.minsize(400, 300)
 
         self.root.title("Lights updater for CSL objects")
+        self.process_info_label = tkinter.Label(
+            self.root, text="No processing running!", fg="blue", padx=5, pady=5
+        )
+        self.process_info_label.pack()
         self.selected_dir_label = tkinter.Label(
             self.root, text="No CSL directory selected!", fg="red", padx=5, pady=5)
         self.selected_dir_label.pack()
@@ -47,6 +52,7 @@ class UpdaterGui:
 
         old_stdout = sys.stdout
         sys.stdout = StdOutRedirect(self.output)
+        sys.stderr = StdOutRedirect(self.output)
 
         self.menu = tkinter.Menu(self.root)
         self.root.config(menu=self.menu)
@@ -54,7 +60,8 @@ class UpdaterGui:
         self.file_menu = tkinter.Menu(self.menu, tearoff=False)
 
         self.file_menu.add_command(
-            label="Run conversion", command=self.run_conversion)
+            label="Run 'normal' conversion", command=self.run_conversion)
+
         self.file_menu.add_command(
             label="Run conversion with flashing beacons",
             command=self.run_flashing_conversion
@@ -62,8 +69,10 @@ class UpdaterGui:
         self.file_menu.add_command(
             label="Remove backup files", command=self.run_removing_backups
         )
+
         self.file_menu.add_command(
             label="Run undo", command=self.run_undo)
+
         self.file_menu.add_command(label="Exit", command=self.root.destroy)
 
         self.config_menu = tkinter.Menu(self.menu, tearoff=False)
@@ -114,8 +123,85 @@ class UpdaterGui:
 
     def run_process(self, cli_params: str) -> None:
         self.output.delete(1.0, tkinter.END)
+        if cli_params == "":
+            process: subprocess.Popen[str] | None = subprocess.Popen(
+                ["python3", "lights_updater.py", "-p",
+                 self.config["csl_path"], "--from_gui"],
+                text=True, stdout=subprocess.PIPE, bufsize=0, shell=False
+            )
+        else:
+            process: subprocess.Popen[str] | None = subprocess.Popen(
+                ["python3", "lights_updater.py", "-p",
+                    self.config["csl_path"], cli_params, "--from_gui"],
+                text=True, stdout=subprocess.PIPE, bufsize=0, shell=False
+            )
+
+        while True:
+            if process.poll() is not None:
+                break
+            msg: str = process.stdout.readline().strip()  # type: ignore
+            if (msg):
+                print(msg)
+            else:
+                print("Done!")
+                break
+
+    def undo_conversion(self):
+        if "csl_path" in self.config:
+            self.output.delete(1.0, tkinter.END)
+            self.process_info_label.config(
+                text="Undoing prior conversions", fg="green")
+            cli_params = "-u"
+            self.run_process(cli_params)
+        else:
+            messagebox.showerror(  # type: ignore
+                "Error", "No directory selected")
+
+    def start_conversion(self) -> None:
+        if "csl_path" in self.config:
+            self.output.delete(1.0, tkinter.END)
+            self.process_info_label.config(
+                text="Run 'normal' conversion", fg="green")
+            cli_params = ""
+            self.run_process(cli_params)
+        else:
+            messagebox.showerror(  # type: ignore
+                "Error", "No directory selected")
+
+    def startconversion_with_flashing_beacons(self) -> None:
+        if "csl_path" in self.config:
+            self.output.delete(1.0, tkinter.END)
+            self.process_info_label.config(
+                text="Run conversion with flashing beacons", fg="green")
+            cli_params = "--flashing_beacons"
+            self.run_process(cli_params)
+        else:
+            messagebox.showerror(  # type: ignore
+                "Error", "No directory selected")
+
+    def remove_backup_files(self) -> None:
+        if "csl_path" in self.config:
+            self.output.delete(1.0, tkinter.END)
+            self.process_info_label.config(
+                text="Removing backups. Be careful!", fg="green")
+            answer = self.show_warning(
+                "Warning", "You will delete all backups. Continue?")
+            if answer:
+                cli_params = "--remove-backups"
+                self.run_process(cli_params)
+            else:
+                print("No backusp removed.")
+                return
+        else:
+            messagebox.showerror(  # type: ignore
+                "Error", "No CSL directory selected")
+
+    def show_version(self) -> None:
+        self.output.delete(1.0, tkinter.END)
+        self.process_info_label.config(text="Programm version", fg="green")
         process: subprocess.Popen[str] | None = subprocess.Popen(
-            f"python lights_updater.py {cli_params}".split(),
+            "python3 lights_updater.py --version".split(
+            ),
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0
         )
         while True:
@@ -127,67 +213,9 @@ class UpdaterGui:
             else:
                 break
 
-    def undo_conversion(self):
-        if "csl_path" in self.config:
-            self.output.delete(1.0, tkinter.END)
-            cli_params = f"--path {self.config['csl_path']} --undo --from_gui"
-            self.run_process(cli_params)
-        else:
-            messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
-
-    def start_conversion(self) -> None:
-        if "csl_path" in self.config:
-            self.output.delete(1.0, tkinter.END)
-            print("Run conversion")
-            cli_params = f"--path {self.config['csl_path']} --from_gui"
-            self.run_process(cli_params)
-        else:
-            messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
-
-    def startconversion_with_flashing_beacons(self) -> None:
-        if "csl_path" in self.config:
-            self.output.delete(1.0, tkinter.END)
-            cli_params = f"--path {self.config['csl_path']} --flashing_beacons --from_gui"
-            self.run_process(cli_params)
-        else:
-            messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
-
-    def remove_backup_files(self) -> None:
-        if "csl_path" in self.config:
-            self.output.delete(1.0, tkinter.END)
-            answer = self.show_warning(
-                "Warning", "You will delete all backups. Continue?")
-            if answer:
-                cli_params = f"--path {self.config['csl_path']} --remove-backups  --from_gui"
-                self.run_process(cli_params)
-            else:
-                print("No backusp removed.")
-                return
-        else:
-            messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
-
-    def show_version(self) -> None:
-        self.output.delete(1.0, tkinter.END)
-        process: subprocess.Popen[str] | None = subprocess.Popen(
-            "python lights_updater.py --version".split(
-            ),
-            text=True, stdout=subprocess.PIPE, bufsize=1
-        )
-        while True:
-            if process.poll() is not None:
-                break
-            msg: str = process.stdout.readline().strip()  # type: ignore
-            if (msg):
-                print(msg)
-            else:
-                break
-
     def set_csl_directory(self) -> None:
-        csl_directory = filedialog.askdirectory(initialdir=".")
+        csl_directory = filedialog.askdirectory(
+            initialdir=self.config["csl_path"], title="Select CSL directory")
 
         if csl_directory:
             self.config["csl_path"] = csl_directory
