@@ -39,10 +39,10 @@ def paused_exit() -> None:
     """ Before exiting ask the user to press key. Will help seeing possible messages before the window closes.
     """
     if interactive:
-        print(f"Interactive is set to: {interactive}")
+        print(f"Interactive is set to: {interactive}", flush=True)
         input("Press any key to continue...")
         sys.exit()
-    print("Exiting the rude way.. Bye!")
+    print("Exiting the rude way.. Bye!", flush=True)
     sys.exit()
 
 
