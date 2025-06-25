@@ -68,18 +68,18 @@ class UpdaterGui:
         self.file_menu = tkinter.Menu(self.menu, tearoff=False)
 
         self.file_menu.add_command(
-            label="Run 'normal' conversion", command=self.run_conversion)
+            label="Run 'normal' conversion", command=self.start_conversion)
 
         self.file_menu.add_command(
             label="Run conversion with flashing beacons",
-            command=self.run_flashing_conversion
+            command=self.start_conversion_with_flashing_beacons
         )
         self.file_menu.add_command(
-            label="Remove backup files", command=self.run_removing_backups
+            label="Remove backup files", command=self.remove_backup_files
         )
 
         self.file_menu.add_command(
-            label="Run undo", command=self.run_undo)
+            label="Run undo", command=self.undo_conversion)
 
         self.file_menu.add_command(label="Exit", command=self.root.destroy)
 
@@ -116,22 +116,9 @@ class UpdaterGui:
         self.root.mainloop()
         sys.stdout = old_stdout
 
-    def run_undo(self) -> None:
-        threading.Thread(target=self.undo_conversion).start()
-
-    def run_conversion(self) -> None:
-        threading.Thread(target=self.start_conversion).start()
-
-    def run_flashing_conversion(self) -> None:
-        threading.Thread(
-            target=self.startconversion_with_flashing_beacons).start()
-
-    def run_removing_backups(self) -> None:
-        threading.Thread(target=self.remove_backup_files).start()
-
-    def run_process(self, cli_params: str) -> None:
+    def run_process(self, cli_params: str, task: str) -> None:
         self.output.delete(1.0, tkinter.END)
-        self.process_info_label.config(text="Processing...", fg="blue")
+        self.process_info_label.config(text=f"Processing...{task}", fg="blue")
 
         cmd = ["python3", "lights_updater.py", "-p",
                self.config["csl_path"], "--from_gui"]
@@ -155,56 +142,56 @@ class UpdaterGui:
 
         threading.Thread(target=reader_thread, daemon=True).start()
 
-    def undo_conversion(self):
-        if self.config["csl_path"] != "":
-            self.process_info_label.config(
-                text="Undoing prior conversions", fg="green")
-            cli_params = "-u"
-            self.run_process(cli_params)
-        else:
-            messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
-
     def start_conversion(self) -> None:
-        if self.config["csl_path"] != "":
-            self.process_info_label.config(
-                text="Run 'normal' conversion", fg="green")
-            cli_params = ""
-            self.run_process(cli_params)
-        else:
-            messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
-
-    def startconversion_with_flashing_beacons(self) -> None:
-        if self.config["csl_path"] != "":
-            self.process_info_label.config(
-                text="Run conversion with flashing beacons", fg="green")
-            cli_params = "--flashing_beacons"
-            self.run_process(cli_params)
-        else:
-            messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
-
-    def remove_backup_files(self) -> None:
-        if self.config["csl_path"] != "":
-            self.process_info_label.config(
-                text="Removing backups. Be careful!", fg="green")
-            answer = self.show_warning(
-                "Warning", "You will delete all backups. Continue?")
-            if answer:
-                cli_params = "--remove-backups"
-                self.run_process(cli_params)
-            else:
-                print("No backusp removed.", flush=True)
-                return
-        else:
+        if self.config["csl_path"] == "":
             messagebox.showerror(  # type: ignore
                 "Error", "No CSL directory selected")
+            return
+        self.process_info_label.config(
+            text="Run 'normal' conversion", fg="green")
+        cli_params = ""
+        self.run_process(cli_params, "standard conversion")
+
+    def start_conversion_with_flashing_beacons(self) -> None:
+        if self.config["csl_path"] == "":
+            messagebox.showerror(  # type: ignore
+                "Error", "No directory selected")
+            return
+        self.process_info_label.config(
+            text="Run conversion with flashing beacons", fg="green")
+        cli_params = "--flashing_beacons"
+        self.run_process(cli_params, "conversion with flashing beacons")
+
+    def remove_backup_files(self) -> None:
+        if self.config["csl_path"] == "":
+            messagebox.showerror(  # type: ignore
+                "Error", "No CSL directory selected")
+            return
+        self.process_info_label.config(
+            text="Removing backups. Be careful!", fg="green")
+        answer = self.show_delete_backups_warning(
+            "Warning", "You will delete all backups. Continue?")
+        if answer:
+            cli_params = "--remove-backups"
+            self.run_process(cli_params, "removing backups")
+        else:
+            print("No backusp removed.", flush=True)
+            return
+
+    def undo_conversion(self):
+        if self.config["csl_path"] == "":
+            messagebox.showerror(  # type: ignore
+                "Error", "No directory selected")
+            return
+        self.process_info_label.config(
+            text="Undoing prior conversions", fg="green")
+        cli_params = "-u"
+        self.run_process(cli_params, "undoing prior conversions")
 
     def show_version(self) -> None:
         self.process_info_label.config(text="Programm version", fg="green")
         cli_params = "--version"
-        self.run_process(cli_params)
+        self.run_process(cli_params, "get version")
 
     def set_csl_directory(self) -> None:
         csl_directory = filedialog.askdirectory(
@@ -214,7 +201,7 @@ class UpdaterGui:
             self.config["csl_path"] = csl_directory
             self.selected_dir_label.config(text=csl_directory, fg="green")
 
-    def show_warning(self, title: str, message: str) -> bool:
+    def show_delete_backups_warning(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
 
 
