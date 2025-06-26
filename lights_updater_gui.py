@@ -6,6 +6,7 @@ from tkinter.scrolledtext import ScrolledText
 import sys
 import subprocess
 import threading
+import shlex
 
 
 class StdOutRedirect:
@@ -26,9 +27,11 @@ class StdOutRedirect:
 class UpdaterGui:
     def __init__(self) -> None:
         self.config: dict[str, str] = {"csl_path": ""}
+        self.process: subprocess.Popen[str] | None = None
 
     def show_gui(self) -> None:
         self.root = tkinter.Tk()
+        self.root.title("Lights updater for CSL objects")
 
         # Center it on screen
         screen_width = self.root.winfo_screenwidth()
@@ -40,31 +43,9 @@ class UpdaterGui:
         self.root.geometry(f'{width}x{height}+{x}+{y}')
         self.root.minsize(400, 300)
 
-        self.root.title("Lights updater for CSL objects")
-        self.process_info_label = tkinter.Label(
-            self.root, text="No processing running!", fg="blue", padx=5, pady=5
-        )
-        self.process_info_label.pack()
-        if self.config["csl_path"] == "":
-            self.selected_dir_label = tkinter.Label(
-                self.root, text="CSL directory: not selected!", fg="red", padx=5, pady=5)
-        else:
-            self.selected_dir_label = tkinter.Label(
-                self.root, text=f"CSL directory: {self.config['csl_path']}", fg="red", padx=5, pady=5)
-
-        self.selected_dir_label.pack()
-
-        self.output = ScrolledText(self.root)
-        self.output.pack(padx=10, pady=10, expand=True,
-                         fill=tkinter.BOTH, side=tkinter.LEFT)
-
-        old_stdout = sys.stdout
-        sys.stdout = StdOutRedirect(self.output)
-        sys.stderr = StdOutRedirect(self.output)
-
+        # The menu
         self.menu = tkinter.Menu(self.root)
         self.root.config(menu=self.menu)
-
         self.file_menu = tkinter.Menu(self.menu, tearoff=False)
 
         self.file_menu.add_command(
@@ -74,12 +55,17 @@ class UpdaterGui:
             label="Run conversion with flashing beacons",
             command=self.start_conversion_with_flashing_beacons
         )
+
+        self.file_menu.add_separator()
+
         self.file_menu.add_command(
             label="Remove backup files", command=self.remove_backup_files
         )
 
         self.file_menu.add_command(
             label="Run undo", command=self.undo_conversion)
+
+        self.file_menu.add_separator()
 
         self.file_menu.add_command(label="Exit", command=self.root.destroy)
 
@@ -113,34 +99,137 @@ class UpdaterGui:
             underline=0
         )
 
+        # In case of panic
+        self.cancel_button = tkinter.Button(
+            self.root, text="Cancel", command=self.cancel_process, state=tkinter.DISABLED)
+        self.cancel_button.pack()
+
+        # processing line
+        self.process_frame = tkinter.Frame(self.root)
+        self.process_frame.pack(anchor="nw")
+
+        self.process_label = tkinter.Label(
+            self.process_frame, text="Processing: ", padx=5, pady=5
+        )
+        self.process_label.pack(side=tkinter.LEFT)
+
+        self.process_info_label = tkinter.Label(
+            self.process_frame, text="No processing running!", fg="blue", padx=5, pady=5
+        )
+        self.process_info_label.pack(side=tkinter.LEFT)
+
+        # csl line
+        self.csl_frame = tkinter.Frame(self.root)
+        self.csl_frame.pack(anchor="nw")
+
+        self.dir_label = tkinter.Label(
+            self.csl_frame, text="CSL directory: ", padx=5, pady=5
+        )
+        self.dir_label.pack(side=tkinter.LEFT)
+
+        if self.config["csl_path"] == "":
+            self.selected_dir_label = tkinter.Label(
+                self.csl_frame, text="not selected!", fg="red", padx=5, pady=5)
+        else:
+            self.selected_dir_label = tkinter.Label(
+                self.csl_frame, text=f"{self.config['csl_path']}", fg="red", padx=5, pady=5)
+
+        self.selected_dir_label.pack(side=tkinter.LEFT)
+
+        # The window to the world
+        self.output = ScrolledText(self.root)
+        self.output.pack(padx=10, pady=10, expand=True,
+                         fill=tkinter.BOTH, side=tkinter.LEFT)
+
+        old_stdout = sys.stdout
+        sys.stdout = StdOutRedirect(self.output)
+        sys.stderr = StdOutRedirect(self.output)
+
         self.root.mainloop()
         sys.stdout = old_stdout
 
     def run_process(self, cli_params: str, task: str) -> None:
+
+        # Let only one thread run at a time
+        if hasattr(self, 'worker_thread') and self.worker_thread.is_alive():  # type: ignore
+            tkinter.messagebox.showwarning(  # type: ignore
+                "Process Running", "A task is already running. Please wait.")
+            return
+
         self.output.delete(1.0, tkinter.END)
-        self.process_info_label.config(text=f"Processing...{task}", fg="blue")
+        self.process_info_label.config(text=f"{task}", fg="blue")
+        self.cancel_requested = False
+        self.cancel_button.config(state=tkinter.NORMAL)
 
-        cmd = ["python3", "lights_updater.py", "-p",
-               self.config["csl_path"], "--from_gui"]
+        cmd = ["python3", "lights_updater.py", "--path",
+               self.config["csl_path"], "--from-gui"]
         if cli_params:
-            cmd.insert(-1, cli_params)
+            cmd[-1:-1] = shlex.split(cli_params)
 
-        def reader_thread():
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1
-            )
+        def reader_thread() -> None:
+            status_text = ""
+            status_color = "green"
+            try:
+                self.process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1
+                )
 
-            for line in iter(process.stdout.readline, ''):  # type: ignore
-                print(line, end='')  # 'print' writes to redirected stdout
-            process.stdout.close()  # type: ignore
-            process.wait()
-            print("Done!")
+                for line in iter(self.process.stdout.readline, ''):  # type: ignore
+                    if self.cancel_requested:
+                        break
+                    self.output.after(0, self.output.insert, tkinter.END, line)
+                    self.output.after(0, self.output.see, tkinter.END)
+                self.process.stdout.close()  # type: ignore
+                self.process.wait()
 
-        threading.Thread(target=reader_thread, daemon=True).start()
+                if self.cancel_requested:
+                    status_text = f"{task} cancelled by user."
+                    status_color = "orange"
+                elif self.process.returncode == 0:
+                    status_text = f"{task} complete."
+                    status_color = "green"
+                else:
+                    status_text = f"{task} failed (exit {self.process.returncode})"
+                    status_color = "red"
+
+            except FileNotFoundError as e:
+                msg = f"Command not found: {e.filename}\n"
+            except subprocess.SubprocessError as e:
+                msg = f"Subprocess error: {str(e)}\n"
+            except OSError as e:
+                msg = f"System error: {e.strerror} (errno {e.errno})\n"
+            except Exception as e:
+                msg = f"Unexpected error ({type(e).__name__}): {str(e)}\n"
+            else:
+                return  # No exception, don't show error
+            finally:
+                self.output.after(0, self.process_info_label.config, {
+                    'text': status_text, 'fg': status_color})
+                self.output.after(0, self.cancel_button.config, {
+                    'state': tkinter.DISABLED})
+                self.process = None
+
+            # Show the error in GUI output
+            if msg != "":
+                self.output.after(0, self.output.insert, tkinter.END, msg)
+                self.output.after(0, self.output.see, tkinter.END)
+                self.output.after(0, self.process_info_label.config, {
+                    'text': f"{task} failed.", 'fg': "red"})
+
+        self.worker_thread = threading.Thread(
+            target=reader_thread, daemon=True)
+        self.worker_thread.start()
+
+    def cancel_process(self) -> None:
+        if hasattr(self, 'process') and self.process:
+            self.cancel_requested = True
+            self.process.terminate()
+            self.output.insert(tkinter.END, "\nProcess cancelled by user.\n")
+            self.output.see(tkinter.END)
 
     def start_conversion(self) -> None:
         if self.config["csl_path"] == "":
@@ -150,7 +239,7 @@ class UpdaterGui:
         self.process_info_label.config(
             text="Run 'normal' conversion", fg="green")
         cli_params = ""
-        self.run_process(cli_params, "standard conversion")
+        self.run_process(cli_params, "Standard conversion")
 
     def start_conversion_with_flashing_beacons(self) -> None:
         if self.config["csl_path"] == "":
@@ -159,8 +248,8 @@ class UpdaterGui:
             return
         self.process_info_label.config(
             text="Run conversion with flashing beacons", fg="green")
-        cli_params = "--flashing_beacons"
-        self.run_process(cli_params, "conversion with flashing beacons")
+        cli_params = "--flashing-beacons"
+        self.run_process(cli_params, "Conversion with flashing beacons")
 
     def remove_backup_files(self) -> None:
         if self.config["csl_path"] == "":
@@ -168,14 +257,16 @@ class UpdaterGui:
                 "Error", "No CSL directory selected")
             return
         self.process_info_label.config(
-            text="Removing backups. Be careful!", fg="green")
-        answer = self.show_delete_backups_warning(
-            "Warning", "You will delete all backups. Continue?")
+            text="Removing backups. Be careful!", fg="red1", font="bold")
+        answer: bool = self.show_delete_backups_warning(
+            "Warning!!", "You will delete all backups. Continue?")
         if answer:
             cli_params = "--remove-backups"
-            self.run_process(cli_params, "removing backups")
+            self.run_process(cli_params, "Removing backups")
         else:
-            print("No backusp removed.", flush=True)
+            self.process_info_label.config(
+                text="No backups removed.", fg="green", font="TkDefaultFont")
+            print("No backups removed.", flush=True)
             return
 
     def undo_conversion(self):
@@ -185,13 +276,13 @@ class UpdaterGui:
             return
         self.process_info_label.config(
             text="Undoing prior conversions", fg="green")
-        cli_params = "-u"
-        self.run_process(cli_params, "undoing prior conversions")
+        cli_params = "--undo"
+        self.run_process(cli_params, "Recover to backuped files")
 
     def show_version(self) -> None:
         self.process_info_label.config(text="Programm version", fg="green")
         cli_params = "--version"
-        self.run_process(cli_params, "get version")
+        self.run_process(cli_params, "Getting version info")
 
     def set_csl_directory(self) -> None:
         csl_directory = filedialog.askdirectory(
