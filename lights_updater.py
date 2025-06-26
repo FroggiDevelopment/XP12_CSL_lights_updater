@@ -357,7 +357,7 @@ To be save: Always use them.
     )
 
     parser.add_argument(
-        "--from_gui",
+        "--from-gui",
         required=False,
         action="store_true",
         help=argparse.SUPPRESS
@@ -365,7 +365,7 @@ To be save: Always use them.
 
     parser.add_argument(
         "-f",
-        "--flashing_beacons",
+        "--flashing-beacons",
         required=False,
         action="store_true",
         help="Sets the beacons to be flashing beacons on bigger airplanes!",
@@ -381,7 +381,7 @@ To be save: Always use them.
 
     parser.add_argument(
         "-r",
-        "--remove_backups",
+        "--remove-backups",
         action="store_true",
         help="Removes the backup files. Be careful!",
     )
