@@ -25,43 +25,43 @@ def convert_airbus_strobe_lights(animation: str, strobe_light_params_dict: dict[
     light_type = "airplane_strobe"
 
     airbus_sequence_1: str = """
-        ANIM_hide    0.0 0.1   sim/time/total_running_time_sec
+        ANIM_hide    0.0 0.10   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.2 0.3   sim/time/total_running_time_sec
+        ANIM_hide    0.15 0.25   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.4 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.30 1.5   sim/time/total_running_time_sec
     """
 
     airbus_sequence_2: str = """
-        ANIM_hide    0.0 0.4   sim/time/total_running_time_sec
+        ANIM_hide    0.0 0.40   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.6 0.7   sim/time/total_running_time_sec
+        ANIM_hide    0.45 0.55   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.9 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.60 1.5   sim/time/total_running_time_sec
     """
 
     airbus_sequence_3: str = """
-        ANIM_hide    0.0 0.7   sim/time/total_running_time_sec
+        ANIM_hide    0.0 0.70   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.8 0.9   sim/time/total_running_time_sec
+        ANIM_hide    0.75 0.85   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.0 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.90 1.5   sim/time/total_running_time_sec
     """
 
     airbus_sequence_4: str = """
-        ANIM_hide    0.0 1.0   sim/time/total_running_time_sec
+        ANIM_hide    0.0 1.00   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.1 1.2   sim/time/total_running_time_sec
+        ANIM_hide    1.05 1.15   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.3 1.5   sim/time/total_running_time_sec
+        ANIM_hide    1.20 1.5   sim/time/total_running_time_sec
     """
 
     airbus_sequence_5: str = """
-        ANIM_hide    0.0 1.1   sim/time/total_running_time_sec
+        ANIM_hide    0.0 1.15   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.2 1.3   sim/time/total_running_time_sec
+        ANIM_hide    1.20 1.30   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.4 1.5   sim/time/total_running_time_sec
+        ANIM_hide    1.35 1.5   sim/time/total_running_time_sec
     """
 
     flash_sequences = [
