@@ -22,7 +22,9 @@ def convert_airplane_beacon_lights(animation: str, light_params_dict: dict[str, 
     return new_animation
 
 
-def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_dict: dict[str, str]) -> str:
+def convert_airplane_flashing_beacon_lights(animation: str,
+                                            beacon_light_params_dict: dict[str, str],
+                                            loop_duration: float = 2.0) -> str:
     """ Converts airplane beacon lights to flashing beacons
 
      Args:
@@ -35,34 +37,34 @@ def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_
     new_animation = convert_airplane_beacon_lights(
         animation, beacon_light_params_dict)
 
-    beacon_sequence_1 = """
-        ANIM_hide    0.0 0.1   sim/time/total_running_time_sec
-        ANIM_keyframe_loop 1.5
-        ANIM_hide    0.2 1.5   sim/time/total_running_time_sec
+    beacon_sequence_1 = f"""
+        ANIM_hide    0.0 0.1  sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.15 {loop_duration}   sim/time/total_running_time_sec
     """
 
-    beacon_sequence_2 = """
-        ANIM_hide    0.0 0.4   sim/time/total_running_time_sec
-        ANIM_keyframe_loop 1.5
-        ANIM_hide    0.5 1.5   sim/time/total_running_time_sec
+    beacon_sequence_2 = f"""
+        ANIM_hide    0.0 0.3   sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.35 {loop_duration}   sim/time/total_running_time_sec
     """
 
-    beacon_sequence_3 = """
+    beacon_sequence_3 = f"""
+        ANIM_hide    0.0 0.5   sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.55 {loop_duration}   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_4 = f"""
         ANIM_hide    0.0 0.7   sim/time/total_running_time_sec
-        ANIM_keyframe_loop 1.5
-        ANIM_hide    0.8 1.5   sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.75 {loop_duration}   sim/time/total_running_time_sec
     """
 
-    beacon_sequence_4 = """
-        ANIM_hide    0.0 1.0   sim/time/total_running_time_sec
-        ANIM_keyframe_loop 1.5
-        ANIM_hide    1.1 1.5   sim/time/total_running_time_sec
-    """
-
-    beacon_sequence_5 = """
-        ANIM_hide    0.0 1.3   sim/time/total_running_time_sec
-        ANIM_keyframe_loop 1.5
-        ANIM_hide    1.4 1.5   sim/time/total_running_time_sec
+    beacon_sequence_5 = f"""
+        ANIM_hide    0.0 0.9   sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.95 {loop_duration}   sim/time/total_running_time_sec
     """
 
     flash_sequences: list[str] = [
@@ -86,7 +88,7 @@ def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_
     new_anim_hide = f"""
     ANIM_hide	-1.0 0.0	libxplanemp/controls/beacon_lites_on
     {flash_sequence}
-    ANIM_keyframe_loop 1.5
+    ANIM_keyframe_loop {loop_duration}
     """
 
     original_beacon_anim_hide = re.findall(
@@ -105,3 +107,17 @@ def convert_airplane_flashing_beacon_lights(animation: str, beacon_light_params_
     new_animation = os.linesep.join(
         [line for line in new_animation.splitlines() if line.strip() != ""])
     return new_animation
+
+
+def convert_airplane_flashing_beacon_lights_airbus(animation: str, beacon_light_params_dict: dict[str, str]) -> str:
+    """Same as the normal flashing beacon converter except shorter loop for airbus of 1 second
+
+    Args:
+        animation (str): animation with beacon lights
+        beacon_light_params_dict (dict[str, str]): the light definitions for beacon lights
+
+    Returns:
+        str: Converted animation with flashing beacon lights in 'Aribus' lopp sequence
+    """
+
+    return convert_airplane_flashing_beacon_lights(animation, beacon_light_params_dict, 1.0)
