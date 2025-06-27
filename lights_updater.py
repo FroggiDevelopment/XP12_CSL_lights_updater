@@ -43,6 +43,7 @@ from light_converters import convert_airplane_taxi_lights
 from light_converters import convert_airplane_nav_lights
 from light_converters import convert_airplane_beacon_lights
 from light_converters import convert_airplane_flashing_beacon_lights
+from light_converters import convert_airplane_flashing_beacon_lights_airbus
 from light_converters import convert_airplane_strobe_lights
 from light_converters import convert_airbus_strobe_lights
 
@@ -167,6 +168,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "airplane_nav": convert_airplane_nav_lights,
         "airplane_beacon": convert_airplane_beacon_lights,
         "airplane_beacon_flashing": convert_airplane_flashing_beacon_lights,
+        "airplane_beacon_flashing_airbus": convert_airplane_flashing_beacon_lights_airbus,
         "airplane_strobe": convert_airplane_strobe_lights,
         "airplane_airbus_strobe": convert_airbus_strobe_lights
     }
@@ -221,11 +223,15 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
                     if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
                         light_converter = _light_converters["airplane_beacon_flashing"]
 
-            # Special case 2: Airbus strobe
+            # Special case 2: Airbus beacon
+            if light_dataref == "libxplanemp/controls/beacon_lites_on" and aircraft_icao_type in airbus_icaos:
+                light_converter = _light_converters["airplane_beacon_flashing_airbus"]
+
+            # Special case 3: Airbus strobe
             if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icaos:
                 light_converter = _light_converters["airplane_airbus_strobe"]
 
-            # Special case 3: Taxilight in wrong landing lights animation (found with Bluebell's)
+            # Special case 4: Taxilight in wrong landing lights animation (found with Bluebell's)
             if light_dataref == "libxplanemp/controls/landing_lites_on" and "airplane_taxi" in _animation:
                 _animation = _animation.replace(
                     "landing_lites_on", "taxi_lites_on")
