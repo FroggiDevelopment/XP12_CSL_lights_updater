@@ -285,8 +285,12 @@ class UpdaterGui:
         self.run_process(cli_params, "Getting version info")
 
     def set_csl_directory(self) -> None:
-        csl_directory = filedialog.askdirectory(
-            initialdir=self.config["csl_path"], title="Select CSL directory")
+        csl_directory: str = filedialog.askdirectory(
+            parent=self.root,
+            initialdir=self.config["csl_path"],
+            title="Select CSL directory",
+            mustexist=True
+        )
 
         if csl_directory:
             self.config["csl_path"] = csl_directory
