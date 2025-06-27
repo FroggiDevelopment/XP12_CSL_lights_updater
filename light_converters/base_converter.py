@@ -18,18 +18,18 @@ def remove_flashing_sequences(animation: str, light_type: str) -> str:
     pattern = r"(?s)(ANIM_hide.+sim/time/total_running_time_sec.+?ANIM_keyframe_loop \d.\d)"
     matches = re.findall(pattern, animation, re.MULTILINE)
 
-    light_name = light_type.split("_")[1]
+    _light_name = light_type.split("_")[1]
     if matches != []:
-        animation = animation.replace("generic", light_name)
+        animation = animation.replace("generic", _light_name)
         for match in matches:
             animation = animation.replace(
-                match, f"ANIM_hide -1.000000 0.000000 libxplanemp/controls/{light_name}_lites_on")
+                match, f"ANIM_hide -1.000000 0.000000 libxplanemp/controls/{_light_name}_lites_on")
 
     return animation
 
 
 def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], light_type: str) -> str:
-    """ Converts airplane lights
+    """ Basic conversion of airplane lights, result will be handled different from the 'calling' converters
 
     Args:
         animation (str): The animations sequence with the XP11 lights
@@ -40,6 +40,15 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
     """
     _known_coordinates: list[str] = []
     _positions = ["_left", "_right", "_tail"]
+    _light_name = light_type.split("_")[1]
+
+    anim_frame: str = """
+# New animation created by lights_updater for tail lights
+ANIM_begin
+    ANIM_hide    -1.0    0    libxplanemp/controls/@light_name@_lites_on
+    @placeholder@
+ANIM_end
+    """
 
     # tabs to spaces
     animation.replace("\t", "    ")
@@ -57,7 +66,11 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
     list_of_animation_lines: list[str] = animation.splitlines()
     for line in list_of_animation_lines:
         light_position: str = ""
+
         if light_type in line:
+            if "_size" in line:  # Maybe this will avoid some weird lights # TODO: To be tested more in detail later!
+                animation = animation.replace(line, "")
+                continue
             if "#~" in line:
                 animation = animation.replace(line, "")
                 continue
@@ -78,11 +91,29 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
                 continue
 
             if light_type in ["airplane_nav", "airplane_strobe"]:
-                light_position = get_light_position(new_line)
+                light_position = get_light_position(line)
+
                 new_line = new_line.replace(
                     f"{light_type}", f"{light_type}{light_position}")
-                light_type = f"{light_type}{light_position}"
+                # TODO: Can this be moved to the specific converters??
+                if "_tail" in line:
+                    new_anim_frame = anim_frame
+                    animation = animation.replace(line, "")
 
+                    tail_billboard_line = f"LIGHT_PARAM airplane_nav_tail_bb {coordinates} {light_params_dict['airplane_nav_tail']}"  # noqa
+                    tail_spill_line = tail_billboard_line.replace("_bb", "_pm")
+
+                    tail_spill_line = reduce_spill_intensity(
+                        tail_spill_line, "airplane_nav")
+                    new_tail_line = f"    {tail_billboard_line}{os.linesep}        {tail_spill_line}"  # noqa
+                    new_tail_line = new_tail_line.replace("_tail", "")
+
+                    new_anim_frame = anim_frame.replace(
+                        "@placeholder@", new_tail_line).replace("@light_name@", _light_name)
+
+                    animation = animation+f"{os.linesep}"+new_anim_frame
+
+            light_type = f"{light_type}{light_position}"
             line_start = f"LIGHT_PARAM    {light_type}_bb"
             line_end = f"{light_params_dict[light_type]}"
 
