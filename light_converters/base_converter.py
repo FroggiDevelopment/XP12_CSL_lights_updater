@@ -91,6 +91,7 @@ ANIM_end
                 continue
 
             if light_type in ["airplane_nav", "airplane_strobe"]:
+                # TODO: Send positional arguments to the specific converters
                 light_position = get_light_position(line)
 
                 new_line = new_line.replace(
