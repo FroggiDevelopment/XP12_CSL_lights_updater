@@ -28,31 +28,31 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
     flash_sequence_1: str = """
         ANIM_hide    0.0 0.10   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.15 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.20 1.5   sim/time/total_running_time_sec
     """
 
     flash_sequence_2: str = """
         ANIM_hide    0.0 0.40   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.45 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.50 1.5   sim/time/total_running_time_sec
     """
 
     flash_sequence_3: str = """
         ANIM_hide    0.0 0.70   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.75 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.80 1.5   sim/time/total_running_time_sec
     """
 
     flash_sequence_4: str = """
         ANIM_hide    0.0 1.00   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.05 1.5   sim/time/total_running_time_sec
+        ANIM_hide    1.10 1.5   sim/time/total_running_time_sec
     """
 
     flash_sequence_5: str = """
         ANIM_hide    0.0 1.30  sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.35 1.5   sim/time/total_running_time_sec
+        ANIM_hide    1.40 1.5   sim/time/total_running_time_sec
     """
 
     flash_sequences: list[str] = [flash_sequence_1, flash_sequence_2,
