@@ -460,6 +460,9 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
 
 
 if __name__ == "__main__":
+    log.info("Lights updater started!")
+    log.debug(f"Lights updater version: {__version__} started!")
+
     args = parse_args()
 
     if args.from_gui:
@@ -482,6 +485,7 @@ if __name__ == "__main__":
             "CSL path seems not to be a valid directory! Please check the path!")
         if interactive:
             paused_exit()
-    main(args, csl_path)
-    if interactive:
-        paused_exit()
+    else:
+        main(args, csl_path)
+        if interactive:
+            paused_exit()
