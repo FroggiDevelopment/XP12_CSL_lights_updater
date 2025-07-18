@@ -9,6 +9,20 @@ init_logging()
 log = logging.getLogger(__name__)
 
 
+def remove_flashing_sequences(animation: str, light_type: str) -> str:
+    pattern = r"(?s)(ANIM_hide.+sim/time/total_running_time_sec.+?ANIM_keyframe_loop \d.\d)"
+    matches = re.findall(pattern, animation, re.MULTILINE)
+
+    _light_name = light_type.split("_")[1]
+    if matches != []:
+        animation = animation.replace("generic", _light_name)
+        for match in matches:
+            animation = animation.replace(
+                match, f"ANIM_hide -1.000000 0.000000 libxplanemp/controls/{_light_name}_lites_on")
+
+    return animation
+
+
 def reduce_spill_intensity(line: str, light_type: str) -> str:
     """Reduces the groundspill intensity of a light
 
