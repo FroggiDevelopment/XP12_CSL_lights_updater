@@ -37,7 +37,7 @@ def reduce_spill_intensity(line: str, light_type: str) -> str:
     # get reduce factors from file
     with open("configs/aircraft_data.json", "r") as aircraft_data:
         aircraft_data = json.load(aircraft_data)
-        reduce_factors = aircraft_data["reduce_factors"]
+        spill_light_reduce_factors = aircraft_data["spill_light_reduce_factors"]
 
     current_candelar = re.search(r"\d+cd", line)
 
@@ -45,7 +45,7 @@ def reduce_spill_intensity(line: str, light_type: str) -> str:
         raw_candelar_value = current_candelar.group(0).replace("cd", "")
 
         reduced_candelar = int(float(raw_candelar_value)
-                               * reduce_factors[light_type])
+                               * spill_light_reduce_factors[light_type])
 
         new_intensity_line = line.replace(
             current_candelar.group(0), f"{str(reduced_candelar)}cd")
