@@ -60,6 +60,11 @@ ANIM_end
         light_position: str = ""
 
         if light_type in line:
+            # Uncomment only lines with digits. They should be light param lines.
+            if re.search(r"\d+", line):
+                new_line = line.replace("#", "")
+            else:
+                continue
             if "_size" in line:  # Maybe this will avoid some weird lights # TODO: To be tested more in detail later!
                 animation = animation.replace(line, "")
                 continue
@@ -79,12 +84,6 @@ ANIM_end
                 _known_coordinates.append(coordinates)
 
             leading_whitespaces = get_leading_whitespaces(line)
-
-            # Uncomment only lines with digits. They should be light param lines.
-            if re.search(r"\d+", line):
-                new_line = line.replace("#", "")
-            else:
-                continue
 
             # TODO: Rewrite base converter to get rid of specific converter related code!!! If possible!?
             if light_type in ["airplane_nav", "airplane_strobe"]:
