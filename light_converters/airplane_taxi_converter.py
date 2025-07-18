@@ -14,6 +14,11 @@ log = logging.getLogger("airplane_taxi_converter")
 
 def convert_airplane_taxi_lights(animation: str, light_params_dict: dict[str, str]) -> str:
     light_type = "airplane_taxi"
+
+    # For those cases that the taxi lights are in the wrong animation, corerect the dataref.
+    if "libxplanemp/controls/landing_lites_on" in animation:
+        animation = animation.replace("landing_lites_on", "taxi_lites_on")
+
     new_animation = convert_airplane_lights(
         animation, light_params_dict, light_type)
 
