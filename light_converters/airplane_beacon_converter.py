@@ -7,6 +7,7 @@ from helpers.init_logging import init_logging
 
 from .base_converter import convert_airplane_lights
 from .converter_helpers import increase_flashing_beacon_light_intensity
+from .converter_helpers import remove_flashing_sequences
 
 # Setup logging
 init_logging()
@@ -15,6 +16,9 @@ log = logging.getLogger(__name__)
 
 def convert_airplane_beacon_lights(animation: str, light_params_dict: dict[str, str]) -> str:
     light_type = "airplane_beacon"
+
+    if "sim/time/total_running_time_sec" in animation:
+        animation = remove_flashing_sequences(animation, light_type)
 
     new_animation = convert_airplane_lights(
         animation, light_params_dict, light_type)
@@ -109,7 +113,7 @@ def convert_airplane_flashing_beacon_lights(animation: str,
     return new_animation
 
 
-def convert_airplane_flashing_beacon_lights_airbus(animation: str, beacon_light_params_dict: dict[str, str]) -> str:
+def convert_airbus_flashing_beacon_lights(animation: str, beacon_light_params_dict: dict[str, str]) -> str:
     """Same as the normal flashing beacon converter except shorter loop for airbus of 1 second
 
     Args:
@@ -117,7 +121,7 @@ def convert_airplane_flashing_beacon_lights_airbus(animation: str, beacon_light_
         beacon_light_params_dict (dict[str, str]): the light definitions for beacon lights
 
     Returns:
-        str: Converted animation with flashing beacon lights in 'Aribus' lopp sequence
+        str: Converted animation with flashing beacon lights in 'Airbus' loop sequence
     """
 
-    return convert_airplane_flashing_beacon_lights(animation, beacon_light_params_dict, 1.0)
+    return convert_airplane_flashing_beacon_lights(animation, beacon_light_params_dict, loop_duration=1.0)
