@@ -48,26 +48,26 @@ class UpdaterGui:
         self.root.config(menu=self.menu)
         self.file_menu = tkinter.Menu(self.menu, tearoff=False)
 
-        self.file_menu.add_command(
+        self.file_menu.add_command(label="Exit", command=self.root.destroy)
+
+        self.process_menu = tkinter.Menu(self.menu, tearoff=False)
+
+        self.process_menu.add_command(
             label="Run 'normal' conversion", command=self.start_conversion)
 
-        self.file_menu.add_command(
+        self.process_menu.add_command(
             label="Run conversion with flashing beacons",
             command=self.start_conversion_with_flashing_beacons
         )
 
-        self.file_menu.add_separator()
+        self.process_menu.add_separator()
 
-        self.file_menu.add_command(
+        self.process_menu.add_command(
             label="Remove backup files", command=self.remove_backup_files
         )
 
-        self.file_menu.add_command(
+        self.process_menu.add_command(
             label="Run undo", command=self.undo_conversion)
-
-        self.file_menu.add_separator()
-
-        self.file_menu.add_command(label="Exit", command=self.root.destroy)
 
         self.CSL_menu = tkinter.Menu(self.menu, tearoff=False)
 
@@ -84,6 +84,12 @@ class UpdaterGui:
         self.menu.add_cascade(
             label="File",
             menu=self.file_menu,
+            underline=0
+        )
+
+        self.menu.add_cascade(
+            label="Process",
+            menu=self.process_menu,
             underline=0
         )
 
