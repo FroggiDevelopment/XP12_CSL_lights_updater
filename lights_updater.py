@@ -214,11 +214,12 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
         if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
             light_type: str = _lighttype_per_dataref[light_dataref]
-            light_converter = _light_converters[light_type]
+            light_converter: Callable[[
+                str, dict[str, str]], str] = _light_converters[light_type]
 
             # Special case 1: Flashing beacons
             if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
-                aircraft_categories = get_aircraft_categories()
+                aircraft_categories: dict[str, str] = get_aircraft_categories()
                 for category in aircraft_categories.items():
                     if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
                         light_converter = _light_converters["airplane_beacon_flashing"]
