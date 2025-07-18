@@ -25,7 +25,13 @@ def convert_airplane_landing_lights(animation: str, light_params_dict: dict[str,
             str: The updated animations sequence with XP12 lights
     """
 
+    # Get rid of illegal lights in landig lights animation
+    if "airplane_landing" not in animation:
+        log.error("Found illegal light in animation! Removing this light animation")
+        return ""
+
     light_type = "airplane_landing"
+
     new_animation = convert_airplane_lights(
         animation, light_params_dict, light_type)
 
@@ -49,7 +55,7 @@ def fix_frontgear_landinglights(animation: str) -> str:
 
     if light_parameter == []:
         log.error(
-            f"No light parameter found in file: {aircraft_processing_data.AircraftData.full_object_path}")
+            f"{__name__} - No light parameter found in file: {aircraft_processing_data.AircraftData.full_object_path}")
         return animation
 
     log.debug("Fixing frontgear landinglights hide animation.")
