@@ -5,6 +5,7 @@ import logging
 from helpers.init_logging import init_logging
 
 from .base_converter import convert_airplane_lights
+from .converter_helpers import remove_flashing_sequences
 
 # Setup logging
 init_logging()
@@ -73,6 +74,10 @@ def convert_airbus_strobe_lights(animation: str, strobe_light_params_dict: dict[
     ]
 
     flash_sequence: str = random.choice(flash_sequences)
+
+    # Remove prior flashing sequenece if present
+    if "sim/time/total_running_time_sec" in animation:
+        animation = remove_flashing_sequences(animation, light_type)
 
     new_anim_hide = f"""
     ANIM_hide    -1.0    0    libxplanemp/controls/strobe_lites_on
