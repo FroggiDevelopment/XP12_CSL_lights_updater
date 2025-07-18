@@ -14,20 +14,6 @@ init_logging()
 log = logging.getLogger(__name__)
 
 
-def remove_flashing_sequences(animation: str, light_type: str) -> str:
-    pattern = r"(?s)(ANIM_hide.+sim/time/total_running_time_sec.+?ANIM_keyframe_loop \d.\d)"
-    matches = re.findall(pattern, animation, re.MULTILINE)
-
-    _light_name = light_type.split("_")[1]
-    if matches != []:
-        animation = animation.replace("generic", _light_name)
-        for match in matches:
-            animation = animation.replace(
-                match, f"ANIM_hide -1.000000 0.000000 libxplanemp/controls/{_light_name}_lites_on")
-
-    return animation
-
-
 def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], light_type: str) -> str:
     """ Basic conversion of airplane lights, result will be handled different from the 'calling' converters
 
@@ -41,21 +27,21 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
     _known_coordinates: list[str] = []
     _positions = ["_left", "_right", "_tail"]
     _light_name = light_type.split("_")[1]
+    _illegal_lights: list[str] = ["headlight"]
 
     anim_frame: str = """
-# New animation created by lights_updater for tail lights
+# New animation created for tail lights by lights_updater
 ANIM_begin
     ANIM_hide    -1.0    0    libxplanemp/controls/@light_name@_lites_on
     @placeholder@
 ANIM_end
     """
 
+    # Convert to new naming convention
+    animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
+
     # tabs to spaces
     animation.replace("\t", "    ")
-
-    # remove flashing sequences if present (create clean base to comnvert)
-    if "sim/time/total_running_time_sec" in animation:
-        animation = remove_flashing_sequences(animation, light_type)
 
     # remove spill line extension so the new one(s) don't get delete in the process
     animation = animation.replace("_pm", "")
@@ -64,16 +50,24 @@ ANIM_end
     animation = remove_show_animation(animation)
 
     list_of_animation_lines: list[str] = animation.splitlines()
+
     for line in list_of_animation_lines:
+        # Remove illegal lights that are not supported in XP12
+        if any(illegal_light in line for illegal_light in _illegal_lights):
+            animation = animation.replace(line, "")
+            continue
+
         light_position: str = ""
 
         if light_type in line:
             if "_size" in line:  # Maybe this will avoid some weird lights # TODO: To be tested more in detail later!
                 animation = animation.replace(line, "")
                 continue
+            # Seems some artistic way to comment unwanted lines. Found in some obj files. Drop it! :-)
             if "#~" in line:
                 animation = animation.replace(line, "")
                 continue
+
             coordinates = f"{line.split()[2]}    {line.split()[3]}    {line.split()[4]}"
 
             if coordinates in _known_coordinates:
@@ -85,11 +79,14 @@ ANIM_end
                 _known_coordinates.append(coordinates)
 
             leading_whitespaces = get_leading_whitespaces(line)
+
+            # Uncomment only lines with digits. They should be light param lines.
             if re.search(r"\d+", line):
                 new_line = line.replace("#", "")
             else:
                 continue
 
+            # TODO: Rewrite base converter to get rid of specific converter related code!!! If possible!?
             if light_type in ["airplane_nav", "airplane_strobe"]:
                 # TODO: Send positional arguments to the specific converters
                 light_position = get_light_position(line)
