@@ -36,8 +36,8 @@ class UpdaterGui:
         # Center it on screen
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        width = 800
-        height = 600
+        width = 1280
+        height = 400
         x = (screen_width - width) // 2
         y = (screen_height - height) // 2
         self.root.geometry(f'{width}x{height}+{x}+{y}')
