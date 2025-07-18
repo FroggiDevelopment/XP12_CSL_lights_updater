@@ -5,7 +5,7 @@ import random
 import logging
 from helpers.init_logging import init_logging
 
-from .base_converter import convert_airplane_lights
+from .common_lights_converter import convert_airplane_lights
 from .converter_helpers import remove_flashing_sequences
 
 # Setup logging

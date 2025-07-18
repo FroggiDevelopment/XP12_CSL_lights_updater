@@ -4,7 +4,7 @@ import os
 import logging
 from helpers import init_logging
 
-from .base_converter import convert_airplane_lights
+from .common_lights_converter import convert_airplane_lights
 from .converter_helpers import get_leading_whitespaces
 
 # Setup logging
