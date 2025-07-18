@@ -43,7 +43,7 @@ from light_converters import convert_airplane_taxi_lights
 from light_converters import convert_airplane_nav_lights
 from light_converters import convert_airplane_beacon_lights
 from light_converters import convert_airplane_flashing_beacon_lights
-from light_converters import convert_airplane_flashing_beacon_lights_airbus
+from light_converters import convert_airbus_flashing_beacon_lights
 from light_converters import convert_airplane_strobe_lights
 from light_converters import convert_airbus_strobe_lights
 
@@ -168,9 +168,9 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "airplane_nav": convert_airplane_nav_lights,
         "airplane_beacon": convert_airplane_beacon_lights,
         "airplane_beacon_flashing": convert_airplane_flashing_beacon_lights,
-        "airplane_beacon_flashing_airbus": convert_airplane_flashing_beacon_lights_airbus,
+        "airplane_beacon_flashing_airbus": convert_airbus_flashing_beacon_lights,
         "airplane_strobe": convert_airplane_strobe_lights,
-        "airplane_airbus_strobe": convert_airbus_strobe_lights
+        "airplane_strobe_airbus": convert_airbus_strobe_lights
     }
 
     # TODO: Move this list to a config or at least up in this code
@@ -210,9 +210,9 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     list_of_animations: list[str] = get_list_of_animations(animations)
 
     for animation in list_of_animations:
-        _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
+        # _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
-        if any((light_dataref := dataref) in _animation for dataref in _lighttype_per_dataref.keys()):
+        if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
             light_type: str = _lighttype_per_dataref[light_dataref]
             light_converter = _light_converters[light_type]
 
@@ -229,18 +229,18 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
             # Special case 3: Airbus strobe
             if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icaos:
-                light_converter = _light_converters["airplane_airbus_strobe"]
+                light_converter = _light_converters["airplane_strobe_airbus"]
 
             # Special case 4: Taxilight in wrong landing lights animation (found with Bluebell's)
-            if light_dataref == "libxplanemp/controls/landing_lites_on" and "airplane_taxi" in _animation:
-                _animation = _animation.replace(
-                    "landing_lites_on", "taxi_lites_on")
+            if light_dataref == "libxplanemp/controls/landing_lites_on" and "airplane_taxi" in animation:
+                log.debug(
+                    "Taxilight in wrong landing lights animation. Fixing...")
                 light_type = "airplane_taxi"
                 light_converter = _light_converters["airplane_taxi"]
 
             try:
                 new_animation: str = light_converter(
-                    _animation, light_params_dict[light_type])
+                    animation, light_params_dict[light_type])
             except WrongLightInAnimationError as err:
                 log.error(err)
                 continue
