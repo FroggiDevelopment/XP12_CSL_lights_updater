@@ -1,2 +1,2 @@
 ECHO OFF
-python lights_updater.py -g
+python lights_updater.py --from-gui
