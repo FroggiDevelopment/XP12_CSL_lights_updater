@@ -184,8 +184,8 @@ class UpdaterGui:
         self.cancel_requested = False
         self.cancel_button.config(state=tkinter.NORMAL)
 
-        cmd = ["python3", "lights_updater.py", "--path",
-               self.config["csl_path"], "--from-gui"]
+        cmd: list[str] = ["python3", "lights_updater.py", "--path",
+                          self.config["csl_path"], "--from-gui"]
         if cli_params:
             cmd[-1:-1] = shlex.split(cli_params)
 
