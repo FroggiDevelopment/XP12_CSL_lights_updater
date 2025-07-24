@@ -63,14 +63,16 @@ class UpdaterGui:
         self.process_menu.add_separator()
 
         self.process_menu.add_command(
+            label="Run undo", command=self.undo_conversion)
+
+        self.process_menu.add_separator()
+
+        self.process_menu.add_command(
             label="Remove backup files! Be careful!",
             command=self.remove_backup_files,
             background="red",
             foreground="yellow"
         )
-
-        self.process_menu.add_command(
-            label="Run undo", command=self.undo_conversion)
 
         self.CSL_menu = tkinter.Menu(self.menu, tearoff=False)
 
