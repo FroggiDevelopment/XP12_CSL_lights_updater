@@ -53,7 +53,7 @@ class UpdaterGui:
         self.process_menu = tkinter.Menu(self.menu, tearoff=False)
 
         self.process_menu.add_command(
-            label="Run 'normal' conversion", command=self.start_conversion)
+            label="Run standard conversion", command=self.start_conversion)
 
         self.process_menu.add_command(
             label="Run conversion with flashing beacons",
@@ -63,7 +63,10 @@ class UpdaterGui:
         self.process_menu.add_separator()
 
         self.process_menu.add_command(
-            label="Remove backup files", command=self.remove_backup_files
+            label="Remove backup files! Be careful!",
+            command=self.remove_backup_files,
+            background="red",
+            foreground="yellow"
         )
 
         self.process_menu.add_command(
@@ -88,7 +91,7 @@ class UpdaterGui:
         )
 
         self.menu.add_cascade(
-            label="Process",
+            label="Converter",
             menu=self.process_menu,
             underline=0
         )
@@ -167,7 +170,7 @@ class UpdaterGui:
         self.cancel_requested = False
         self.cancel_button.config(state=tkinter.NORMAL)
 
-        cmd = ["python3", "lights_updater.py", "--path",
+        cmd = [sys.executable, "lights_updater.py", "--path",
                self.config["csl_path"], "--from-gui"]
         if cli_params:
             cmd[-1:-1] = shlex.split(cli_params)
