@@ -1,4 +1,4 @@
-import os
+# import os
 import re
 
 import logging
@@ -27,7 +27,7 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
     _known_coordinates: list[str] = []
     _positions = ["_left", "_right", "_tail"]
     _light_name = light_type.split("_")[1]
-    _illegal_lights: list[str] = ["headlight"]
+    _illegal_lights: list[str] = ["headlight", "airplane_beacon_rotate_sp"]
 
     anim_frame: str = """
 # New animation created for tail lights by lights_updater
@@ -102,13 +102,13 @@ ANIM_end
 
                     tail_spill_line = reduce_spill_intensity(
                         tail_spill_line, "airplane_nav")
-                    new_tail_line = f"    {tail_billboard_line}{os.linesep}        {tail_spill_line}"  # noqa
+                    new_tail_line = f"    {tail_billboard_line}\n        {tail_spill_line}"  # noqa
                     new_tail_line = new_tail_line.replace("_tail", "")
 
                     new_anim_frame = anim_frame.replace(
                         "@placeholder@", new_tail_line).replace("@light_name@", _light_name)
 
-                    animation = animation+f"{os.linesep}"+new_anim_frame
+                    animation = animation+"\n"+new_anim_frame
 
             light_type = f"{light_type}{light_position}"
             line_start = f"LIGHT_PARAM    {light_type}_bb"
@@ -124,11 +124,11 @@ ANIM_end
             spill_line = billboard_line.replace("_bb", "_pm")
             spill_line = reduce_spill_intensity(
                 spill_line, light_type)
-            new_line = f"{leading_whitespaces}{billboard_line}{os.linesep}{leading_whitespaces}{spill_line}"
+            new_line = f"{leading_whitespaces}{billboard_line}\n{leading_whitespaces}{spill_line}"
             animation = animation.replace(line, new_line)
 
     # remove empty lines
-    new_animation = os.linesep.join(
+    new_animation = "\n".join(
         [line for line in animation.splitlines() if line.strip() != ""])
 
     return new_animation

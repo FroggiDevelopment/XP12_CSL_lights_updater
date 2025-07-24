@@ -1,5 +1,5 @@
 import re
-import os
+# import os
 import random
 
 import logging
@@ -108,7 +108,7 @@ def convert_airplane_flashing_beacon_lights(animation: str,
     new_animation = increase_flashing_beacon_light_intensity(new_animation)
 
     # remove empty lines
-    new_animation = os.linesep.join(
+    new_animation = "\n".join(
         [line for line in new_animation.splitlines() if line.strip() != ""])
     return new_animation
 

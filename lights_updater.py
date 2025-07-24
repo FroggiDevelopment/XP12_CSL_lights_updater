@@ -16,7 +16,7 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 import re
-import os
+# import os
 
 import argparse
 import logging
@@ -270,7 +270,7 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             continue
         except UnicodeDecodeError as err:
             log.error(
-                f"Object file seems damaged! See: {err}{os.linesep}Trying to repair it.")
+                f"Object file seems damaged! See: {err}\nTrying to repair it.")
             continue
 
         if aircraft_object_content == "":

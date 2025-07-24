@@ -1,5 +1,5 @@
 import re
-import os
+# import os
 import random
 
 import logging
@@ -85,7 +85,7 @@ def convert_airplane_strobe_lights(animation: str, strobe_light_params_dict: dic
     new_animation = new_animation.replace(
         "airplane_strobe", "airplane_generic")
 
-    new_animation = os.linesep.join(
+    new_animation = "\n".join(
         [line for line in new_animation.splitlines() if line.strip() != ""])
 
     return new_animation

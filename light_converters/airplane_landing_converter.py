@@ -1,5 +1,5 @@
 import re
-import os
+# import os
 
 import logging
 from helpers.init_logging import init_logging
@@ -88,11 +88,11 @@ def fix_frontgear_landinglights(animation: str) -> str:
         if x_position < 0.4 and x_position > -0.4:
             new_animation = animation.replace(
                 landinglight_anim_hide,
-                f"{leading_whitespaces}{landinglight_anim_hide}{os.linesep}{leading_whitespaces}{extra_anim_hide}",
+                f"{leading_whitespaces}{landinglight_anim_hide}\n{leading_whitespaces}{extra_anim_hide}",
             )
 
             # remove empty lines
-            new_animation = os.linesep.join(
+            new_animation = "\n".join(
                 [line for line in new_animation.splitlines() if line.strip() != ""])
 
             return new_animation
