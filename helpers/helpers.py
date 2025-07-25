@@ -255,4 +255,4 @@ def copy_new_to_old(aircraft_objects: list[dict[str, str]], TEMP_FILE_SUFFIX: st
             log.error(f"{temp_object_file.name} can not be deleted!", err)
             continue
         log.info(
-            f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
+            f"Moving {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
