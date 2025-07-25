@@ -4,6 +4,7 @@ from tkinter import filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
 
 import sys
+import platform
 import subprocess
 import threading
 import shlex
@@ -172,7 +173,12 @@ class UpdaterGui:
         self.cancel_requested = False
         self.cancel_button.config(state=tkinter.NORMAL)
 
-        cmd = [sys.executable, "lights_updater.py", "--path",
+        if platform.system() == "Windows":
+            python_exe = "pyw"
+        else:
+            python_exe = "python3"
+
+        cmd = [python_exe, "lights_updater.py", "--path",
                self.config["csl_path"], "--from-gui"]
         if cli_params:
             cmd[-1:-1] = shlex.split(cli_params)
@@ -312,5 +318,14 @@ class UpdaterGui:
 
 
 if __name__ == "__main__":
+    # Remove splash screen
+    try:
+        import pyi_splash
+        # pyi_splash.update_text("Initializing...")
+        # Later when done:
+        pyi_splash.close()
+    except ImportError:
+        # No splash screen support (e.g., dev mode or build without --splash)
+        pass
     app = UpdaterGui()
     app.show_gui()
