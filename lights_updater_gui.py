@@ -29,6 +29,8 @@ class UpdaterGui:
     def __init__(self) -> None:
         self.config: dict[str, str] = {"csl_path": ""}
         self.process: subprocess.Popen[str] | None = None
+        self.license_file = "Documentation/gpl-3.0.txt"
+        self.about_file = "Documentation/about.txt"
 
     def show_gui(self) -> None:
         self.root = tkinter.Tk()
@@ -85,6 +87,12 @@ class UpdaterGui:
         self.help_menu = tkinter.Menu(self.menu, tearoff=False)
         self.help_menu.add_command(
             label="Show version", command=self.show_version
+        )
+        self.help_menu.add_command(
+            label="Show license", command=self.show_license
+        )
+        self.help_menu.add_command(
+            label="About", command=self.show_about
         )
 
         self.menu.add_cascade(
@@ -316,13 +324,21 @@ class UpdaterGui:
     def show_delete_backups_warning(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
 
+    def show_license(self) -> None:
+        with open(self.license_file, 'r') as f:
+            license_text = f.read()
+        print(license_text, flush=True)
+
+    def show_about(self) -> None:
+        with open(self.about_file, 'r') as f:
+            about_text = f.read()
+        print(about_text, flush=True)
+
 
 if __name__ == "__main__":
     # Remove splash screen
     try:
-        import pyi_splash
-        # pyi_splash.update_text("Initializing...")
-        # Later when done:
+        import pyi_splash  # type: ignore
         pyi_splash.close()
     except ImportError:
         # No splash screen support (e.g., dev mode or build without --splash)
