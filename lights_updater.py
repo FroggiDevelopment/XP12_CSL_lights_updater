@@ -218,15 +218,17 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
                 str, dict[str, str]], str] = _light_converters[light_type]
 
             # Special case 1: Flashing beacons
-            if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
-                aircraft_categories: dict[str, str] = get_aircraft_categories()
-                for category in aircraft_categories.items():
-                    if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
-                        light_converter = _light_converters["airplane_beacon_flashing"]
+            if flashing_beacons is True:
+                if light_dataref == "libxplanemp/controls/beacon_lites_on":
+                    aircraft_categories: dict[str,
+                                              str] = get_aircraft_categories()
+                    for category in aircraft_categories.items():
+                        if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
+                            light_converter = _light_converters["airplane_beacon_flashing"]
 
-            # Special case 2: Airbus beacon
-            if light_dataref == "libxplanemp/controls/beacon_lites_on" and aircraft_icao_type in airbus_icaos:
-                light_converter = _light_converters["airplane_beacon_flashing_airbus"]
+                # Special case 2: Airbus beacons flashing sequence
+                    if light_dataref == "libxplanemp/controls/beacon_lites_on" and aircraft_icao_type in airbus_icaos:
+                        light_converter = _light_converters["airplane_beacon_flashing_airbus"]
 
             # Special case 3: Airbus strobe
             if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icaos:
