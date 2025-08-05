@@ -24,7 +24,8 @@ import sys
 
 
 def init_logging():
-    with open('configs/logging.conf', 'r') as configfile:
+    logging_config = "configs/logging.conf"
+    with open(logging_config, 'r') as configfile:
         try:
             logger_config = json.load(configfile)
         except FileNotFoundError:
