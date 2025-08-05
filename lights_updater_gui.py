@@ -188,6 +188,7 @@ class UpdaterGui:
 
         cmd = [python_exe, "lights_updater.py", "--path",
                self.config["csl_path"], "--from-gui"]
+
         if cli_params:
             cmd[-1:-1] = shlex.split(cli_params)
 
@@ -232,10 +233,9 @@ class UpdaterGui:
             else:
                 return  # No exception, don't show error
             finally:
-                self.output.after(0, self.process_info_label.config, {
-                    'text': status_text, 'fg': status_color})
-                self.output.after(0, self.cancel_button.config, {
-                    'state': tkinter.DISABLED})
+                self.process_info_label.config(
+                    text=status_text, fg=status_color)
+                self.cancel_button.config(state=tkinter.DISABLED)
                 self.process = None
 
             # Show the error in GUI output
@@ -325,11 +325,16 @@ class UpdaterGui:
         return messagebox.askyesno(title, message)  # type: ignore
 
     def show_license(self) -> None:
+        self.output.delete(1.0, tkinter.END)
+        self.process_info_label.config(
+            text="Showing program license", fg="green")
         with open(self.license_file, 'r') as f:
             license_text = f.read()
         print(license_text, flush=True)
 
     def show_about(self) -> None:
+        self.output.delete(1.0, tkinter.END)
+        self.process_info_label.config(text="Showing program info", fg="green")
         with open(self.about_file, 'r') as f:
             about_text = f.read()
         print(about_text, flush=True)
