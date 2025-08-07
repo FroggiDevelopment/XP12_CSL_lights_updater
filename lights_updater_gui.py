@@ -269,7 +269,7 @@ class UpdaterGui:
     def start_conversion_with_flashing_beacons(self) -> None:
         if self.config["csl_path"] == "":
             messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
+                "Error", "No CSL directory selected")
             return
         self.process_info_label.config(
             text="Run conversion with flashing beacons", fg="green")
@@ -297,7 +297,7 @@ class UpdaterGui:
     def undo_conversion(self):
         if self.config["csl_path"] == "":
             messagebox.showerror(  # type: ignore
-                "Error", "No directory selected")
+                "Error", "No CSL directory selected")
             return
         self.process_info_label.config(
             text="Undoing prior conversions", fg="green")
