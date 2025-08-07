@@ -24,15 +24,15 @@ from .init_logging import init_logging
 
 from .custom_exceptions import NoFilesFoundError
 
-import configs.program_env as program_env
-
 from decorators.time_benchmark import time_benchmark
 
 # Setup logging
 init_logging()
 log = logging.getLogger(__name__)
 
-interactive = program_env.ProgramEnv.interactive
+interactive_configuration = json.load(
+    open("configs/interactive_conf.json"))
+interactive = interactive_configuration["interactive"]["active"]
 
 
 def paused_exit() -> None:
@@ -184,7 +184,6 @@ def get_list_of_files(searchpath: Path, filename: str) -> list[Path]:
     if files == []:
         raise NoFilesFoundError(
             message=f"No {filename} found in {searchpath}!")
-    # log.debug(f"Found these files while globing: {files}")
     log.debug(f"Found {len(files)} xsb_aircraft.txt files!")
     return files
 
