@@ -16,7 +16,6 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
 """
 
 import re
-# import os
 import logging
 from pathlib import Path
 
@@ -26,10 +25,12 @@ from .helpers import get_list_of_files
 from .helpers import paused_exit
 from .init_logging import init_logging
 
+
 from .custom_exceptions import NoFilesFoundError
 
 # Setup logging
 init_logging()
+
 log = logging.getLogger(__name__)
 
 IGNORE_OBJECTS: list[str] = ["glass", "prop", "PropDisc", "ZZZ",
@@ -50,7 +51,12 @@ def get_path_to_aircraft_object(line: str) -> str:
     Returns:
         str: string representation of the path
     """
-    if not any((_separator := delimiter) in line for delimiter in [":", "/"]):
+    # From the original xsb_aircraft.txt file definitions:
+    # Directory paths in the XSB_aircraft.txt file should use the
+    # /, \ or : character (/ is recommended) as a directory separator.
+    legal_delimiters: list[str] = [":", "/", "\\"]
+
+    if not any((_separator := delimiter) in line for delimiter in legal_delimiters):
         log.error(
             f"Could not find separator in {line} Can not create path to object file!")
         return "no sep error"
@@ -86,6 +92,7 @@ def get_aircraft_objects_from_xsb_file(searchpath: Path) -> list[dict[str, str]]
         log.error(errormsg)
         log.error("Please verify that your path is correct!")
         paused_exit()
+        exit()
 
     aircraft_object_files: list[dict[str, str]] = []
     unique_aircraft_objects: list[dict[str, str]] = []
