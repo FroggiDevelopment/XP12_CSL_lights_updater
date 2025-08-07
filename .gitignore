@@ -52,3 +52,5 @@ Thumbs.db
 *CSL*
 
 .cov*
+
+!WIN_lights_updater_gui.exe
