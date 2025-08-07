@@ -16,10 +16,10 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 import re
-# import os
 
 import argparse
 import logging
+import json
 from pathlib import Path
 from configparser import ConfigParser, NoSectionError, NoOptionError
 from typing import Callable
@@ -48,7 +48,6 @@ from light_converters import convert_airplane_strobe_lights
 from light_converters import convert_airbus_strobe_lights
 
 import configs.aircraft_processing_data as aircraft_processing_data
-import configs.program_env as program_env
 
 from helpers.custom_exceptions import NoAnimationFoundError
 from helpers.custom_exceptions import WrongLightInAnimationError
@@ -468,9 +467,17 @@ if __name__ == "__main__":
 
     args = parse_args()
 
+    # program_env = program_env.ProgramEnv()
+    # interactive = program_env.get_interactive_value("test")
+    # program_env.set_interactive_value("test", False)
+
+    interactive_configuration = json.load(
+        open("configs/interactive_conf.json"))
+    interactive = interactive_configuration["interactive"]["active"]
     if args.from_gui:
-        interactive = False
-        program_env.ProgramEnv.interactive = False
+        interactive_configuration["interactive"]["active"] = False
+        with open("configs/interactive_conf.json", "w") as f:
+            json.dump(interactive_configuration, f)
 
     # To set this var as global, I do it here. Rest is set in the main() function
     if args.flashing_beacons:
