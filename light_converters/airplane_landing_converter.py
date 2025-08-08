@@ -27,7 +27,8 @@ def convert_airplane_landing_lights(animation: str, light_params_dict: dict[str,
 
     # Get rid of illegal lights in landig lights animation
     if "airplane_landing" not in animation:
-        log.error("Found illegal light in animation! Removing this light animation")
+        log.warning(
+            "Found non landing light in animation! Removing this light animation")
         return ""
 
     light_type = "airplane_landing"
