@@ -3,6 +3,7 @@ import tkinter
 from tkinter import filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
 
+import os
 import sys
 import platform
 import subprocess
@@ -182,11 +183,21 @@ class UpdaterGui:
         self.cancel_button.config(state=tkinter.NORMAL)
 
         if platform.system() == "Windows":
-            python_exe = "pyw"
+            self.python_exe = "pyw"
         else:
-            python_exe = "python3"
+            self.python_exe = "python3"
 
-        cmd = [python_exe, "lights_updater.py", "--path",
+        # if platform.system() == "Darwin":
+        #     if os.path.exists(f"{os.getcwd()}/lights_updater.py"):
+            print("Hurray!")
+        #     self.python_exe = "python3"
+        #     if self.is_running_from_app_bundle():
+        #         true_working_dir = self.get_app_root_dir()
+        #     else:
+        #         true_working_dir = os.path.dirname(sys.executable)
+        #     os.chdir(true_working_dir)
+
+        cmd = [self.python_exe, "lights_updater.py", "--path",
                self.config["csl_path"], "--from-gui"]
 
         if cli_params:
@@ -304,11 +315,6 @@ class UpdaterGui:
         cli_params = "--undo"
         self.run_process(cli_params, "Recover to backuped files")
 
-    def show_version(self) -> None:
-        self.process_info_label.config(text="Programm version", fg="green")
-        cli_params = "--version"
-        self.run_process(cli_params, "Getting version info")
-
     def set_csl_directory(self) -> None:
         csl_directory: str = filedialog.askdirectory(
             parent=self.root,
@@ -324,6 +330,20 @@ class UpdaterGui:
     def show_delete_backups_warning(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
 
+    def show_version(self) -> None:
+        # print(f"Platform: {sys.platform}")
+        # print(f"Pythonversion: {sys.version}")
+        # print(f"Filepath: {sys.executable}")
+        # print(f"Running form app package: {self.is_running_from_app_bundle()}")
+        # print("sys.executable:", sys.executable)
+        # print("Apps root dir:", self.get_app_root_dir())
+        # print("cwd:", os.getcwd())
+        # print("argv[0]:", sys.argv[0])
+        # print("_MEIPASS:", getattr(sys, '_MEIPASS', None))
+        self.process_info_label.config(text="Programm version", fg="green")
+        cli_params = "--version"
+        self.run_process(cli_params, "Getting version info")
+
     def show_license(self) -> None:
         self.output.delete(1.0, tkinter.END)
         self.process_info_label.config(
@@ -338,6 +358,26 @@ class UpdaterGui:
         with open(self.about_file, 'r') as f:
             about_text = f.read()
         print(about_text, flush=True)
+
+    def get_app_root_dir(self) -> str:
+        """
+        Returns the folder that contains the .app bundle on macOS.
+        Example: If the app is at /Users/you/Desktop/MyApp.app,
+        this returns /Users/you/Desktop
+        """
+        exec_path = os.path.abspath(sys.executable)
+
+        # Walk up from Contents/MacOS/MyApp → Contents → MyApp.app → parent folder
+        app_dir = os.path.dirname(os.path.dirname(
+            os.path.dirname(os.path.dirname(exec_path))))
+
+        return app_dir
+
+    def is_running_from_app_bundle(self) -> bool:
+        # Only true when frozen and running from inside an .app
+        if getattr(sys, 'frozen', False):
+            return ".app/" in sys.executable
+        return False
 
 
 if __name__ == "__main__":
