@@ -467,10 +467,6 @@ if __name__ == "__main__":
 
     args = parse_args()
 
-    # program_env = program_env.ProgramEnv()
-    # interactive = program_env.get_interactive_value("test")
-    # program_env.set_interactive_value("test", False)
-
     interactive_configuration = json.load(
         open("configs/interactive_conf.json"))
     interactive = interactive_configuration["interactive"]["active"]
