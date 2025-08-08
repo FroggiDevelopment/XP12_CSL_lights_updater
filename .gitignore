@@ -54,3 +54,6 @@ Thumbs.db
 .cov*
 
 !WIN_lights_updater_gui.exe
+
+# Possible MacOS specific
+._*
