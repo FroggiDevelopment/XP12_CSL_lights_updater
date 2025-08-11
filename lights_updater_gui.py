@@ -187,15 +187,10 @@ class UpdaterGui:
         else:
             self.python_exe = "python3"
 
-        # if platform.system() == "Darwin":
-        #     if os.path.exists(f"{os.getcwd()}/lights_updater.py"):
-            print("Hurray!")
-        #     self.python_exe = "python3"
-        #     if self.is_running_from_app_bundle():
-        #         true_working_dir = self.get_app_root_dir()
-        #     else:
-        #         true_working_dir = os.path.dirname(sys.executable)
-        #     os.chdir(true_working_dir)
+        if platform.system() == "Darwin":
+            if not os.path.exists(f"{os.getcwd()}/lights_updater.py"):
+                true_working_dir = os.path.dirname(sys.executable)
+                os.chdir(true_working_dir)
 
         cmd = [self.python_exe, "lights_updater.py", "--path",
                self.config["csl_path"], "--from-gui"]
