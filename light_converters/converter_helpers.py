@@ -104,12 +104,8 @@ def get_strobe_light_positions(line: str) -> str:
 
     # Upper / lower lights? _z_psoition to save tail strobes on the bigger airplanes.
     if _x_position == 0 and _y_position > 1.0 and _z_position < 20:
-        print(line)
-        print(f"{_x_position}, {_y_position}: i.e upper light")
         return "_upper"
     if _x_position == 0 and _y_position < 1.0 and _z_position < 20:
-        print(line)
-        print(f"{_x_position}, {_y_position}: i.e lower light")
         return "_lower"
     if _x_position < -0.50:
         return "_left"
