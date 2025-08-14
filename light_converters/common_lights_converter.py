@@ -5,7 +5,8 @@ import logging
 from helpers.init_logging import init_logging
 
 from .converter_helpers import reduce_spill_intensity
-from .converter_helpers import get_light_position
+from .converter_helpers import get_nav_light_position
+from .converter_helpers import get_strobe_light_positions
 from .converter_helpers import get_leading_whitespaces
 from .converter_helpers import remove_show_animation
 
@@ -25,7 +26,7 @@ def convert_airplane_lights(animation: str, light_params_dict: dict[str, str], l
             str: The updated animations sequence with XP12 lights
     """
     _known_coordinates: list[str] = []
-    _positions = ["_left", "_right", "_tail"]
+    _positions = ["_left", "_right", "_tail", "_lower", "_upper"]
     _light_name = light_type.split("_")[1]
     _illegal_lights: list[str] = ["headlight", "airplane_beacon_rotate_sp"]
 
@@ -88,7 +89,10 @@ ANIM_end
             # TODO: Rewrite base converter to get rid of specific converter related code!!! If possible!?
             if light_type in ["airplane_nav", "airplane_strobe"]:
                 # TODO: Send positional arguments to the specific converters
-                light_position = get_light_position(line)
+                if light_type == "airplane_strobe":
+                    light_position = get_strobe_light_positions(line)
+                else:
+                    light_position = get_nav_light_position(line)
 
                 new_line = new_line.replace(
                     f"{light_type}", f"{light_type}{light_position}")
