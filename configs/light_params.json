@@ -14,7 +14,9 @@
         "airplane_strobe": {
             "airplane_strobe_left": "1 1 1 0 50000cd -0.66745901 0.069296718 -0.5414152 0.04217486",
             "airplane_strobe_right": "1 1 1 0 50000cd 0.66745675 0.06932088 -0.5414152 0.04217486",
-            "airplane_strobe_tail": "1 1 1 0 50000cd -0.00000004 -0 1 0.4217486"
+            "airplane_strobe_tail": "1 1 1 0 50000cd -0.00000004 -0 1 0.4217486",
+            "airplane_strobe_upper": "1 1 1 0 50000cd 0 1 0 0",
+            "airplane_strobe_lower": "1 1 1 0 50000cd 0 -1 0 0"
         },
         "airplane_beacon": {
             "airplane_beacon": "1 0 0 0 20000cd 0 0 0 1.0",
@@ -37,7 +39,9 @@
         "airplane_strobe": {
             "airplane_strobe_left": "1 1 1 0 50000cd -0.66745901 0.069296718 -0.5414152 0.04217486",
             "airplane_strobe_right": "1 1 1 0 50000cd 0.66745675 0.06932088 -0.5414152 0.04217486",
-            "airplane_strobe_tail": "1 1 1 0 50000cd -0.00000004 -0 1 0.4217486"
+            "airplane_strobe_tail": "1 1 1 0 50000cd -0.00000004 -0 1 0.4217486",
+            "airplane_strobe_upper": "1 1 1 0 50000cd 0 1 0 0",
+            "airplane_strobe_lower": "1 1 1 0 50000cd 0 -1 0 0"
         },
         "airplane_beacon": {
             "airplane_beacon": "1 0 0 0 10000cd 0 0 0 1",
@@ -60,7 +64,9 @@
         "airplane_strobe": {
             "airplane_strobe_left": "1 1 1 0 15000cd -0.66745901 0.069296718 -0.5414152 0.04217486",
             "airplane_strobe_right": "1 1 1 0 15000cd 0.66745675 0.06932088 -0.5414152 0.04217486",
-            "airplane_strobe_tail": "1 1 1 0 15000cd -0.00000004 -0 1 0.4217486"
+            "airplane_strobe_tail": "1 1 1 0 15000cd -0.00000004 -0 1 0.4217486",
+            "airplane_strobe_upper": "1 1 1 0 15000cd 0 1 0 0",
+            "airplane_strobe_lower": "1 1 1 0 15000cd 0 -1 0 0"
         },
         "airplane_beacon": {
             "airplane_beacon": "1 0 0 0 10000cd 0 0 0 1",
@@ -83,7 +89,9 @@
         "airplane_strobe": {
             "airplane_strobe_left": "1 1 1 0 10000cd -0.83651626 -0.25881907 -0.48296297 0.08217486",
             "airplane_strobe_right": "1 1 1 0 10000cd 0.83651608 -0.25881904 -0.48296326 0.08217486",
-            "airplane_strobe_tail": "1 1 1 0 10000cd -0.00000004 -0 1 0.08217486"
+            "airplane_strobe_tail": "1 1 1 0 10000cd -0.00000004 -0 1 0.08217486",
+            "airplane_strobe_upper": "1 1 1 0 10000cd 0 1 0 0",
+            "airplane_strobe_lower": "1 1 1 0 10000cd 0 -1 0 0"
         },
         "airplane_beacon": {
             "airplane_beacon": "1 0 0 0 500cd 0 0 0 1",
@@ -106,7 +114,9 @@
         "airplane_strobe": {
             "airplane_strobe_left": "1 1 1 0 10000cd -0.83651626 -0.25881907 -0.48296297 0.08217486",
             "airplane_strobe_right": "1 1 1 0 10000cd 0.83651608 -0.25881904 -0.48296326 0.08217486",
-            "airplane_strobe_tail": "1 1 1 0 10000cd -0.00000004 -0 1 0.08217486"
+            "airplane_strobe_tail": "1 1 1 0 10000cd -0.00000004 -0 1 0.08217486",
+            "airplane_strobe_upper": "1 1 1 0 10000cd 0 1 0 0",
+            "airplane_strobe_lower": "1 1 1 0 10000cd 0 -1 0 0"
         },
         "airplane_beacon": {
             "airplane_beacon": "1 0 0 0 500cd 0 0 0 1",
