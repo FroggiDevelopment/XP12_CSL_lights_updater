@@ -48,24 +48,48 @@ def convert_airplane_flashing_beacon_lights(animation: str,
     """
 
     beacon_sequence_2 = f"""
+        ANIM_hide    0.0 0.2   sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.25 {loop_duration}   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_3 = f"""
         ANIM_hide    0.0 0.3   sim/time/total_running_time_sec
         ANIM_keyframe_loop {loop_duration}
         ANIM_hide    0.35 {loop_duration}   sim/time/total_running_time_sec
     """
 
-    beacon_sequence_3 = f"""
+    beacon_sequence_4 = f"""
+        ANIM_hide    0.0 0.4   sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.45 {loop_duration}   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_5 = f"""
         ANIM_hide    0.0 0.5   sim/time/total_running_time_sec
         ANIM_keyframe_loop {loop_duration}
         ANIM_hide    0.55 {loop_duration}   sim/time/total_running_time_sec
     """
 
-    beacon_sequence_4 = f"""
+    beacon_sequence_6 = f"""
+        ANIM_hide    0.0 0.6   sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.65 {loop_duration}   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_7 = f"""
         ANIM_hide    0.0 0.7   sim/time/total_running_time_sec
         ANIM_keyframe_loop {loop_duration}
         ANIM_hide    0.75 {loop_duration}   sim/time/total_running_time_sec
     """
 
-    beacon_sequence_5 = f"""
+    beacon_sequence_8 = f"""
+        ANIM_hide    0.0 0.8   sim/time/total_running_time_sec
+        ANIM_keyframe_loop {loop_duration}
+        ANIM_hide    0.85 {loop_duration}   sim/time/total_running_time_sec
+    """
+
+    beacon_sequence_9 = f"""
         ANIM_hide    0.0 0.9   sim/time/total_running_time_sec
         ANIM_keyframe_loop {loop_duration}
         ANIM_hide    0.95 {loop_duration}   sim/time/total_running_time_sec
@@ -76,7 +100,11 @@ def convert_airplane_flashing_beacon_lights(animation: str,
         beacon_sequence_2,
         beacon_sequence_3,
         beacon_sequence_4,
-        beacon_sequence_5
+        beacon_sequence_5,
+        beacon_sequence_6,
+        beacon_sequence_7,
+        beacon_sequence_8,
+        beacon_sequence_9
     ]
     # get flashing sequence
     flash_sequence = random.choice(flash_sequences)
