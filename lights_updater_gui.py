@@ -33,6 +33,17 @@ class UpdaterGui:
         self.license_file = "Documentation/gpl-3.0.txt"
         self.about_file = "Documentation/about.txt"
 
+        # Platform specific needs
+        if platform.system() == "Windows":
+            self.python_exe = "pyw"
+        else:
+            self.python_exe = "python3"
+
+        if platform.system() == "Darwin":
+            if not os.path.exists(f"{os.getcwd()}/lights_updater.py"):
+                true_working_dir = os.path.dirname(sys.executable)
+                os.chdir(true_working_dir)
+
     def show_gui(self) -> None:
         self.root = tkinter.Tk()
         self.root.title("Lights updater for CSL objects")
@@ -182,16 +193,6 @@ class UpdaterGui:
         self.cancel_requested = False
         self.cancel_button.config(state=tkinter.NORMAL)
 
-        if platform.system() == "Windows":
-            self.python_exe = "pyw"
-        else:
-            self.python_exe = "python3"
-
-        if platform.system() == "Darwin":
-            if not os.path.exists(f"{os.getcwd()}/lights_updater.py"):
-                true_working_dir = os.path.dirname(sys.executable)
-                os.chdir(true_working_dir)
-
         cmd = [self.python_exe, "lights_updater.py", "--path",
                self.config["csl_path"], "--from-gui"]
 
@@ -326,15 +327,6 @@ class UpdaterGui:
         return messagebox.askyesno(title, message)  # type: ignore
 
     def show_version(self) -> None:
-        # print(f"Platform: {sys.platform}")
-        # print(f"Pythonversion: {sys.version}")
-        # print(f"Filepath: {sys.executable}")
-        # print(f"Running form app package: {self.is_running_from_app_bundle()}")
-        # print("sys.executable:", sys.executable)
-        # print("Apps root dir:", self.get_app_root_dir())
-        # print("cwd:", os.getcwd())
-        # print("argv[0]:", sys.argv[0])
-        # print("_MEIPASS:", getattr(sys, '_MEIPASS', None))
         self.process_info_label.config(text="Programm version", fg="green")
         cli_params = "--version"
         self.run_process(cli_params, "Getting version info")
@@ -345,14 +337,16 @@ class UpdaterGui:
             text="Showing program license", fg="green")
         with open(self.license_file, 'r') as f:
             license_text = f.read()
-        print(license_text, flush=True)
+        self.output.insert("1.0", license_text)
+        self.output.see("1.0")
 
     def show_about(self) -> None:
         self.output.delete(1.0, tkinter.END)
         self.process_info_label.config(text="Showing program info", fg="green")
         with open(self.about_file, 'r') as f:
             about_text = f.read()
-        print(about_text, flush=True)
+        self.output.insert("1.0", about_text)
+        self.output.see("1.0")
 
     def get_app_root_dir(self) -> str:
         """
@@ -368,20 +362,16 @@ class UpdaterGui:
 
         return app_dir
 
-    def is_running_from_app_bundle(self) -> bool:
-        # Only true when frozen and running from inside an .app
-        if getattr(sys, 'frozen', False):
-            return ".app/" in sys.executable
-        return False
-
 
 if __name__ == "__main__":
-    # Remove splash screen
-    try:
-        import pyi_splash  # type: ignore
-        pyi_splash.close()
-    except ImportError:
-        # No splash screen support (e.g., dev mode or build without --splash)
-        pass
+    # Remove splash screen, if not on macOS.
+    # MacOS prohibits splashscreens for pyinstaller.
+    if platform.system() != "Darwin":
+        try:
+            import pyi_splash  # type: ignore
+            pyi_splash.close()
+        except ImportError:
+            # pyi_splash is not installed or not needed, just ignore it!
+            pass
     app = UpdaterGui()
     app.show_gui()
