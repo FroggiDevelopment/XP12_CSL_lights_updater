@@ -31,12 +31,13 @@ from helpers import remove_xpmp2_files
 from helpers import copy_new_to_old
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
-from helpers import get_aircraft_categories
 from helpers import get_list_of_animations
 from helpers import check_if_files_are_in_correct_json
 from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
+
+from helpers.aircraft_light_params import get_aircraft_with_flashing_beacons
 
 from light_converters import convert_airplane_landing_lights
 from light_converters import convert_airplane_taxi_lights
@@ -174,7 +175,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
     # TODO: Move this list to a config or at least up in this code
     # To get the typical Airbus strobe flash sequence the strobes must be converted differently
-    airbus_icaos: list[str] = [
+    airbus_icao_identifiers: list[str] = [
         "A19N",
         "A20N",
         "A21N",
@@ -218,22 +219,30 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
 
             # Special case 1: Flashing beacons
             if flashing_beacons is True:
-                if light_dataref == "libxplanemp/controls/beacon_lites_on":
-                    aircraft_categories: dict[str,
-                                              str] = get_aircraft_categories()
-                    for category in aircraft_categories.items():
-                        if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
-                            light_converter = _light_converters["airplane_beacon_flashing"]
+                aircraft_with_flashing_beacons: list[str] | None = get_aircraft_with_flashing_beacons(
+                )
+                if aircraft_with_flashing_beacons is None:
+                    log.error(
+                        "No data for aircraft with flashing beacons found. Converting all to rotating beacons!")
+                    aircraft_with_flashing_beacons = []
 
-                # Special case 2: Airbus beacons flashing sequence
-                    if light_dataref == "libxplanemp/controls/beacon_lites_on" and aircraft_icao_type in airbus_icaos:
+                if light_dataref == "libxplanemp/controls/beacon_lites_on":
+                    # aircraft_categories: dict[str,
+                    #                           str] = get_aircraft_categories()
+                    # for category in aircraft_categories.items():
+                    # if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
+                    if aircraft_icao_type in aircraft_with_flashing_beacons:
+                        light_converter = _light_converters["airplane_beacon_flashing"]
+
+                # Special case 1.1: Airbus beacons flashing sequence
+                    if light_dataref == "libxplanemp/controls/beacon_lites_on" and aircraft_icao_type in airbus_icao_identifiers:  # noqa
                         light_converter = _light_converters["airplane_beacon_flashing_airbus"]
 
-            # Special case 3: Airbus strobe
-            if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icaos:
+            # Special case 2: Airbus strobe
+            if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icao_identifiers:  # noqa
                 light_converter = _light_converters["airplane_strobe_airbus"]
 
-            # Special case 4: Taxilight in wrong landing lights animation (found with Bluebell's)
+            # Special case 3: Taxilight in wrong landing lights animation (found with Bluebell's)
             if light_dataref == "libxplanemp/controls/landing_lites_on" and "airplane_taxi" in animation:
                 log.debug(
                     "Taxilight in wrong landing lights animation. Fixing...")
