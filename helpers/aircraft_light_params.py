@@ -42,6 +42,22 @@ def check_if_files_are_in_correct_json() -> bool:
     return False
 
 
+def get_aircraft_with_flashing_beacons() -> list[str] | None:
+    try:
+        with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
+            aircrafts = json.load(
+                aircrafts_definitions)
+            return aircrafts["aircraft_with_flashing_beacons"]
+    except FileNotFoundError:
+        log.error(f"Missing {AIRCRAFT_DEFINITIONS} file. Stopping now!")
+        paused_exit()
+    except json.decoder.JSONDecodeError:
+        log.error(
+            f"{AIRCRAFT_DEFINITIONS} may be corrupted. Please check the file for consistency!"
+        )
+        paused_exit()
+
+
 def get_aircraft_categories() -> dict[str, str]:
     """returns data from the aircrafts.json file
 
