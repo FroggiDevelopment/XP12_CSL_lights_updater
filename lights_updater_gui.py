@@ -45,6 +45,8 @@ class UpdaterGui:
                 os.chdir(true_working_dir)
 
     def show_gui(self) -> None:
+        """Creates the primary GUI for the user"""
+
         self.root = tkinter.Tk()
         self.root.title("Lights updater for CSL objects")
 
@@ -181,6 +183,13 @@ class UpdaterGui:
         sys.stdout = old_stdout
 
     def run_process(self, cli_params: str, task: str) -> None:
+        """ Running the choosen process task in a thread.
+            So prohibiting double tasks and allow canceling the running task.
+
+        Args:
+            cli_params (str): The command line parameters which are sent to lights_updater.py
+            task (str): A name for the running task
+        """
 
         # Let only one thread run at a time
         if hasattr(self, 'worker_thread') and self.worker_thread.is_alive():  # type: ignore
@@ -199,7 +208,9 @@ class UpdaterGui:
         if cli_params:
             cmd[-1:-1] = shlex.split(cli_params)
 
-        def reader_thread() -> None:
+        def upater_task_thread() -> None:
+            """Here the threading magic happens"""
+
             status_text = ""
             status_color = "green"
             try:
@@ -253,10 +264,12 @@ class UpdaterGui:
                     'text': f"{task} failed.", 'fg': "red"})
 
         self.worker_thread = threading.Thread(
-            target=reader_thread, daemon=True)
+            target=upater_task_thread, daemon=True)
         self.worker_thread.start()
 
     def cancel_process(self) -> None:
+        """ Stops the running task thread"""
+
         if hasattr(self, 'process') and self.process:
             self.cancel_requested = True
             self.process.terminate()
@@ -264,6 +277,8 @@ class UpdaterGui:
             self.output.see(tkinter.END)
 
     def start_conversion(self) -> None:
+        """ Runs the normal conversion task with rotating beacons"""
+
         if self.config["csl_path"] == "":
             messagebox.showerror(  # type: ignore
                 "Error", "No CSL directory selected")
@@ -274,6 +289,8 @@ class UpdaterGui:
         self.run_process(cli_params, "Standard conversion")
 
     def start_conversion_with_flashing_beacons(self) -> None:
+        """" Runs the conversion task with flashing beacons"""
+
         if self.config["csl_path"] == "":
             messagebox.showerror(  # type: ignore
                 "Error", "No CSL directory selected")
@@ -284,13 +301,15 @@ class UpdaterGui:
         self.run_process(cli_params, "Conversion with flashing beacons")
 
     def remove_backup_files(self) -> None:
+        """ Runs the task to remove backup files permanently"""
+
         if self.config["csl_path"] == "":
             messagebox.showerror(  # type: ignore
                 "Error", "No CSL directory selected")
             return
         self.process_info_label.config(
             text="Removing backups. Be careful!", fg="red1", font="bold")
-        answer: bool = self.show_delete_backups_warning(
+        answer: bool = self.show_decision_box(
             "Warning!!", "You will delete all backups. Continue?")
         if answer:
             cli_params = "--remove-backups"
@@ -302,6 +321,8 @@ class UpdaterGui:
             return
 
     def undo_conversion(self):
+        """ Runs the recovery task to recover the original files from the backup files"""
+
         if self.config["csl_path"] == "":
             messagebox.showerror(  # type: ignore
                 "Error", "No CSL directory selected")
@@ -312,6 +333,8 @@ class UpdaterGui:
         self.run_process(cli_params, "Recover to backuped files")
 
     def set_csl_directory(self) -> None:
+        """ Sets the path to the CSL directory with the aircarft objects"""
+
         csl_directory: str = filedialog.askdirectory(
             parent=self.root,
             initialdir=self.config["csl_path"],
@@ -323,7 +346,7 @@ class UpdaterGui:
             self.config["csl_path"] = csl_directory
             self.selected_dir_label.config(text=csl_directory, fg="green")
 
-    def show_delete_backups_warning(self, title: str, message: str) -> bool:
+    def show_decision_box(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
 
     def show_version(self) -> None:
