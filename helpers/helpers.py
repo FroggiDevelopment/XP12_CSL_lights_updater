@@ -134,10 +134,7 @@ def remove_xpmp2_files(filepath: Path) -> None:
         NoReturn: As it says :-)
     """
     xpmp2_files = list(filepath.rglob("*xpmp2.obj"))
-    # if len(xpmp2_files) > 0:
-    #     log.debug(xpmp2_files)
-    # else:
-    #     log.debug("No xpmp2.obj files found.")
+
     delete_files(files=xpmp2_files)
 
 
