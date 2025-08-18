@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import tkinter
 from tkinter import filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
@@ -32,6 +33,15 @@ class UpdaterGui:
         self.process: subprocess.Popen[str] | None = None
         self.license_file = "Documentation/gpl-3.0.txt"
         self.about_file = "Documentation/about.txt"
+        self.config_file = "configs/config.json"
+
+        if os.path.exists(self.config_file):
+            with open(self.config_file, 'r') as f:
+                self.config = json.load(f)
+                if self.config["csl_path"] == "":
+                    self.config["csl_path"] = os.getcwd()
+        else:
+            self.config["csl_path"] = os.getcwd()
 
         # Platform specific needs
         if platform.system() == "Windows":
@@ -165,8 +175,12 @@ class UpdaterGui:
             self.selected_dir_label = tkinter.Label(
                 self.csl_frame, text="not selected!", fg="red", padx=5, pady=5)
         else:
-            self.selected_dir_label = tkinter.Label(
-                self.csl_frame, text=f"{self.config['csl_path']}", fg="red", padx=5, pady=5)
+            if os.path.exists(self.config["csl_path"]):
+                self.selected_dir_label = tkinter.Label(
+                    self.csl_frame, text=f"{self.config['csl_path']}", fg="green", padx=5, pady=5)
+            else:
+                self.selected_dir_label = tkinter.Label(
+                    self.csl_frame, text=f"Path does not exist: {self.config['csl_path']}", fg="red", padx=5, pady=5)
 
         self.selected_dir_label.pack(side=tkinter.LEFT)
 
@@ -345,6 +359,8 @@ class UpdaterGui:
         if csl_directory:
             self.config["csl_path"] = csl_directory
             self.selected_dir_label.config(text=csl_directory, fg="green")
+            with open(self.config_file, 'w') as f:
+                json.dump(self.config, f, indent=4)
 
     def show_decision_box(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
@@ -379,20 +395,6 @@ class UpdaterGui:
             about_text = f.read()
         self.output.insert("1.0", about_text)
         self.output.see("1.0")
-
-    # def get_app_root_dir(self) -> str:
-    #     """
-    #     Returns the folder that contains the .app bundle on macOS.
-    #     Example: If the app is at /Users/you/Desktop/MyApp.app,
-    #     this returns /Users/you/Desktop
-    #     """
-    #     exec_path = os.path.abspath(sys.executable)
-
-    #     # Walk up from Contents/MacOS/MyApp → Contents → MyApp.app → parent folder
-    #     app_dir = os.path.dirname(os.path.dirname(
-    #         os.path.dirname(os.path.dirname(exec_path))))
-
-    #     return app_dir
 
 
 if __name__ == "__main__":
