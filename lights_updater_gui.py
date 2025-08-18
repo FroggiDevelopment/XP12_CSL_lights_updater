@@ -41,8 +41,8 @@ class UpdaterGui:
 
         if platform.system() == "Darwin":
             if not os.path.exists(f"{os.getcwd()}/lights_updater.py"):
-                true_working_dir = os.path.dirname(sys.executable)
-                os.chdir(true_working_dir)
+                # true_working_dir = os.path.dirname(sys.executable)
+                os.chdir(self.get_real_app_dir())
 
     def show_gui(self) -> None:
         """Creates the primary GUI for the user"""
@@ -354,6 +354,15 @@ class UpdaterGui:
         cli_params = "--version"
         self.run_process(cli_params, "Getting version info")
 
+    def get_real_app_dir(self) -> str:
+        """Returns the directory where the executable lives on disk."""
+        if hasattr(sys, '_MEIPASS'):
+            # For --onefile: get path of the extracted executable
+            return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(p=sys.executable))))
+        else:
+            # For --onedir or running normally
+            return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
     def show_license(self) -> None:
         self.output.delete(1.0, tkinter.END)
         self.process_info_label.config(
@@ -371,19 +380,19 @@ class UpdaterGui:
         self.output.insert("1.0", about_text)
         self.output.see("1.0")
 
-    def get_app_root_dir(self) -> str:
-        """
-        Returns the folder that contains the .app bundle on macOS.
-        Example: If the app is at /Users/you/Desktop/MyApp.app,
-        this returns /Users/you/Desktop
-        """
-        exec_path = os.path.abspath(sys.executable)
+    # def get_app_root_dir(self) -> str:
+    #     """
+    #     Returns the folder that contains the .app bundle on macOS.
+    #     Example: If the app is at /Users/you/Desktop/MyApp.app,
+    #     this returns /Users/you/Desktop
+    #     """
+    #     exec_path = os.path.abspath(sys.executable)
 
-        # Walk up from Contents/MacOS/MyApp → Contents → MyApp.app → parent folder
-        app_dir = os.path.dirname(os.path.dirname(
-            os.path.dirname(os.path.dirname(exec_path))))
+    #     # Walk up from Contents/MacOS/MyApp → Contents → MyApp.app → parent folder
+    #     app_dir = os.path.dirname(os.path.dirname(
+    #         os.path.dirname(os.path.dirname(exec_path))))
 
-        return app_dir
+    #     return app_dir
 
 
 if __name__ == "__main__":
