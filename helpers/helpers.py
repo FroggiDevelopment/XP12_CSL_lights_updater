@@ -30,15 +30,18 @@ from decorators.time_benchmark import time_benchmark
 init_logging()
 log = logging.getLogger(__name__)
 
-interactive_configuration = json.load(
-    open("configs/interactive_conf.json"))
-interactive = interactive_configuration["interactive"]["active"]
+# interactive_configuration = json.load(
+#     open("configs/interactive_conf.json"))
+# interactive = interactive_configuration["interactive"]["active"]
+
+with open("configs/config.json", 'r') as f:
+    config = json.load(f)
 
 
 def paused_exit() -> None:
     """ Before exiting ask the user to press key. Will help seeing possible messages before the window closes.
     """
-    if interactive:
+    if config["interactive"]:
         input("Press any key to continue...")
         sys.exit()
     print("Exiting the rude way.. Bye!", flush=True)

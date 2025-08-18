@@ -16,13 +16,12 @@ Copyright (C) 2025  Richard J.M. Muller / Froggi
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 import re
-
+import os
 import argparse
 import logging
 import json
 from pathlib import Path
-from configparser import ConfigParser, NoSectionError, NoOptionError
-from typing import Callable
+from typing import Callable, TypedDict
 
 from helpers import make_backup
 from helpers import remove_backups
@@ -104,6 +103,12 @@ POSITION_IDENTIFIERS: dict[str, str] = {
     "_right": "",
     "_tail": ""
 }
+
+
+class Configuration(TypedDict):
+    csl_path: str
+    interactive: bool
+
 
 flashing_beacons: bool = False
 interactive: bool = True
@@ -316,32 +321,20 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             log.error("Something went wrong!", err)
 
 
-def set_csl_path() -> str:
-    """Set a minimal configuration.
+# def get_csl_path() -> str:
+#     """Set a minimal configuration.
 
-    Args:
-        args_path_to_csl (str | None): If available the path is set by commandline param.
+#     Args:
+#         args_path_to_csl (str | None): If available the path is set by commandline param.
 
-    Returns:
-        Path: Returns path to CSL files
-    """
-    config = ConfigParser()
-    config.read("configs/config.ini")
-
-    if config.read("configs/config.ini") != []:
-        try:
-            return config.get("csl", "csl_path").strip('"')
-        except NoSectionError:
-            log.error(
-                "No csl section found in config.ini! Please check your config file!")
-            if interactive:
-                paused_exit()
-        except NoOptionError:
-            log.error(
-                "No csl_path option found in config.ini! Please check your config file!")
-            if interactive:
-                paused_exit()
-    return ""
+#     Returns:
+#         Path: Returns path to CSL files
+#     """
+#     if os.path.exists("configs/config.json"):
+#         with open("configs/config.json", 'r') as f:
+#             config = json.load(f)
+#             return config["csl_path"]
+#     return ""
 
 
 def parse_args() -> argparse.Namespace:
@@ -471,18 +464,22 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    log.info("Lights updater started!")
     log.debug(f"Lights updater version: {__version__} started!")
+    config_file = "configs/config.json"
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+    else:
+        config: Configuration = {"interactive": True, "csl_path": ""}
 
     args = parse_args()
 
-    interactive_configuration = json.load(
-        open("configs/interactive_conf.json"))
-    interactive = interactive_configuration["interactive"]["active"]
+    interactive = config["interactive"]
+
     if args.from_gui:
-        interactive_configuration["interactive"]["active"] = False
-        with open("configs/interactive_conf.json", "w") as f:
-            json.dump(interactive_configuration, f)
+        config["interactive"] = False
+        with open("configs/config.json", "w") as f:
+            json.dump(config, f, indent=4)
 
     # To set this var as global, I do it here. Rest is set in the main() function
     if args.flashing_beacons:
@@ -491,8 +488,11 @@ if __name__ == "__main__":
 
     if args.csl_path is not None:
         csl_path = args.csl_path
+        config["csl_path"] = str(csl_path)
+        with open(config_file, 'w') as f:
+            json.dump(config, f, indent=4)
     else:
-        csl_path = set_csl_path()
+        csl_path = config["csl_path"]
 
     csl_path = Path(csl_path)
     if csl_path.is_dir() is False:
@@ -501,6 +501,7 @@ if __name__ == "__main__":
         if interactive:
             paused_exit()
     else:
+        log.info("Lights updater started!")
         main(args, csl_path)
         if interactive:
             paused_exit()
