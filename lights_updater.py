@@ -474,8 +474,6 @@ if __name__ == "__main__":
 
     args = parse_args()
 
-    interactive = config["interactive"]
-
     if args.from_gui:
         config["interactive"] = False
         with open("configs/config.json", "w") as f:
@@ -498,10 +496,10 @@ if __name__ == "__main__":
     if csl_path.is_dir() is False:
         log.info(
             "CSL path seems not to be a valid directory! Please check the path!")
-        if interactive:
+        if config["interactive"]:
             paused_exit()
     else:
         log.info("Lights updater started!")
         main(args, csl_path)
-        if interactive:
+        if config["interactive"]:
             paused_exit()
