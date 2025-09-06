@@ -28,7 +28,8 @@ class StdOutRedirect:
 
 
 class UpdaterGui:
-    """The code behind the GUI. Finally lights_updater is clickable!
+    """
+    The code behind the GUI. Finally lights_updater is clickable!
     """
 
     def __init__(self) -> None:
