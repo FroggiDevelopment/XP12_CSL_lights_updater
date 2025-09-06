@@ -13,6 +13,9 @@ import shlex
 
 
 class StdOutRedirect:
+    """Class to redirect stdout
+    """
+
     def __init__(self, widget: tkinter.Text):
         self.widget = widget
 
