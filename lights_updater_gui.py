@@ -28,6 +28,9 @@ class StdOutRedirect:
 
 
 class UpdaterGui:
+    """The code behind the GUI. Finally lights_updater is clickable!
+    """
+
     def __init__(self) -> None:
         self.config: dict[str, str] = {"csl_path": ""}
         self.process: subprocess.Popen[str] | None = None
