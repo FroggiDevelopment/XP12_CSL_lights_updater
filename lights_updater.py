@@ -470,7 +470,7 @@ if __name__ == "__main__":
         with open(config_file, 'r') as f:
             config = json.load(f)
     else:
-        config: Configuration = {"interactive": True, "csl_path": ""}
+        config: Configuration = {"interactive": True, "csl_path": "."}
 
     args = parse_args()
 
