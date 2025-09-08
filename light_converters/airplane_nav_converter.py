@@ -1,4 +1,4 @@
-from .base_converter import convert_airplane_lights
+from .common_lights_converter import convert_airplane_lights
 
 
 def convert_airplane_nav_lights(animation: str, light_params_dict: dict[str, str]) -> str:

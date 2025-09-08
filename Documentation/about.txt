@@ -1,0 +1,21 @@
+This program converts airplane lights to the new XP12 native light params.
+It will only convert lights that are correct declared. Illegal or wrong declared lights will be ignored or deleted.
+
+If you read this, you are using the GUI (Graphical User Interface) version of the program. So command line params are not explained here. 
+For those params please refer to the manual.
+
+- To start choose the directory where your CSL airplanes are located.
+  To get the right directory you must be in it, only highlighting the directory is not enough.
+  It is a kind of old file picker interface. I choose it because so you don't have to install extra dependencies.
+
+- You have two options for conversion under the converter menu. Standard conversion and conversion with flashing beacons.
+  The later converts beacon lights to the more modern flashing beacons on specific modern aircraft.
+
+- Further you have the option to undo the changes and the option to delete the backup files if you want. 
+
+The program will create a backup of the original file before converting the lights. 
+If you undo the changes, the program will restore the original file.
+
+I gave the strobes and beacons a slightly different starting time, so that not all airplanes flash at the same time.
+
+I hope you enjoy the program and its results!

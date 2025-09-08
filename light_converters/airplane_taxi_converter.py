@@ -1,10 +1,10 @@
 import re
-import os
+# import os
 
 import logging
 from helpers import init_logging
 
-from .base_converter import convert_airplane_lights
+from .common_lights_converter import convert_airplane_lights
 from .converter_helpers import get_leading_whitespaces
 
 # Setup logging
@@ -14,6 +14,11 @@ log = logging.getLogger("airplane_taxi_converter")
 
 def convert_airplane_taxi_lights(animation: str, light_params_dict: dict[str, str]) -> str:
     light_type = "airplane_taxi"
+
+    # For those cases that the taxi lights are in the wrong animation, corerect the dataref.
+    if "libxplanemp/controls/landing_lites_on" in animation:
+        animation = animation.replace("landing_lites_on", "taxi_lites_on")
+
     new_animation = convert_airplane_lights(
         animation, light_params_dict, light_type)
 
@@ -49,14 +54,14 @@ def fix_taxilights(animation: str) -> str:
 
         new_animation = new_animation.replace(
             original_taxi_anim_hide[0],
-            f"{original_taxi_anim_hide[0]}{os.linesep}{leading_whitespaces}{extra_anim_hide}",
+            f"{original_taxi_anim_hide[0]}\n{leading_whitespaces}{extra_anim_hide}",
         )
         original_taxi_anim_show = re.findall(
             "ANIM_show.+taxi_lites_on", new_animation)
 
         if original_taxi_anim_show != []:
             new_animation = new_animation.replace(
-                f"{original_taxi_anim_show[0]}{os.linesep}",
+                f"{original_taxi_anim_show[0]}\n",
                 "",
             )
         return new_animation

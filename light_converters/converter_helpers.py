@@ -9,6 +9,20 @@ init_logging()
 log = logging.getLogger(__name__)
 
 
+def remove_flashing_sequences(animation: str, light_type: str) -> str:
+    pattern = r"(?s)(ANIM_hide.+sim/time/total_running_time_sec.+?ANIM_keyframe_loop \d.\d)"
+    matches = re.findall(pattern, animation, re.MULTILINE)
+
+    _light_name = light_type.split("_")[1]
+    if matches != []:
+        animation = animation.replace("generic", _light_name)
+        for match in matches:
+            animation = animation.replace(
+                match, f"ANIM_hide -1.000000 0.000000 libxplanemp/controls/{_light_name}_lites_on")
+
+    return animation
+
+
 def reduce_spill_intensity(line: str, light_type: str) -> str:
     """Reduces the groundspill intensity of a light
 
@@ -23,7 +37,7 @@ def reduce_spill_intensity(line: str, light_type: str) -> str:
     # get reduce factors from file
     with open("configs/aircraft_data.json", "r") as aircraft_data:
         aircraft_data = json.load(aircraft_data)
-        reduce_factors = aircraft_data["reduce_factors"]
+        spill_light_reduce_factors = aircraft_data["spill_light_reduce_factors"]
 
     current_candelar = re.search(r"\d+cd", line)
 
@@ -31,7 +45,7 @@ def reduce_spill_intensity(line: str, light_type: str) -> str:
         raw_candelar_value = current_candelar.group(0).replace("cd", "")
 
         reduced_candelar = int(float(raw_candelar_value)
-                               * reduce_factors[light_type])
+                               * spill_light_reduce_factors[light_type])
 
         new_intensity_line = line.replace(
             current_candelar.group(0), f"{str(reduced_candelar)}cd")
@@ -59,13 +73,14 @@ def get_leading_whitespaces(line: str) -> str:
     return leading_whitespaces.group()
 
 
-def get_light_position(line: str) -> str:
+def get_nav_light_position(line: str) -> str:
     """To determine directional parameters return _left, _right or _tail based on
        x-y-position of the light.
        Will be removed again later on in the process.
 
     Args:
         line (str): Line with light-parameters.
+        strobes (bool, optional): Are these strobes? Defaults to False.
 
     Returns:
         str: postion of the light
@@ -73,12 +88,30 @@ def get_light_position(line: str) -> str:
 
     _x_position = float(line.split()[2:3][0])
 
-    if (_x_position) > -0.50 and _x_position < 0.50:
+    if _x_position > -0.50 and _x_position < 0.50:
         return "_tail"
-    elif (_x_position) < -0.50:
+    elif _x_position < -0.50:
         return "_left"
 
     return "_right"
+
+
+def get_strobe_light_positions(line: str) -> str:
+
+    _x_position = float(line.split()[2:3][0])
+    _y_position = float(line.split()[3:4][0])
+    _z_position = float(line.split()[4:5][0])
+
+    # Upper / lower lights? _z_psoition to save tail strobes on the bigger airplanes.
+    if _x_position == 0 and _y_position > 1.0 and _z_position < 20:
+        return "_upper"
+    if _x_position == 0 and _y_position < 1.0 and _z_position < 20:
+        return "_lower"
+    if _x_position < -0.50:
+        return "_left"
+    if _x_position > 0.50:
+        return "_right"
+    return "_tail"
 
 
 def increase_flashing_beacon_light_intensity(animation: str) -> str:

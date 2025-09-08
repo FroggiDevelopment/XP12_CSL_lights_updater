@@ -4,7 +4,8 @@ import random
 import logging
 from helpers.init_logging import init_logging
 
-from .base_converter import convert_airplane_lights
+from .common_lights_converter import convert_airplane_lights
+from .converter_helpers import remove_flashing_sequences
 
 # Setup logging
 init_logging()
@@ -25,43 +26,107 @@ def convert_airbus_strobe_lights(animation: str, strobe_light_params_dict: dict[
     light_type = "airplane_strobe"
 
     airbus_sequence_1: str = """
-        ANIM_hide    0.0 0.1   sim/time/total_running_time_sec
+        ANIM_hide    0.0 0.10   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.2 0.3   sim/time/total_running_time_sec
+        ANIM_hide    0.15 0.20   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.4 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.25 1.5   sim/time/total_running_time_sec
     """
 
     airbus_sequence_2: str = """
-        ANIM_hide    0.0 0.4   sim/time/total_running_time_sec
+        ANIM_hide    0.0 0.20   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.6 0.7   sim/time/total_running_time_sec
+        ANIM_hide    0.25 0.30   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.9 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.35 1.5   sim/time/total_running_time_sec
     """
 
     airbus_sequence_3: str = """
-        ANIM_hide    0.0 0.7   sim/time/total_running_time_sec
+        ANIM_hide    0.0 0.30   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    0.8 0.9   sim/time/total_running_time_sec
+        ANIM_hide    0.35 0.40   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.0 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.45 1.5   sim/time/total_running_time_sec
     """
 
     airbus_sequence_4: str = """
-        ANIM_hide    0.0 1.0   sim/time/total_running_time_sec
+        ANIM_hide    0.0 0.40   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.1 1.2   sim/time/total_running_time_sec
+        ANIM_hide    0.45 0.50   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.3 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.55 1.5   sim/time/total_running_time_sec
     """
 
     airbus_sequence_5: str = """
-        ANIM_hide    0.0 1.1   sim/time/total_running_time_sec
+        ANIM_hide    0.0 0.50   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.2 1.3   sim/time/total_running_time_sec
+        ANIM_hide    0.55 0.60   sim/time/total_running_time_sec
         ANIM_keyframe_loop 1.5
-        ANIM_hide    1.4 1.5   sim/time/total_running_time_sec
+        ANIM_hide    0.65 1.5   sim/time/total_running_time_sec
+    """
+
+    airbus_sequence_6: str = """
+        ANIM_hide    0.0 0.60   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.65 0.70   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.75 1.5   sim/time/total_running_time_sec
+    """
+
+    airbus_sequence_7: str = """
+        ANIM_hide    0.0 0.70   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.75 0.80   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.85 1.5   sim/time/total_running_time_sec
+    """
+
+    airbus_sequence_8: str = """
+        ANIM_hide    0.0 0.80   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.85 0.90   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.95 1.5   sim/time/total_running_time_sec
+    """
+
+    airbus_sequence_9: str = """
+        ANIM_hide    0.0 0.90   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    0.95 1.00   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.05 1.5   sim/time/total_running_time_sec
+    """
+
+    airbus_sequence_10: str = """
+        ANIM_hide    0.0 1.00   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.05 1.10   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.15 1.5   sim/time/total_running_time_sec
+    """
+
+    airbus_sequence_11: str = """
+        ANIM_hide    0.0 1.10   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.15 1.20   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.25 1.5   sim/time/total_running_time_sec
+    """
+
+    airbus_sequence_12: str = """
+        ANIM_hide    0.0 1.20   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.25 1.30   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.35 1.5   sim/time/total_running_time_sec
+    """
+
+    airbus_sequence_13: str = """
+        ANIM_hide    0.0 1.30   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.35 1.40   sim/time/total_running_time_sec
+        ANIM_keyframe_loop 1.5
+        ANIM_hide    1.45 1.5   sim/time/total_running_time_sec
     """
 
     flash_sequences = [
@@ -69,10 +134,22 @@ def convert_airbus_strobe_lights(animation: str, strobe_light_params_dict: dict[
         airbus_sequence_2,
         airbus_sequence_3,
         airbus_sequence_4,
-        airbus_sequence_5
+        airbus_sequence_5,
+        airbus_sequence_6,
+        airbus_sequence_7,
+        airbus_sequence_8,
+        airbus_sequence_9,
+        airbus_sequence_10,
+        airbus_sequence_11,
+        airbus_sequence_12,
+        airbus_sequence_13
     ]
 
     flash_sequence: str = random.choice(flash_sequences)
+
+    # Remove prior flashing sequenece if present
+    if "sim/time/total_running_time_sec" in animation:
+        animation = remove_flashing_sequences(animation, light_type)
 
     new_anim_hide = f"""
     ANIM_hide    -1.0    0    libxplanemp/controls/strobe_lites_on

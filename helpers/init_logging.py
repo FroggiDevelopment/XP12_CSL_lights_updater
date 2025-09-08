@@ -24,7 +24,8 @@ import sys
 
 
 def init_logging():
-    with open('configs/logging.conf', 'r') as configfile:
+    logging_config = "configs/logging.conf"
+    with open(logging_config, 'r') as configfile:
         try:
             logger_config = json.load(configfile)
         except FileNotFoundError:
@@ -33,7 +34,7 @@ def init_logging():
             sys.exit()
         except json.decoder.JSONDecodeError:
             print(
-                "Logging config might be corrupted. Please check the configfile for consistency!"
+                "Logging config might be corrupted. Please check the configfile for consistency!", flush=True
             )
             input("Press any key to continue...")
             sys.exit()

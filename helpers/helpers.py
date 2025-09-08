@@ -30,11 +30,17 @@ from decorators.time_benchmark import time_benchmark
 init_logging()
 log = logging.getLogger(__name__)
 
+with open("configs/config.json", 'r') as f:
+    config = json.load(f)
+
 
 def paused_exit() -> None:
     """ Before exiting ask the user to press key. Will help seeing possible messages before the window closes.
     """
-    input("Press any key to continue...")
+    if config["interactive"]:
+        input("Press any key to continue...")
+        sys.exit()
+    print("Exiting the rude way.. Bye!", flush=True)
     sys.exit()
 
 
@@ -105,14 +111,14 @@ def remove_backups(aircraft_objects: list[dict[str, str]]) -> None:
                                                  including path information
     """
     files_to_remove: list[Path] = []
-    log.info("Backups will be removed now! This is PERMANENT!!")
-    yes_no = input("Are you sure? yes/No: " or "No")
-    if yes_no.lower() == "yes" or yes_no.lower() == "y":
-        log.info("Okay! Let's do it....!!")
-        for aircraft_object in aircraft_objects:
-            files_to_remove.append(Path(aircraft_object["full_object_path"]))
-        delete_files(files_to_remove, ".BCK")
+    for aircraft_object in aircraft_objects:
+        files_to_remove.append(Path(aircraft_object["full_object_path"]))
+    remaining_files, _ = delete_files(files_to_remove, ".BCK")
+    if remaining_files == 0:
         log.info("Backup files removed successfully!")
+    else:
+        log.warning(
+            f"Could not remove {remaining_files} backup files! See log for more information.")
 
 
 @time_benchmark
@@ -127,31 +133,34 @@ def remove_xpmp2_files(filepath: Path) -> None:
         NoReturn: As it says :-)
     """
     xpmp2_files = list(filepath.rglob("*xpmp2.obj"))
-    if len(xpmp2_files) > 0:
-        log.debug(xpmp2_files)
-    else:
-        log.debug("No xpmp2.obj files found.")
+
     delete_files(files=xpmp2_files)
 
 
-def delete_files(files: list[Path], suffix: str = ""):
+def delete_files(files: list[Path], suffix: str = "") -> tuple[int, int]:
     """Delete files descibed in the list of files
 
     Args:
         files (list[Path]): List of filepaths to delete
         suffix (str, optional): Suffix if it differs from the suffix in the list of files. Defaults to "".
     """
+    files_count = len(files)
+    deleted_files = 0
     for file in files:
         if suffix != "":
             file = file.with_suffix(suffix)
         try:
             file.unlink()
+            files_count -= 1
+            deleted_files += 1
         except PermissionError:
             log.warning(f"Permission denied for deleting {file.name}!")
             continue
         except FileNotFoundError:
             log.warning(f"{file.name} can not be deleted! It doesn't exist.")
             continue
+    log.info(f"Deleted {deleted_files} out of {len(files)} files.")
+    return files_count, deleted_files
 
 
 def get_list_of_files(searchpath: Path, filename: str) -> list[Path]:
@@ -171,7 +180,6 @@ def get_list_of_files(searchpath: Path, filename: str) -> list[Path]:
     if files == []:
         raise NoFilesFoundError(
             message=f"No {filename} found in {searchpath}!")
-    # log.debug(f"Found these files while globing: {files}")
     log.debug(f"Found {len(files)} xsb_aircraft.txt files!")
     return files
 
@@ -242,4 +250,4 @@ def copy_new_to_old(aircraft_objects: list[dict[str, str]], TEMP_FILE_SUFFIX: st
             log.error(f"{temp_object_file.name} can not be deleted!", err)
             continue
         log.info(
-            f"Copying {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
+            f"Moving {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")

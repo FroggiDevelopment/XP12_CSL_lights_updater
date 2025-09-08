@@ -19,9 +19,9 @@ import re
 import os
 import argparse
 import logging
+import json
 from pathlib import Path
-from configparser import ConfigParser, NoSectionError, NoOptionError
-from typing import Callable
+from typing import Callable, TypedDict
 
 from helpers import make_backup
 from helpers import remove_backups
@@ -30,18 +30,20 @@ from helpers import remove_xpmp2_files
 from helpers import copy_new_to_old
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
-from helpers import get_aircraft_categories
 from helpers import get_list_of_animations
 from helpers import check_if_files_are_in_correct_json
 from helpers import get_description
 from helpers import init_logging
 from helpers import paused_exit
 
+from helpers.aircraft_light_params import get_aircraft_with_flashing_beacons
+
 from light_converters import convert_airplane_landing_lights
 from light_converters import convert_airplane_taxi_lights
 from light_converters import convert_airplane_nav_lights
 from light_converters import convert_airplane_beacon_lights
 from light_converters import convert_airplane_flashing_beacon_lights
+from light_converters import convert_airbus_flashing_beacon_lights
 from light_converters import convert_airplane_strobe_lights
 from light_converters import convert_airbus_strobe_lights
 
@@ -102,7 +104,14 @@ POSITION_IDENTIFIERS: dict[str, str] = {
     "_tail": ""
 }
 
+
+class Configuration(TypedDict):
+    csl_path: str
+    interactive: bool
+
+
 flashing_beacons: bool = False
+interactive: bool = True
 
 
 def remove_positional_name_from_line(line: str) -> str:
@@ -164,13 +173,14 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "airplane_nav": convert_airplane_nav_lights,
         "airplane_beacon": convert_airplane_beacon_lights,
         "airplane_beacon_flashing": convert_airplane_flashing_beacon_lights,
+        "airplane_beacon_flashing_airbus": convert_airbus_flashing_beacon_lights,
         "airplane_strobe": convert_airplane_strobe_lights,
-        "airplane_airbus_strobe": convert_airbus_strobe_lights
+        "airplane_strobe_airbus": convert_airbus_strobe_lights
     }
 
     # TODO: Move this list to a config or at least up in this code
     # To get the typical Airbus strobe flash sequence the strobes must be converted differently
-    airbus_icaos: list[str] = [
+    airbus_icao_identifiers: list[str] = [
         "A19N",
         "A20N",
         "A21N",
@@ -205,33 +215,48 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     list_of_animations: list[str] = get_list_of_animations(animations)
 
     for animation in list_of_animations:
-        _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
+        # _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
 
-        if any((light_dataref := dataref) in _animation for dataref in _lighttype_per_dataref.keys()):
+        if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
             light_type: str = _lighttype_per_dataref[light_dataref]
-            light_converter = _light_converters[light_type]
+            light_converter: Callable[[
+                str, dict[str, str]], str] = _light_converters[light_type]
 
             # Special case 1: Flashing beacons
-            if light_dataref == "libxplanemp/controls/beacon_lites_on" and flashing_beacons is True:
-                aircraft_categories = get_aircraft_categories()
-                for category in aircraft_categories.items():
-                    if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
+            if flashing_beacons is True:
+                aircraft_with_flashing_beacons: list[str] | None = get_aircraft_with_flashing_beacons(
+                )
+                if aircraft_with_flashing_beacons is None:
+                    log.error(
+                        "No data for aircraft with flashing beacons found. Converting all to rotating beacons!")
+                    aircraft_with_flashing_beacons = []
+
+                if light_dataref == "libxplanemp/controls/beacon_lites_on":
+                    # aircraft_categories: dict[str,
+                    #                           str] = get_aircraft_categories()
+                    # for category in aircraft_categories.items():
+                    # if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
+                    if aircraft_icao_type in aircraft_with_flashing_beacons:
                         light_converter = _light_converters["airplane_beacon_flashing"]
 
+                # Special case 1.1: Airbus beacons flashing sequence
+                    if light_dataref == "libxplanemp/controls/beacon_lites_on" and aircraft_icao_type in airbus_icao_identifiers:  # noqa
+                        light_converter = _light_converters["airplane_beacon_flashing_airbus"]
+
             # Special case 2: Airbus strobe
-            if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icaos:
-                light_converter = _light_converters["airplane_airbus_strobe"]
+            if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icao_identifiers:  # noqa
+                light_converter = _light_converters["airplane_strobe_airbus"]
 
             # Special case 3: Taxilight in wrong landing lights animation (found with Bluebell's)
-            if light_dataref == "libxplanemp/controls/landing_lites_on" and "airplane_taxi" in _animation:
-                _animation = _animation.replace(
-                    "landing_lites_on", "taxi_lites_on")
+            if light_dataref == "libxplanemp/controls/landing_lites_on" and "airplane_taxi" in animation:
+                log.debug(
+                    "Taxilight in wrong landing lights animation. Fixing...")
                 light_type = "airplane_taxi"
                 light_converter = _light_converters["airplane_taxi"]
 
             try:
                 new_animation: str = light_converter(
-                    _animation, light_params_dict[light_type])
+                    animation, light_params_dict[light_type])
             except WrongLightInAnimationError as err:
                 log.error(err)
                 continue
@@ -260,7 +285,7 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             continue
         except UnicodeDecodeError as err:
             log.error(
-                f"Object file seems damaged! See: {err}{os.linesep}Trying to repair it.")
+                f"Object file seems damaged! See: {err}\nTrying to repair it.")
             continue
 
         if aircraft_object_content == "":
@@ -296,30 +321,20 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             log.error("Something went wrong!", err)
 
 
-def set_csl_path() -> str:
-    """Set a minimal configuration.
+# def get_csl_path() -> str:
+#     """Set a minimal configuration.
 
-    Args:
-        args_path_to_csl (str | None): If available the path is set by commandline param.
+#     Args:
+#         args_path_to_csl (str | None): If available the path is set by commandline param.
 
-    Returns:
-        Path: Returns path to CSL files
-    """
-    config = ConfigParser()
-    config.read("configs/config.ini")
-
-    if config.read("configs/config.ini") != []:
-        try:
-            return config.get("csl", "csl_path").strip('"')
-        except NoSectionError:
-            log.error(
-                "No csl section found in config.ini! Please check your config file!")
-            paused_exit()
-        except NoOptionError:
-            log.error(
-                "No csl_path option found in config.ini! Please check your config file!")
-            paused_exit()
-    return ""
+#     Returns:
+#         Path: Returns path to CSL files
+#     """
+#     if os.path.exists("configs/config.json"):
+#         with open("configs/config.json", 'r') as f:
+#             config = json.load(f)
+#             return config["csl_path"]
+#     return ""
 
 
 def parse_args() -> argparse.Namespace:
@@ -349,6 +364,13 @@ def parse_args() -> argparse.Namespace:
 If there are whitespaces in the path, you MUST use quotation marks around the path!
 To be save: Always use them.
         """,
+    )
+
+    parser.add_argument(
+        "--from-gui",
+        required=False,
+        action="store_true",
+        help=argparse.SUPPRESS
     )
 
     parser.add_argument(
@@ -395,7 +417,8 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
     """
     # Check if aircrafts.json and light_params.json exist and are correct. If not stop!
     if not check_if_files_are_in_correct_json():
-        paused_exit()
+        if interactive:
+            paused_exit()
 
     # Get the list of aircraft objects and its file locations
     aircraft_objects: list[dict[str, str]] = get_aircraft_objects_from_xsb_file(
@@ -408,7 +431,15 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
         return
 
     if args.remove_backups:  # Remove the backupfiles.
-        remove_backups(aircraft_objects)
+        log.info("Backups will be removed now! This is PERMANENT!!")
+
+        if interactive is False:
+            yes_no = "yes"
+        else:
+            yes_no = input("Are you sure? yes/No: " or "No")
+        if yes_no.lower() == "yes" or yes_no.lower() == "y":
+            log.info("Okay! Let's do it....!!")
+            remove_backups(aircraft_objects)
         return
 
     # Start of main processing
@@ -433,7 +464,21 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
 
 
 if __name__ == "__main__":
+    log.debug(f"Lights updater version: {__version__} started!")
+    config_file = "configs/config.json"
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+    else:
+        config: Configuration = {"interactive": True, "csl_path": "."}
+
     args = parse_args()
+
+    if args.from_gui:
+        config["interactive"] = False
+        with open("configs/config.json", "w") as f:
+            json.dump(config, f, indent=4)
+
     # To set this var as global, I do it here. Rest is set in the main() function
     if args.flashing_beacons:
         flashing_beacons = True
@@ -441,13 +486,20 @@ if __name__ == "__main__":
 
     if args.csl_path is not None:
         csl_path = args.csl_path
+        config["csl_path"] = str(csl_path)
+        with open(config_file, 'w') as f:
+            json.dump(config, f, indent=4)
     else:
-        csl_path = set_csl_path()
+        csl_path = config["csl_path"]
 
     csl_path = Path(csl_path)
     if csl_path.is_dir() is False:
         log.info(
             "CSL path seems not to be a valid directory! Please check the path!")
-        paused_exit()
-    main(args, csl_path)
-    paused_exit()
+        if config["interactive"]:
+            paused_exit()
+    else:
+        log.info("Lights updater started!")
+        main(args, csl_path)
+        if config["interactive"]:
+            paused_exit()

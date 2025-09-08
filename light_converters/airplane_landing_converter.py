@@ -1,10 +1,10 @@
 import re
-import os
+# import os
 
 import logging
 from helpers.init_logging import init_logging
 
-from .base_converter import convert_airplane_lights
+from .common_lights_converter import convert_airplane_lights
 from .converter_helpers import get_leading_whitespaces
 
 import configs.aircraft_processing_data as aircraft_processing_data
@@ -25,7 +25,14 @@ def convert_airplane_landing_lights(animation: str, light_params_dict: dict[str,
             str: The updated animations sequence with XP12 lights
     """
 
+    # Get rid of illegal lights in landig lights animation
+    if "airplane_landing" not in animation:
+        log.warning(
+            "Found non landing light in animation! Removing this light animation")
+        return ""
+
     light_type = "airplane_landing"
+
     new_animation = convert_airplane_lights(
         animation, light_params_dict, light_type)
 
@@ -49,7 +56,7 @@ def fix_frontgear_landinglights(animation: str) -> str:
 
     if light_parameter == []:
         log.error(
-            f"No light parameter found in file: {aircraft_processing_data.AircraftData.full_object_path}")
+            f"{__name__} - No light parameter found in file: {aircraft_processing_data.AircraftData.full_object_path}")
         return animation
 
     log.debug("Fixing frontgear landinglights hide animation.")
@@ -82,11 +89,11 @@ def fix_frontgear_landinglights(animation: str) -> str:
         if x_position < 0.4 and x_position > -0.4:
             new_animation = animation.replace(
                 landinglight_anim_hide,
-                f"{leading_whitespaces}{landinglight_anim_hide}{os.linesep}{leading_whitespaces}{extra_anim_hide}",
+                f"{leading_whitespaces}{landinglight_anim_hide}\n{leading_whitespaces}{extra_anim_hide}",
             )
 
             # remove empty lines
-            new_animation = os.linesep.join(
+            new_animation = "\n".join(
                 [line for line in new_animation.splitlines() if line.strip() != ""])
 
             return new_animation
