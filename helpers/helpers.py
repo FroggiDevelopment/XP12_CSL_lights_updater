@@ -176,7 +176,7 @@ def get_list_of_files(searchpath: Path, filename: str) -> list[Path]:
         list[Path]: ist of files with the searchresults for the specified filename
     """
 
-    files = list(searchpath.rglob(filename))
+    files: list[Path] = list(searchpath.rglob(filename))
     if files == []:
         raise NoFilesFoundError(
             message=f"No {filename} found in {searchpath}!")
