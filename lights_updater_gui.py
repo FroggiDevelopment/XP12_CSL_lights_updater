@@ -8,6 +8,7 @@ import os
 import sys
 import platform
 import subprocess
+from pathlib import Path
 import threading
 import shlex
 from typing import Any
@@ -169,10 +170,16 @@ class UpdaterGui:
             self.csl_frame, text="CSL directory: ", padx=5, pady=5
         )
         self.dir_label.pack(side=tkinter.LEFT)
-
+        # TODO: Checks must get a better place. Changes are not reflected here!! It's static checking.
         if self.config["csl_path"] == "":
             self.selected_dir_label = tkinter.Label(
                 self.csl_frame, text="not selected!", fg="red", padx=5, pady=5)
+        elif not os.path.exists(self.config["csl_path"]):
+            self.selected_dir_label = tkinter.Label(
+                self.csl_frame, text=f"Path does not exist: {self.config['csl_path']}", fg="red", padx=5, pady=5)
+        elif self.check_if_dir_contains_csl_files(self.config["csl_path"]) is False:
+            self.selected_dir_label = tkinter.Label(
+                self.csl_frame, text=f"Path does not contain CSL files: {self.config['csl_path']}", fg="red", padx=5, pady=5)
         else:
             if os.path.exists(self.config["csl_path"]):
                 self.selected_dir_label = tkinter.Label(
@@ -360,6 +367,13 @@ class UpdaterGui:
             self.selected_dir_label.config(text=csl_directory, fg="green")
             with open(self.config_file, 'w') as f:
                 json.dump(self.config, f, indent=4)
+
+    def check_if_dir_contains_csl_files(self, dirname: str) -> bool:
+        xsb_files: list[Path] = list(Path(dirname).rglob("xsb_aircraft.txt"))
+        print(xsb_files, flush=True)
+        if xsb_files == []:
+            return False
+        return True
 
     def show_decision_box(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
