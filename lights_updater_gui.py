@@ -10,6 +10,7 @@ import platform
 import subprocess
 import threading
 import shlex
+from typing import Any
 
 
 class StdOutRedirect:
@@ -35,20 +36,12 @@ class UpdaterGui:
     The code behind the GUI. Finally lights_updater is clickable!
     """
 
-    def __init__(self) -> None:
-        self.config: dict[str, str] = {"csl_path": ""}
+    def __init__(self, config: dict[str, Any], config_file: str) -> None:
+        self.config = config
+        self.config_file = config_file
         self.process: subprocess.Popen[str] | None = None
         self.license_file = "Documentation/gpl-3.0.txt"
         self.about_file = "Documentation/about.txt"
-        self.config_file = "configs/config.json"
-
-        if os.path.exists(self.config_file):
-            with open(self.config_file, 'r') as f:
-                self.config = json.load(f)
-                if self.config["csl_path"] == "":
-                    self.config["csl_path"] = os.getcwd()
-        else:
-            self.config["csl_path"] = os.getcwd()
 
         # Platform specific needs
         if platform.system() == "Windows":
@@ -223,8 +216,8 @@ class UpdaterGui:
         self.cancel_requested = False
         self.cancel_button.config(state=tkinter.NORMAL)
 
-        cmd = [self.python_exe, "lights_updater.py", "--path",
-               self.config["csl_path"], "--from-gui"]
+        cmd: list[str] = [self.python_exe, "lights_updater.py", "--path",
+                          self.config["csl_path"], "--from-gui"]
 
         if cli_params:
             cmd[-1:-1] = shlex.split(cli_params)
@@ -405,6 +398,19 @@ class UpdaterGui:
 
 
 if __name__ == "__main__":
+    # Get config from file or build a config file with basic settings.
+    config: dict[str, Any] = {}
+    config_file = "configs/config.json"
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+            if config["csl_path"] == "":
+                config["csl_path"] = os.getcwd()
+    else:
+        config["csl_path"] = os.getcwd()
+        config["interactive"] = True
+        with open(config_file, 'w') as f:
+            json.dump(config, f, indent=4)
     # Remove splash screen, if not on macOS.
     # MacOS prohibits splashscreens for pyinstaller.
     if platform.system() != "Darwin":
@@ -414,5 +420,5 @@ if __name__ == "__main__":
         except ImportError:
             # pyi_splash is not installed or not needed, just ignore it!
             pass
-    app = UpdaterGui()
+    app = UpdaterGui(config, config_file)
     app.show_gui()
