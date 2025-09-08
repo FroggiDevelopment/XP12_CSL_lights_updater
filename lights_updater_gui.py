@@ -51,7 +51,6 @@ class UpdaterGui:
 
         if platform.system() == "Darwin":
             if not os.path.exists(f"{os.getcwd()}/lights_updater.py"):
-                # true_working_dir = os.path.dirname(sys.executable)
                 os.chdir(self.get_real_app_dir())
 
     def show_gui(self) -> None:
