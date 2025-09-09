@@ -172,15 +172,12 @@ class UpdaterGui:
         self.dir_label.pack(side=tkinter.LEFT)
         # TODO: Checks must get a better place. Changes are not reflected here!! It's static checking.
         valid, message = self.set_csl_message()
-        if valid:
-            textcolor = "green"
-        else:
-            textcolor = "red"
-        self.selected_dir_label = tkinter.Label(
-            self.csl_frame, text=message, fg=textcolor, padx=5, pady=5
-        )
 
+        self.selected_dir_label = tkinter.Label(
+            self.csl_frame, text="", fg="green", padx=5, pady=5)
         self.selected_dir_label.pack(side=tkinter.LEFT)
+
+        self.set_csl_directory_label(valid, message)
 
         # The window to the world
         self.output = ScrolledText(self.root)
@@ -193,6 +190,14 @@ class UpdaterGui:
 
         self.root.mainloop()
         sys.stdout = old_stdout
+
+    def set_csl_directory_label(self, valid: bool, message: str) -> None:
+        if valid:
+            textcolor = "green"
+        else:
+            textcolor = "red"
+
+        self.selected_dir_label.config(text=message, fg=textcolor)
 
     def run_process(self, cli_params: str, task: str) -> None:
         """ Running the choosen process task in a thread.
@@ -359,42 +364,31 @@ class UpdaterGui:
             self.selected_dir_label.config(text=csl_directory, fg="green")
             with open(self.config_file, 'w') as f:
                 json.dump(self.config, f, indent=4)
-        self.is_dir_a_valid_csl_dir()
+        valid, message = self.set_csl_message()
+        self.set_csl_directory_label(valid, message)
 
     def set_csl_message(self) -> tuple[bool, str]:
-        valid = False
+        message = f"Valid CSL path: {self.config['csl_path']}"
+        valid = True
 
         if self.config["csl_path"] == "":
-            print("empty string", flush=True)
             message = "CSL path not selected!"
+            valid = False
             return valid, message
 
-        return valid, ""
-
-    def is_dir_a_valid_csl_dir(self) -> None:
-
-        if self.config["csl_path"] == "":
-            print("empty string", flush=True)
-            self.selected_dir_label = tkinter.Label(
-                self.csl_frame, text="not selected!", fg="red", padx=5, pady=5)
-            return
-
         if os.path.exists(self.config["csl_path"]) is False:
-            print("path not existing", flush=True)
-            self.selected_dir_label = tkinter.Label(
-                self.csl_frame, text=f"Path does not exist: {self.config['csl_path']}", fg="red", padx=5, pady=5)
-            return
+            message = f"Path does not exist: {self.config['csl_path']}"
+            valid = False
+            return valid, message
 
         xsb_files: list[Path] = list(
             Path(self.config["csl_path"]).rglob("xsb_aircraft.txt"))
         if xsb_files == []:
-            print("no xsb_aircraft.txt", flush=True)
-            self.selected_dir_label = tkinter.Label(
-                self.csl_frame, text=f"Path does not contain CSL files: {self.config['csl_path']}", fg="red", padx=5, pady=5)
-            return
-        print("All good!")
-        self.selected_dir_label = tkinter.Label(
-            self.csl_frame, text=f"{self.config['csl_path']}", fg="green", padx=5, pady=5)
+            message = f"Path does not contain valid CSL files: {self.config['csl_path']}"
+            valid = False
+            return valid, message
+
+        return valid, message
 
     def show_decision_box(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
