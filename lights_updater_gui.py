@@ -145,7 +145,16 @@ class UpdaterGui:
 
         # In case of panic
         self.cancel_button = tkinter.Button(
-            self.root, text="Cancel", command=self.cancel_process, state=tkinter.DISABLED)
+            self.root,
+            text="Cancel process",
+            bg="red3",
+            fg="chartreuse",
+            command=self.cancel_process,
+            state=tkinter.DISABLED,
+            font=("bold", 12),
+            activebackground="red1",
+            activeforeground="chartreuse"
+        )
         self.cancel_button.pack()
 
         # processing line
@@ -167,17 +176,15 @@ class UpdaterGui:
         self.csl_frame.pack(anchor="nw")
 
         self.dir_label = tkinter.Label(
-            self.csl_frame, text="CSL directory: ", padx=5, pady=5
+            self.csl_frame, text="CSL directory is valid:", padx=5, pady=5
         )
         self.dir_label.pack(side=tkinter.LEFT)
-        # TODO: Checks must get a better place. Changes are not reflected here!! It's static checking.
-        valid, message = self.set_csl_message()
 
         self.selected_dir_label = tkinter.Label(
             self.csl_frame, text="", fg="green", padx=5, pady=5)
         self.selected_dir_label.pack(side=tkinter.LEFT)
 
-        self.set_csl_directory_label(valid, message)
+        self.set_csl_message()
 
         # The window to the world
         self.output = ScrolledText(self.root)
@@ -191,13 +198,13 @@ class UpdaterGui:
         self.root.mainloop()
         sys.stdout = old_stdout
 
-    def set_csl_directory_label(self, valid: bool, message: str) -> None:
-        if valid:
-            textcolor = "green"
-        else:
-            textcolor = "red"
+    # def set_csl_directory_label(self, valid: bool, message: str) -> None:
+    #     if valid:
+    #         textcolor = "green"
+    #     else:
+    #         textcolor = "red"
 
-        self.selected_dir_label.config(text=message, fg=textcolor)
+    #     self.selected_dir_label.config(text=message, fg=textcolor)
 
     def run_process(self, cli_params: str, task: str) -> None:
         """ Running the choosen process task in a thread.
@@ -364,31 +371,38 @@ class UpdaterGui:
             self.selected_dir_label.config(text=csl_directory, fg="green")
             with open(self.config_file, 'w') as f:
                 json.dump(self.config, f, indent=4)
-        valid, message = self.set_csl_message()
-        self.set_csl_directory_label(valid, message)
+        self.set_csl_message()
 
-    def set_csl_message(self) -> tuple[bool, str]:
-        message = f"Valid CSL path: {self.config['csl_path']}"
-        valid = True
+    def set_csl_message(self) -> None:
+        message: str = f"{self.config['csl_path']}"
+        color: str = "green"
+        csl_label_text: str = str(self.dir_label.cget(
+            'text')).replace("invalid", "valid")
+
+        self.process_info_label.config(text="Validating CSL path", fg="blue")
 
         if self.config["csl_path"] == "":
             message = "CSL path not selected!"
-            valid = False
-            return valid, message
-
+            color = "red"
+            csl_label_text = csl_label_text.replace("valid", "invalid")
+        # TODO: Possible not neccesary, test on valid csl path seems enough.
         if os.path.exists(self.config["csl_path"]) is False:
-            message = f"Path does not exist: {self.config['csl_path']}"
-            valid = False
-            return valid, message
+            # message = f"Path does not exist: {self.config['csl_path']}"
+            csl_label_text = csl_label_text.replace("valid", "invalid")
+            color = "red"
 
         xsb_files: list[Path] = list(
             Path(self.config["csl_path"]).rglob("xsb_aircraft.txt"))
-        if xsb_files == []:
-            message = f"Path does not contain valid CSL files: {self.config['csl_path']}"
-            valid = False
-            return valid, message
 
-        return valid, message
+        if xsb_files == []:
+            # message = f"Path does not contain valid CSL files: {self.config['csl_path']}"
+            csl_label_text = csl_label_text.replace("valid", "invalid")
+            color = "red"
+        self.process_info_label.config(
+            text="Validating CSL path completed", fg="green")
+
+        self.dir_label.config(text=csl_label_text, fg=color)
+        self.selected_dir_label.config(text=message, fg=color)
 
     def show_decision_box(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
@@ -429,6 +443,8 @@ if __name__ == "__main__":
     # Get config from file or build a config file with basic settings.
     config: dict[str, Any] = {}
     config_file = "configs/config.json"
+    config["interactive"] = True
+    # Create the config file if it doen't exist. Otherwise use csl path from config file
     if os.path.exists(config_file):
         with open(config_file, 'r') as f:
             config = json.load(f)
@@ -436,9 +452,9 @@ if __name__ == "__main__":
                 config["csl_path"] = os.getcwd()
     else:
         config["csl_path"] = os.getcwd()
-        config["interactive"] = True
-        with open(config_file, 'w') as f:
-            json.dump(config, f, indent=4)
+
+    with open(config_file, 'w') as f:
+        json.dump(config, f, indent=4)
     # Remove splash screen, if not on macOS.
     # MacOS prohibits splashscreens for pyinstaller.
     if platform.system() != "Darwin":
