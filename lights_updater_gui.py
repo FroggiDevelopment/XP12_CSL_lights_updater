@@ -171,23 +171,14 @@ class UpdaterGui:
         )
         self.dir_label.pack(side=tkinter.LEFT)
         # TODO: Checks must get a better place. Changes are not reflected here!! It's static checking.
-        self.is_dir_a_valid_csl_dir()
-        # if self.config["csl_path"] == "":
-        #     self.selected_dir_label = tkinter.Label(
-        #         self.csl_frame, text="not selected!", fg="red", padx=5, pady=5)
-        # elif not os.path.exists(self.config["csl_path"]):
-        #     self.selected_dir_label = tkinter.Label(
-        #         self.csl_frame, text=f"Path does not exist: {self.config['csl_path']}", fg="red", padx=5, pady=5)
-        # elif self.is_dir_a_valid_csl_dir(self.config["csl_path"]) is False:
-        #     self.selected_dir_label = tkinter.Label(
-        #         self.csl_frame, text=f"Path does not contain CSL files: {self.config['csl_path']}", fg="red", padx=5, pady=5)
-        # else:
-        #     if os.path.exists(self.config["csl_path"]):
-        #         self.selected_dir_label = tkinter.Label(
-        #             self.csl_frame, text=f"{self.config['csl_path']}", fg="green", padx=5, pady=5)
-        #     else:
-        #         self.selected_dir_label = tkinter.Label(
-        #             self.csl_frame, text=f"Path does not exist: {self.config['csl_path']}", fg="red", padx=5, pady=5)
+        valid, message = self.set_csl_message()
+        if valid:
+            textcolor = "green"
+        else:
+            textcolor = "red"
+        self.selected_dir_label = tkinter.Label(
+            self.csl_frame, text=message, fg=textcolor, padx=5, pady=5
+        )
 
         self.selected_dir_label.pack(side=tkinter.LEFT)
 
@@ -369,6 +360,16 @@ class UpdaterGui:
             with open(self.config_file, 'w') as f:
                 json.dump(self.config, f, indent=4)
         self.is_dir_a_valid_csl_dir()
+
+    def set_csl_message(self) -> tuple[bool, str]:
+        valid = False
+
+        if self.config["csl_path"] == "":
+            print("empty string", flush=True)
+            message = "CSL path not selected!"
+            return valid, message
+
+        return valid, ""
 
     def is_dir_a_valid_csl_dir(self) -> None:
 
