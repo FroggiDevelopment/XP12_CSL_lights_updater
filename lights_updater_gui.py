@@ -32,7 +32,7 @@ class StdOutRedirect:
         pass
 
 
-class UpdaterGui:
+class LightsUpdaterGui:
     """
     The code behind the GUI. Finally lights_updater is clickable!
     """
@@ -43,6 +43,7 @@ class UpdaterGui:
         self.process: subprocess.Popen[str] | None = None
         self.license_file = "Documentation/gpl-3.0.txt"
         self.about_file = "Documentation/about.txt"
+        self.found_xsb_file = None
 
         # Platform specific needs
         if platform.system() == "Windows":
@@ -184,7 +185,7 @@ class UpdaterGui:
             self.csl_frame, text="", fg="green", padx=5, pady=5)
         self.selected_dir_label.pack(side=tkinter.LEFT)
 
-        self.set_csl_message()
+        self.start_verifying_path()
 
         # The window to the world
         self.output = ScrolledText(self.root)
@@ -197,14 +198,6 @@ class UpdaterGui:
 
         self.root.mainloop()
         sys.stdout = old_stdout
-
-    # def set_csl_directory_label(self, valid: bool, message: str) -> None:
-    #     if valid:
-    #         textcolor = "green"
-    #     else:
-    #         textcolor = "red"
-
-    #     self.selected_dir_label.config(text=message, fg=textcolor)
 
     def run_process(self, cli_params: str, task: str) -> None:
         """ Running the choosen process task in a thread.
@@ -371,38 +364,49 @@ class UpdaterGui:
             self.selected_dir_label.config(text=csl_directory, fg="green")
             with open(self.config_file, 'w') as f:
                 json.dump(self.config, f, indent=4)
-        self.set_csl_message()
+        self.start_verifying_path()
 
-    def set_csl_message(self) -> None:
-        message: str = f"{self.config['csl_path']}"
-        color: str = "green"
-        csl_label_text: str = str(self.dir_label.cget(
-            'text')).replace("invalid", "valid")
+    def start_verifying_path(self) -> None:
+        threading.Thread(
+            target=self.check_for_xsb_aircraft_files, daemon=True).start()
 
-        self.process_info_label.config(text="Validating CSL path", fg="blue")
+    def check_for_xsb_aircraft_files(self) -> None:
+        self.found_xsb_file = None
+        dir_label_text = self.dir_label.cget('text')
+        task = "Validating path..."
+        message = f"{task} This can take a while depending on the path and it's depth!"
+        self.process_info_label.after(
+            0, lambda: self.process_info_label.config(text=message, fg="blue"))
+        self.dir_label.after(0, lambda: self.dir_label.config(
+            text=f"Checking if {dir_label_text}", fg="blue"))
 
-        if self.config["csl_path"] == "":
-            message = "CSL path not selected!"
+        self.found_xsb_file: Path | None = None
+        search_path = Path(self.config["csl_path"])
+
+        for file in search_path.rglob("xsb_aircraft.txt"):
+            self.found_xsb_file = file
+            break
+
+        if self.found_xsb_file:
+            color = "green"
+            message = f"{task} Done!"
+            dir_label_text = f"{dir_label_text.replace(' invalid', ' valid')}"
+
+        else:
             color = "red"
-            csl_label_text = csl_label_text.replace("valid", "invalid")
-        # TODO: Possible not neccesary, test on valid csl path seems enough.
-        if os.path.exists(self.config["csl_path"]) is False:
-            # message = f"Path does not exist: {self.config['csl_path']}"
-            csl_label_text = csl_label_text.replace("valid", "invalid")
-            color = "red"
+            message = f"{task} Failed!"
+            dir_label_text = f"{dir_label_text.replace(' valid', ' invalid')}"
 
-        xsb_files: list[Path] = list(
-            Path(self.config["csl_path"]).rglob("xsb_aircraft.txt"))
+        self.process_info_label.after(
+            0, lambda: self.process_info_label.config(text=message, fg=color))
+        self.dir_label.after(
+            0, lambda: self.dir_label.config(text=dir_label_text, fg=color))
 
-        if xsb_files == []:
-            # message = f"Path does not contain valid CSL files: {self.config['csl_path']}"
-            csl_label_text = csl_label_text.replace("valid", "invalid")
-            color = "red"
-        self.process_info_label.config(
-            text="Validating CSL path completed", fg="green")
+        self.selected_dir_label.after(
+            0, lambda: self.selected_dir_label.config(text=self.config["csl_path"], fg=color))
 
-        self.dir_label.config(text=csl_label_text, fg=color)
-        self.selected_dir_label.config(text=message, fg=color)
+    # def set_csl_message(self) -> None:
+    #     self.start_verifying_path()
 
     def show_decision_box(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
@@ -464,5 +468,5 @@ if __name__ == "__main__":
         except ImportError:
             # pyi_splash is not installed or not needed, just ignore it!
             pass
-    app = UpdaterGui(config, config_file)
+    app = LightsUpdaterGui(config, config_file)
     app.show_gui()
