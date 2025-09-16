@@ -232,10 +232,6 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
                     aircraft_with_flashing_beacons = []
 
                 if light_dataref == "libxplanemp/controls/beacon_lites_on":
-                    # aircraft_categories: dict[str,
-                    #                           str] = get_aircraft_categories()
-                    # for category in aircraft_categories.items():
-                    # if aircraft_icao_type in category[1] and category[0] in ["medium", "high"]:
                     if aircraft_icao_type in aircraft_with_flashing_beacons:
                         light_converter = _light_converters["airplane_beacon_flashing"]
 
@@ -319,22 +315,6 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
                 new_obj_file.write(new_file_content)
         except IOError as err:
             log.error("Something went wrong!", err)
-
-
-# def get_csl_path() -> str:
-#     """Set a minimal configuration.
-
-#     Args:
-#         args_path_to_csl (str | None): If available the path is set by commandline param.
-
-#     Returns:
-#         Path: Returns path to CSL files
-#     """
-#     if os.path.exists("configs/config.json"):
-#         with open("configs/config.json", 'r') as f:
-#             config = json.load(f)
-#             return config["csl_path"]
-#     return ""
 
 
 def parse_args() -> argparse.Namespace:
