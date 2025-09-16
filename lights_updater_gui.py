@@ -51,10 +51,6 @@ class LightsUpdaterGui:
         else:
             self.python_exe = "python3"
 
-        if platform.system() == "Darwin":
-            if not os.path.exists(f"{os.getcwd()}/lights_updater.py"):
-                os.chdir(self.get_real_app_dir())
-
     def show_gui(self) -> None:
         """Creates the primary GUI for the user"""
 
@@ -378,7 +374,7 @@ class LightsUpdaterGui:
         self.process_info_label.after(
             0, lambda: self.process_info_label.config(text=message, fg="blue"))
         self.dir_label.after(0, lambda: self.dir_label.config(
-            text=f"Checking if {dir_label_text}", fg="blue"))
+            text=f"Checking if {dir_label_text.replace(' invalid', ' valid')}", fg="blue"))
 
         self.found_xsb_file: Path | None = None
         search_path = Path(self.config["csl_path"])
@@ -405,9 +401,6 @@ class LightsUpdaterGui:
         self.selected_dir_label.after(
             0, lambda: self.selected_dir_label.config(text=self.config["csl_path"], fg=color))
 
-    # def set_csl_message(self) -> None:
-    #     self.start_verifying_path()
-
     def show_decision_box(self, title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)  # type: ignore
 
@@ -415,15 +408,6 @@ class LightsUpdaterGui:
         self.process_info_label.config(text="Programm version", fg="green")
         cli_params = "--version"
         self.run_process(cli_params, "Getting version info")
-
-    def get_real_app_dir(self) -> str:
-        """Returns the directory where the executable lives on disk."""
-        if hasattr(sys, '_MEIPASS'):
-            # For --onefile: get path of the extracted executable
-            return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(p=sys.executable))))
-        else:
-            # For --onedir or running normally
-            return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     def show_license(self) -> None:
         self.output.delete(1.0, tkinter.END)
@@ -443,7 +427,30 @@ class LightsUpdaterGui:
         self.output.see("1.0")
 
 
+def get_real_app_dir() -> str:
+    """Get the directory where the executable lives on disk.
+       This is needed for pyinstaller apps with --onefile option on MacOS
+
+    Returns:
+        str: String with pathinfo of the original loacation of theexecutable
+    """
+    if hasattr(sys, '_MEIPASS'):
+        # For --onefile: get path of the extracted executable
+        return os.path.dirname(sys.executable)
+    else:
+        # For --onedir or running normally
+        return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
 if __name__ == "__main__":
+    # First of all:
+    # On MacOS change to executable directory, pyinstaller will set you in the dir it unzips the files to.
+    # So a chdir back is needed to let the program work.
+
+    if platform.system() == "Darwin":
+        if not os.path.exists(f"{os.getcwd()}/lights_updater.py"):
+            os.chdir(get_real_app_dir())
+
     # Get config from file or build a config file with basic settings.
     config: dict[str, Any] = {}
     config_file = "configs/config.json"
