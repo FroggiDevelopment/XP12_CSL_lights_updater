@@ -5,13 +5,12 @@ If you read this, you are using the GUI (Graphical User Interface) version of th
 For those params please refer to the manual.
 
 - To start choose the directory where your CSL airplanes are located.
-  To get the right directory you must be in it, only highlighting the directory is not enough.
-  It is a kind of old file picker interface. I choose it because so you don't have to install extra dependencies.
+  Depending on the OS you can click an choose the folder / directory or you must double click the folder, so you are in that folder to choose the right one.
 
 - You have two options for conversion under the converter menu. Standard conversion and conversion with flashing beacons.
   The later converts beacon lights to the more modern flashing beacons on specific modern aircraft.
 
-- Further you have the option to undo the changes and the option to delete the backup files if you want. 
+- Further you have the option to undo the changes and the option to delete the backup files if you want. Be careful with the delete option!
 
 The program will create a backup of the original file before converting the lights. 
 If you undo the changes, the program will restore the original file.
