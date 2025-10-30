@@ -45,7 +45,7 @@ def time_benchmark(func: Callable[..., Any]) -> Any:
     return wrapper
 
 
-def named_time_benchmark(argument: str = ""):
+def named_time_benchmark(argument: str = "") -> Callable[..., Any]:
     def time_benchmark(func: Callable[..., Any]) -> Any:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any):
