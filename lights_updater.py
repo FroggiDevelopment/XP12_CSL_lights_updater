@@ -215,8 +215,6 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     list_of_animations: list[str] = get_list_of_animations(animations)
 
     for animation in list_of_animations:
-        # _animation = animation.replace("LIGHT_NAMED", "LIGHT_PARAM")
-
         if any((light_dataref := dataref) in animation for dataref in _lighttype_per_dataref.keys()):
             light_type: str = _lighttype_per_dataref[light_dataref]
             light_converter: Callable[[
@@ -227,7 +225,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
                 aircraft_with_flashing_beacons: list[str] | None = get_aircraft_with_flashing_beacons(
                 )
                 if aircraft_with_flashing_beacons is None:
-                    log.error(
+                    log.warning(
                         "No data for aircraft with flashing beacons found. Converting all to rotating beacons!")
                     aircraft_with_flashing_beacons = []
 
@@ -246,7 +244,7 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
             # Special case 3: Taxilight in wrong landing lights animation (found with Bluebell's)
             if light_dataref == "libxplanemp/controls/landing_lites_on" and "airplane_taxi" in animation:
                 log.debug(
-                    "Taxilight in wrong landing lights animation. Fixing...")
+                    "Taxilight in wrong landing lights animation. Fixing it...")
                 light_type = "airplane_taxi"
                 light_converter = light_converters["airplane_taxi"]
 
