@@ -47,7 +47,10 @@ def get_aircraft_with_flashing_beacons() -> list[str] | None:
         with open(AIRCRAFT_DEFINITIONS, "r") as aircrafts_definitions:
             aircrafts = json.load(
                 aircrafts_definitions)
-            return aircrafts["aircraft_with_flashing_beacons"]
+            if "aircraft_with_flashing_beacons" in aircrafts:
+                return aircrafts["aircraft_with_flashing_beacons"]
+            else:
+                return []
     except FileNotFoundError:
         log.error(f"Missing {AIRCRAFT_DEFINITIONS} file. Stopping now!")
         paused_exit()
