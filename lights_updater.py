@@ -62,42 +62,6 @@ log = logging.getLogger("lights_updater")
 # Some constants
 TEMP_FILE_SUFFIX: str = ".TEMP"
 
-OLD_AIRCRAFT_LIGHTS: dict[str, str] = {
-    "airplane_landing": "airplane_landing",
-    "airplane_landing_core": "airplane_landing",
-    "airplane_landing_glow": "airplane_landing",
-    "airplane_landing_flare": "airplane_landing",
-    "airplane_landing_sp": "airplane_landing",
-    "airplane_taxi": "airplane_taxi",
-    "airplane_taxi_core": "airplane_taxi",
-    "airplane_taxi_flare": "airplane_taxi",
-    "airplane_taxi_glow": "airplane_taxi",
-    "airplane_taxi_sp": "airplane_taxi",
-    "airplane_nav": "airplane_nav",
-    "airplane_nav_sp": "airplane_nav",
-    "airplane_nav_left": "airplane_nav",
-    "airplane_nav_sp_left": "airplane_nav",
-    "airplane_nav_right": "airplane_nav",
-    "airplane_nav_sp_right": "airplane_nav",
-    "airplane_nav_tail": "airplane_nav",
-    "airplane_nav_tail_size": "airplane_nav",
-    "airplane_nav_left_size": "airplane_nav",
-    "airplane_nav_right_size": "airplane_nav",
-    "airplane_strobe": "airplane_strobe",
-    "airplane_strobe_sp": "airplane_strobe",
-    "airplane_strobe_left": "airplane_strobe",
-    "airplane_strobe_right": "airplane_strobe",
-    "airplane_strobe_tail": "airplane_strobe",
-    "airplane_strobe_omni": "airplane_strobe",
-    "airplane_strobe_dir": "airplane_strobe",
-    "airplane_beacon": "airplane_beacon",
-    "airplane_beacon_sp": "airplane_beacon",
-    "airplane_beacon_rotate": "airplane_beacon",
-    "airplane_beacon_rotate_sp ": "airplane_beacon",
-    "airplane_beacon_strobe": "airplane_beacon",
-    "airplane_beacon_strobe_sp": "airplane_beacon",
-}
-
 POSITION_IDENTIFIERS: dict[str, str] = {
     "_left": "",
     "_right": "",
@@ -114,6 +78,36 @@ light_converters: dict[str, Callable[[str, dict[str, str]], str]] = {
     "airplane_strobe": convert_airplane_strobe_lights,
     "airplane_strobe_airbus": convert_airbus_strobe_lights
 }
+
+# TODO: Move this list to a config or at least up in this code
+# To get the typical Airbus strobe flash sequence the strobes must be converted differently
+airbus_icao_identifiers: list[str] = [
+    "A19N",
+    "A20N",
+    "A21N",
+    "A306",
+    "A30B",
+    "A310",
+    "A318",
+    "A319",
+    "A320",
+    "A321",
+    "A332",
+    "A333",
+    "A337",
+    "A338",
+    "A339",
+    "A342",
+    "A343",
+    "A345",
+    "A346",
+    "A359",
+    "A35K",
+    "A388",
+    "A3ST",
+    "BCS1",
+    "BCS3"
+]
 
 
 class Configuration(TypedDict):
@@ -160,6 +154,32 @@ def split_object_file(object_file: str) -> tuple[str, str]:
     raise NoAnimationFoundError
 
 
+def get_flashing_beacon_converter(aircraft_icao_type: str) -> Callable[[str, dict[str, str]], str]:
+    """ Returns the light_converter for flashing beacons if aircrafts icao is in the list,
+        else the 'normal' converter for beacons.
+        Makes difference for Airbus aircrafts as those have a different strobe sequence
+
+    Args:
+        aircraft_icao_type (str): The ICAO code of the aircraft in case
+    Returns:
+        Callable[[str, dict[str, str]], str]: The converter function depending on aircraft type
+    """
+    light_converter: Callable[[str, dict[str, str]],
+                              str] = light_converters["airplane_beacon"]
+
+    aircraft_with_flashing_beacons: list[str] = get_aircraft_with_flashing_beacons(
+    )
+
+    if aircraft_icao_type in aircraft_with_flashing_beacons:
+        light_converter = light_converters["airplane_beacon_flashing"]
+
+    # Special case 1.1: Airbus beacons flashing sequence
+    if aircraft_icao_type in airbus_icao_identifiers:  # noqa
+        light_converter = light_converters["airplane_beacon_flashing_airbus"]
+
+    return light_converter
+
+
 def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
     """ Process the animations section where light parameters are defined
 
@@ -178,36 +198,6 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
         "libxplanemp/controls/strobe_lites_on": "airplane_strobe",
     }
 
-    # TODO: Move this list to a config or at least up in this code
-    # To get the typical Airbus strobe flash sequence the strobes must be converted differently
-    airbus_icao_identifiers: list[str] = [
-        "A19N",
-        "A20N",
-        "A21N",
-        "A306",
-        "A30B",
-        "A310",
-        "A318",
-        "A319",
-        "A320",
-        "A321",
-        "A332",
-        "A333",
-        "A337",
-        "A338",
-        "A339",
-        "A342",
-        "A343",
-        "A345",
-        "A346",
-        "A359",
-        "A35K",
-        "A388",
-        "A3ST",
-        "BCS1",
-        "BCS3"
-    ]
-
     light_params_dict: dict[str, dict[str, str]] = get_light_params_for_aircraft_type(
         str(aircraft_icao_type)
     )
@@ -221,21 +211,9 @@ def process_animations_section(animations: str, aircraft_icao_type: str) -> str:
                 str, dict[str, str]], str] = light_converters[light_type]
 
             # Special case 1: Flashing beacons
-            if flashing_beacons is True:
-                aircraft_with_flashing_beacons: list[str] | None = get_aircraft_with_flashing_beacons(
-                )
-                if aircraft_with_flashing_beacons is None:
-                    log.warning(
-                        "No data for aircraft with flashing beacons found. Converting all to rotating beacons!")
-                    aircraft_with_flashing_beacons = []
-
-                if light_dataref == "libxplanemp/controls/beacon_lites_on":
-                    if aircraft_icao_type in aircraft_with_flashing_beacons:
-                        light_converter = light_converters["airplane_beacon_flashing"]
-
-                # Special case 1.1: Airbus beacons flashing sequence
-                    if light_dataref == "libxplanemp/controls/beacon_lites_on" and aircraft_icao_type in airbus_icao_identifiers:  # noqa
-                        light_converter = light_converters["airplane_beacon_flashing_airbus"]
+            if flashing_beacons is True and light_dataref == "libxplanemp/controls/beacon_lites_on":
+                light_converter = get_flashing_beacon_converter(
+                    aircraft_icao_type=aircraft_icao_type)
 
             # Special case 2: Airbus strobe
             if light_dataref == "libxplanemp/controls/strobe_lites_on" and aircraft_icao_type in airbus_icao_identifiers:  # noqa
@@ -292,6 +270,7 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
             continue
 
         log.info(f"Processing {aircraft_object_path}")
+        log.debug(f"MESSAGE: Processing {aircraft_object_path}")
 
         # Set data for usage in submodules
         aircraft_processing_data.AircraftData.icao_type = aircraft_object["icao_type"]
@@ -300,6 +279,7 @@ def process_object_files(aircraft_objects: list[dict[str, str]]) -> None:
 
         new_animations_section = process_animations_section(
             animations, aircraft_object["icao_type"])
+        log.debug(f"MESSAGE: Processing {aircraft_object_path} done!")
 
         # Glue the two file parts together
         new_file_content = object_definitions + new_animations_section
