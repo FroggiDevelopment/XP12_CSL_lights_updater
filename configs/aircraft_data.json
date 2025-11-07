@@ -2,7 +2,7 @@
     "spill_light_reduce_factors": {
         "airplane_landing": 1.0,
         "airplane_taxi": 0.75,
-        "airplane_nav": 0.4,
+        "airplane_nav": 0.3,
         "airplane_beacon": 0.35,
         "airplane_strobe": 0.5
     }
