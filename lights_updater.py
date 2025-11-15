@@ -27,7 +27,7 @@ from helpers import make_backup
 from helpers import remove_backups
 from helpers import recover_from_backup
 from helpers import remove_xpmp2_files
-from helpers import copy_new_to_old
+from helpers import move_processed_files_to_originals
 from helpers import get_light_params_for_aircraft_type
 from helpers import get_aircraft_objects_from_xsb_file
 from helpers import get_list_of_animations
@@ -415,7 +415,7 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
     )
     process_object_files(aircraft_objects)
 
-    copy_new_to_old(aircraft_objects, TEMP_FILE_SUFFIX)
+    move_processed_files_to_originals(aircraft_objects, TEMP_FILE_SUFFIX)
 
     log.info(
         f"Processing done, {len(aircraft_objects)} files have been processed!")
