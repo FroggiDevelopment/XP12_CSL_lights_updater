@@ -224,30 +224,26 @@ def filepath_is_valid(filepath: Path) -> bool:
     return result
 
 
-def copy_new_to_old(aircraft_objects: list[dict[str, str]], TEMP_FILE_SUFFIX: str) -> None:
+def move_processed_files_to_originals(aircraft_objects: list[dict[str, str]], TEMP_FILE_SUFFIX: str) -> None:
     """Copy the new created files over the original files
        Delete the new files.
     """
-    log.info("Start copying processed files to original file!")
+    log.info("Start moving processed files to original file!")
+
     for aircraft_object in aircraft_objects:
-        destination_file = Path(
-            aircraft_object["full_object_path"]).with_suffix(".obj")
-        temp_object_file = Path(
+        tmp_object_file = Path(
             aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
 
         try:
-            destination_file.write_bytes(temp_object_file.read_bytes())
+            tmp_object_file.rename(tmp_object_file.with_suffix(".obj"))
         except PermissionError as err:
-            log.error("Stopping on error!", err)
-            paused_exit()
+            log.error(
+                f"Error on renaming {aircraft_object['full_object_path']}!", err)
             continue
-        except FileNotFoundError as err:
-            log.error(f"File could not be copied! See: {err}")
+        except FileNotFoundError:
+            log.error(
+                f"{aircraft_object['full_object_path']} could not be copied! Temporary file does noet exist!")
             continue
-        try:
-            temp_object_file.unlink()
-        except PermissionError as err:
-            log.error(f"{temp_object_file.name} can not be deleted!", err)
-            continue
+
         log.info(
-            f"Moving {temp_object_file.name} to {aircraft_object['full_object_path']} file done.")
+            f"Moving {tmp_object_file.name} to {aircraft_object['full_object_path']} file done.")
