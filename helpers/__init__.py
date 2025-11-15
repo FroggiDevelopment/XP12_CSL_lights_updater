@@ -5,7 +5,7 @@ from .helpers import delete_files as delete_files
 from .helpers import remove_xpmp2_files as remove_xpmp2_files
 from .helpers import get_list_of_files as get_list_of_files
 from .helpers import filepath_is_valid as filepath_is_valid
-from .helpers import copy_new_to_old as copy_new_to_old
+from .helpers import move_processed_files_to_originals as move_processed_files_to_originals
 from .helpers import paused_exit as paused_exit
 
 from .init_logging import init_logging as init_logging
