@@ -231,7 +231,7 @@ def move_processed_files_to_originals(aircraft_objects: list[dict[str, str]], TE
     log.info("Start moving processed files to original file!")
 
     for aircraft_object in aircraft_objects:
-        tmp_object_file = Path(
+        tmp_object_file: Path = Path(
             aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
 
         try:
