@@ -217,11 +217,11 @@ def filepath_is_valid(filepath: Path) -> bool:
     Returns:
         bool: True if valid, False otherwise
     """
-    result = True
-    if (filepath.exists() is False):
-        result = False
 
-    return result
+    if (filepath.exists() is False):
+        return False
+
+    return True
 
 
 def move_processed_files_to_originals(aircraft_objects: list[dict[str, str]], TEMP_FILE_SUFFIX: str) -> None:
