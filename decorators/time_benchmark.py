@@ -30,14 +30,14 @@ log = logging.getLogger(__name__)
 
 def time_benchmark(func: Callable[..., Any]) -> Any:
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any):
-        start_time = perf_counter()
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        start_time: float = perf_counter()
         log.debug(f"Starting {func.__name__}")
         result = func(*args, **kwargs)
-        end_time = perf_counter()
+        end_time: float = perf_counter()
         log.debug(f"Finished {func.__name__}")
 
-        duration = end_time - start_time
+        duration: float = end_time - start_time
 
         log.info(f"It took {duration:.2f} seconds to complete {func.__name__}")
         return result
