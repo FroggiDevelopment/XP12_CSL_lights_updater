@@ -234,17 +234,7 @@ def move_processed_files_to_originals(aircraft_objects: list[dict[str, str]], TE
         tmp_object_file: Path = Path(
             aircraft_object["full_object_path"]).with_suffix(TEMP_FILE_SUFFIX)
 
-        # try:
-        #     # First delete existing object. Added after Win11 does not like the below rename action anymore.
-        #     Path.unlink(
-        #         Path(aircraft_object["full_object_path"]), missing_ok=True)
-        # except PermissionError as err:
-        #     log.error(
-        #         f"Error on deleting {aircraft_object['full_object_path']}!", err)
-        #     continue
-
         try:
-            # Second copy new object
             tmp_object_file.replace(tmp_object_file.with_suffix(".obj"))
         except PermissionError as err:
             log.error(
