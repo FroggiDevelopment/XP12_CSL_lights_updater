@@ -7,6 +7,8 @@
 	"settings": {
 		"workbench.colorCustomizations": {
 			"tab.activeBorder": "#22aa22"
-		}
+		},
+		"terminal.integrated.fontSize": 12,
+		"editor.fontSize": 12
 	}
 }
