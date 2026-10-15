@@ -424,6 +424,7 @@ def main(args: argparse.Namespace, csl_path: Path) -> None:
 if __name__ == "__main__":
     log.debug(f"Lights updater version: {__version__} started!")
     config_file = "configs/config.json"
+
     if os.path.exists(config_file):
         with open(config_file, 'r') as f:
             config = json.load(f)
