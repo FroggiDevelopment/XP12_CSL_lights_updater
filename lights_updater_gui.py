@@ -12,6 +12,7 @@ from pathlib import Path
 import threading
 import shlex
 from typing import Any
+import configs._version
 
 
 class StdOutRedirect:
@@ -55,7 +56,8 @@ class LightsUpdaterGui:
         """Creates the primary GUI for the user"""
 
         self.root = tkinter.Tk()
-        self.root.title("Lights updater for CSL objects")
+        self.root.title("Lights updater for CSL objects: V" +
+                        configs._version.__version__)
 
         # Center it on screen
         screen_width = self.root.winfo_screenwidth()
